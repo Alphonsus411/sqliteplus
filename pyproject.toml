@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sqliteplus"
+version = "1.0.0"
+description = "SQLite mejorado con cifrado SQLCipher y caché en Redis"
+authors = [
+    { name = "Adolfo González Hernández", email = "adolfogonzal@gmail.com" }
+]
+license = { text = "MIT" }
+dependencies = [
+    "click",
+    "fastapi",
+    "uvicorn",
+    "redis",
+    "bcrypt",
+    "PyJWT",
+    "pytest",
+    "setuptools"
+]
+readme = "README.md"
+requires-python = ">=3.7"
+dynamic = ["classifiers"]
+
+[project.scripts]
+sqliteplus = "sqliteplus.cli:cli"
+
+[tool.setuptools]
+packages = ["sqliteplus"]
