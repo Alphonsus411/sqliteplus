@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sqliteplus"
+name = "sqliteplus-enhanced"
 version = "1.0.0"
 description = "SQLite mejorado con cifrado SQLCipher y caché en Redis"
 authors = [

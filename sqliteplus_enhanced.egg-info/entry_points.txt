@@ -1,0 +1,2 @@
+[console_scripts]
+sqliteplus = sqliteplus.cli:cli

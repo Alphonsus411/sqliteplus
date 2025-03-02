@@ -1,0 +1,8 @@
+click
+fastapi
+uvicorn
+redis
+bcrypt
+PyJWT
+pytest
+setuptools
