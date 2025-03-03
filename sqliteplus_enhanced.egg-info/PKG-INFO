@@ -1,9 +1,9 @@
 Metadata-Version: 2.2
 Name: sqliteplus-enhanced
-Version: 1.0.0
+Version: 1.0.3
 Summary: SQLite mejorado con cifrado SQLCipher y caché en Redis
-Home-page: https://github.com/Alphonsus411/sqliteplus
-Author: Tu Nombre
+Home-page: https://github.com/Alphonsus411/sqliteplus-enhanced
+Author: Adolfo González Hernández
 Author-email: Adolfo González Hernández <adolfogonzal@gmail.com>
 License: MIT
 Classifier: Programming Language :: Python :: 3
@@ -11,6 +11,7 @@ Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
+License-File: LICENSE.md
 Requires-Dist: click
 Requires-Dist: fastapi
 Requires-Dist: uvicorn
@@ -24,103 +25,60 @@ Dynamic: classifier
 Dynamic: home-page
 Dynamic: requires-python
 
-# 📌 SQLitePlus - Base de Datos Mejorada con Cifrado y Caché 🚀
+# SQLitePlus Enhanced
 
-## 📖 Descripción
-SQLitePlus es una implementación mejorada de SQLite con soporte para:
-- **Cifrado de base de datos con SQLCipher** 🔒
-- **Caché en Redis** para mejorar el rendimiento ⚡
-- **Manejo de concurrencia con threading** 🛠️
-- **Exportación y replicación de datos** 📂
-- **Interfaz CLI para administración desde la terminal** 🖥️
-- **Servidor API con FastAPI** para integración flexible 🌐
+SQLitePlus Enhanced es una librería optimizada para la gestión avanzada de bases de datos SQLite con autenticación JWT, consultas asincrónicas y documentación automática con FastAPI.
 
----
+## 🚀 Características
+- ✅ **Autenticación JWT** 🔐
+- ✅ **Soporte para múltiples bases de datos SQLite** 📂
+- ✅ **Consultas asincrónicas con `aiosqlite`** ⚡
+- ✅ **API documentada automáticamente con Swagger y Redoc** 📜
+- ✅ **Optimización con `lifespan` para gestión de conexiones**
 
 ## 📦 Instalación
-### **1️⃣ Clonar el Repositorio**
+Instala la librería con pip:
 ```bash
-git clone https://github.com/tuusuario/sqliteplus.git
-cd sqliteplus
+pip install sqliteplus-enhanced
 ```
 
-### **2️⃣ Crear un Entorno Virtual**
+## 🌐 Uso Rápido
+### 1️⃣ Iniciar el Servidor API
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # En Linux/Mac
-.venv\Scripts\activate     # En Windows
+uvicorn sqliteplus.server_async:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### **3️⃣ Instalar Dependencias**
+### 2️⃣ Generar un Token JWT
 ```bash
-pip install -r requirements.txt
+curl -X POST "http://127.0.0.1:8000/token" -d "username=admin&password=admin" -H "Content-Type: application/x-www-form-urlencoded"
 ```
 
----
-
-## 🚀 Uso
-
-### **🔹 Inicializar la Base de Datos**
+### 3️⃣ Crear una Tabla
 ```bash
-python -m sqliteplus.cli init-db
+curl -X POST "http://127.0.0.1:8000/databases/test_db/create_table?table_name=logs" -H "Authorization: Bearer <TOKEN>"
 ```
 
-### **🔹 Ejecutar una Consulta de Escritura**
+### 4️⃣ Insertar Datos
 ```bash
-python -m sqliteplus.cli execute "INSERT INTO logs (action) VALUES ('Test desde CLI')"
+curl -X POST "http://127.0.0.1:8000/databases/test_db/insert?table_name=logs&data=PrimerRegistro" -H "Authorization: Bearer <TOKEN>"
 ```
 
-### **🔹 Ejecutar una Consulta de Lectura**
+### 5️⃣ Consultar Datos
 ```bash
-python -m sqliteplus.cli fetch "SELECT * FROM logs"
+curl -X GET "http://127.0.0.1:8000/databases/test_db/fetch?table_name=logs" -H "Authorization: Bearer <TOKEN>"
 ```
 
-### **🔹 Crear una Copia de Seguridad**
+### 6️⃣ Eliminar una Tabla
 ```bash
-python -m sqliteplus.cli backup
+curl -X DELETE "http://127.0.0.1:8000/databases/test_db/drop_table?table_name=logs" -H "Authorization: Bearer <TOKEN>"
 ```
 
-### **🔹 Exportar una Tabla a CSV**
-```bash
-python -m sqliteplus.cli export-csv logs logs_export.csv
-```
+## 📜 Documentación de la API
+- **Swagger UI:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **Redoc:** [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
 
----
+## 🔗 Contribución
+Si quieres colaborar, ¡envía un pull request o reporta problemas en el repositorio! 🚀
 
-## ⚙️ Configuración de Redis (Opcional pero Recomendado)
-Si deseas habilitar la caché en Redis:
-1. **Iniciar Redis en Local**
-   ```bash
-   redis-server
-   ```
-2. **Verificar que Redis está activo**
-   ```bash
-   redis-cli ping  # Debería responder con 'PONG'
-   ```
-
----
-
-## 📡 Uso del Servidor API
-### **🔹 Iniciar el Servidor FastAPI**
-```bash
-uvicorn sqliteplus.server:app --reload --host 0.0.0.0 --port 8000
-```
-
-### **🔹 Acceder a la Documentación Interactiva**
-Abre en tu navegador: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-
----
-
-## 📜 Licencia
-Este proyecto está bajo la licencia **MIT**.
-
----
-
-## 🤝 Contribuciones
-¡Las contribuciones son bienvenidas! Si deseas mejorar SQLitePlus, haz un fork del repositorio y envía un pull request. 🚀
-
----
-
-## 📧 Contacto
-Si tienes dudas o sugerencias, puedes contactarme en **[tuemail@example.com](mailto:tuemail@example.com)** o abrir un issue en GitHub.
-
+## 📄 Licencia
+MIT License

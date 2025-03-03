@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="sqliteplus-enhanced",
-    version="1.0.0",
+    version="1.0.3",
     author="Adolfo González Hernández",
     author_email="adolfogonzal@gmail.com",
     description="SQLite mejorado con cifrado SQLCipher y caché en Redis",
