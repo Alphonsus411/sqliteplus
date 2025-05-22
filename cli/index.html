@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Cli - My Docs</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../css/brands.min.css" rel="stylesheet">
+        <link href="../css/solid.min.css" rel="stylesheet">
+        <link href="../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">My Docs</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href=".." class="nav-link">SQLitePlus Enhanced</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../api/" class="nav-link">API REST - SQLitePlus Enhanced</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="./" class="nav-link active" aria-current="page">Cli</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../configuracion/" class="nav-link">Configuración Avanzada</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../endpoints/" class="nav-link">Endpoints REST</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../instalacion/" class="nav-link">Instalación</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../uso_avanzado/" class="nav-link">Uso avanzado</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../uso_basico/" class="nav-link">Uso Básico</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../api/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../configuracion/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="2"><a href="#cli-interfaz-de-linea-de-comandos" class="nav-link">CLI - Interfaz de Línea de Comandos</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-bs-level="2"><a href="#inicializar-la-base-de-datos" class="nav-link">📦 Inicializar la base de datos</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-bs-level="2"><a href="#ejecutar-consulta-de-escritura" class="nav-link">🛠 Ejecutar consulta de escritura</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-bs-level="2"><a href="#ejecutar-consulta-de-lectura" class="nav-link">🔎 Ejecutar consulta de lectura</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-bs-level="2"><a href="#exportar-tabla-a-csv" class="nav-link">🧾 Exportar tabla a CSV</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-bs-level="2"><a href="#crear-copia-de-seguridad" class="nav-link">💾 Crear copia de seguridad</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-bs-level="2"><a href="#i-ayuda" class="nav-link">ℹ️ Ayuda</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h2 id="cli-interfaz-de-linea-de-comandos">CLI - Interfaz de Línea de Comandos</h2>
+<p>SQLitePlus Enhanced ofrece una CLI sencilla para ejecutar acciones rápidas sobre tu base de datos.</p>
+<hr />
+<h2 id="inicializar-la-base-de-datos">📦 Inicializar la base de datos</h2>
+<pre><code class="language-bash">sqliteplus-enhanced init-db
+</code></pre>
+<p>Crea el archivo database.db y registra el log de inicialización.</p>
+<h2 id="ejecutar-consulta-de-escritura">🛠 Ejecutar consulta de escritura</h2>
+<pre><code class="language-bash">sqliteplus-enhanced execute &quot;INSERT INTO logs (msg) VALUES ('Mensaje desde CLI')&quot;
+</code></pre>
+<p>Inserta directamente un registro o ejecuta cualquier consulta de escritura.</p>
+<h2 id="ejecutar-consulta-de-lectura">🔎 Ejecutar consulta de lectura</h2>
+<pre><code class="language-bash">sqliteplus-enhanced fetch &quot;SELECT * FROM logs&quot;
+</code></pre>
+<p>Devuelve y muestra el resultado de cualquier consulta SELECT.</p>
+<h2 id="exportar-tabla-a-csv">🧾 Exportar tabla a CSV</h2>
+<pre><code class="language-bash">sqliteplus-enhanced export-csv logs salida.csv
+</code></pre>
+<p>Guarda los datos de la tabla logs en un archivo CSV llamado salida.csv</p>
+<h2 id="crear-copia-de-seguridad">💾 Crear copia de seguridad</h2>
+<pre><code class="language-bash">sqliteplus-enhanced backup
+</code></pre>
+<p>Genera una copia en la carpeta backups/ con fecha y hora.</p>
+<h2 id="i-ayuda">ℹ️ Ayuda</h2>
+<pre><code class="language-bash">sqliteplus-enhanced --help
+</code></pre></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js"></script>
+        <script src="../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
