@@ -4,7 +4,82 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc0a462b-e3de-45fc-af99-721ba85989d9" name="Changes" comment="" />
+    <list default="true" id="4c359cdc-b091-4c1b-b23e-f29138a2231f" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config_ini.ps1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/api.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/cli.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/configuracion.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/endpoints.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/index.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/instalacion.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/mkdocs.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/uso_avanzado.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/uso_basico.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hoja_ruta_mejora_sqlite.pdf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/img.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/requirements-dev.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reset-pypi.ps1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/api/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/api/endpoints.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/auth/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/auth/jwt.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/core/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/core/db.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/core/logger.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/core/schemas.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/utils/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/utils/database_manager_sync.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/utils/replication_sync.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sqliteplus/utils/sqliteplus_sync.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/conftest.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_auth.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_database_api.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_database_async.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_insert_and_fetch_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_server_endpoints.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqliteplus.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqliteplus.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/databases/test_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/databases/test_db.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/databases/test_db.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/databases/test_db.db-wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/sqliteplus_enhanced-1.0.0-py3-none-any.whl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/sqliteplus_enhanced-1.0.0.tar.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/sqliteplus_enhanced-1.0.2-py3-none-any.whl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/sqliteplus_enhanced-1.0.2.tar.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/sqliteplus_enhanced-1.0.3-py3-none-any.whl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/sqliteplus_enhanced-1.0.3.tar.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus.egg-info/PKG-INFO" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus.egg-info/SOURCES.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus.egg-info/dependency_links.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus.egg-info/entry_points.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus.egg-info/requires.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus.egg-info/top_level.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus/cli.py" beforeDir="false" afterPath="$PROJECT_DIR$/sqliteplus/cli.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus/core.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus/database_manager.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus/database_manager_async.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus/replication.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus/security.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus/server.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus/server_async.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus_enhanced.egg-info/PKG-INFO" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus_enhanced.egg-info/SOURCES.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus_enhanced.egg-info/dependency_links.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus_enhanced.egg-info/entry_points.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus_enhanced.egg-info/requires.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus_enhanced.egg-info/top_level.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_database_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_database_manager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_database_manager_async.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_database_manager_async.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -33,49 +108,34 @@
   }
 }</component>
   <component name="ProjectColorInfo">{
-  &quot;customColor&quot;: &quot;&quot;,
-  &quot;associatedIndex&quot;: 2
+  &quot;associatedIndex&quot;: 0
 }</component>
-  <component name="ProjectId" id="2tlxniU0GMk6rRKm4Nz3H5UwAZe" />
+  <component name="ProjectId" id="2xRSnGNGDpxaADzeAXjdzoIDq8W" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;Python tests.Python tests in test_database_manager.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests in test_database_manager_async.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test3.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python tests.Python tests in test_database_async.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_insert_and_fetch_data.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_server_endpoints.py.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;full.screen.before.presentation.mode&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Adolfo/PycharmProjects/sqliteplus&quot;
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Adolfo/PycharmProjects/sqliteplus/sqliteplus&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;
   }
 }</component>
-  <component name="RunManager" selected="Python tests.Python tests in test_database_manager_async.py">
-    <configuration name="test3" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="sqliteplus" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test3.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Python tests in test_database_manager_async.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Adolfo\PycharmProjects\sqliteplus\sqliteplus" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python tests.Python tests in test_server_endpoints.py">
+    <configuration name="Python tests in test_database_async.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="sqliteplus" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -86,11 +146,11 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_database_manager_async.py&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_database_async.py&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests in test_database_manager.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Python tests in test_insert_and_fetch_data.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="sqliteplus" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -101,15 +161,30 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_database_manager.py&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_insert_and_fetch_data.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests in test_server_endpoints.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="sqliteplus" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_server_endpoints.py&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Python tests in test_database_manager_async.py" />
-        <item itemvalue="Python tests.Python tests in test_database_manager.py" />
-        <item itemvalue="Python.test3" />
+        <item itemvalue="Python tests.Python tests in test_server_endpoints.py" />
+        <item itemvalue="Python tests.Python tests in test_database_async.py" />
+        <item itemvalue="Python tests.Python tests in test_insert_and_fetch_data.py" />
       </list>
     </recent_temporary>
   </component>
@@ -120,15 +195,25 @@
       </set>
     </attachedChunks>
   </component>
-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="bc0a462b-e3de-45fc-af99-721ba85989d9" name="Changes" comment="" />
-      <created>1740940630476</created>
+      <changelist id="4c359cdc-b091-4c1b-b23e-f29138a2231f" name="Changes" comment="" />
+      <created>1747899557762</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1740940630476</updated>
+      <updated>1747899557762</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

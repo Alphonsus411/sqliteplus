@@ -4,12 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sqliteplus-enhanced"
-version = "1.0.3"
-description = "SQLite mejorado con cifrado SQLCipher y caché en Redis"
+version = "1.0.5"
+description = "SQLite mejorado con cifrado SQLCipher, caché en Redis y API REST asincrónica con FastAPI"
 authors = [
     { name = "Adolfo González Hernández", email = "adolfogonzal@gmail.com" }
 ]
 license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.7"
 dependencies = [
     "click",
     "fastapi",
@@ -20,12 +22,22 @@ dependencies = [
     "pytest",
     "setuptools"
 ]
-readme = "README.md"
-requires-python = ">=3.7"
-dynamic = ["classifiers"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Framework :: FastAPI",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable"
+]
 
 [project.scripts]
 sqliteplus = "sqliteplus.cli:cli"
 
-[tool.setuptools]
-packages = ["sqliteplus"]
+[tool.setuptools.packages.find]
+where = ["sqliteplus"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+

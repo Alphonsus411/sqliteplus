@@ -1,6 +1,7 @@
 import unittest
 import asyncio
-from sqliteplus.database_manager_async import AsyncDatabaseManager
+from sqliteplus.core.db import AsyncDatabaseManager
+
 
 
 class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):

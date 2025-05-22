@@ -1,5 +1,6 @@
 import unittest
-from sqliteplus.database_manager import DatabaseManager
+
+from sqliteplus.utils.database_manager_sync import DatabaseManager
 
 
 class TestDatabaseManager(unittest.TestCase):

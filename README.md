@@ -1,57 +1,75 @@
 # SQLitePlus Enhanced
 
-SQLitePlus Enhanced es una librería optimizada para la gestión avanzada de bases de datos SQLite con autenticación JWT, consultas asincrónicas y documentación automática con FastAPI.
+**SQLitePlus Enhanced** es un backend modular en Python con FastAPI que combina:
+- 🔐 Autenticación JWT
+- 🔄 Operaciones asincrónicas sobre múltiples bases de datos SQLite
+- 🧠 Esquemas validados con Pydantic
+- 📦 CLI sincrónico con Click
+- 🔄 Soporte opcional para replicación, exportación y backups
 
-## 🚀 Características
-- ✅ **Autenticación JWT** 🔐
-- ✅ **Soporte para múltiples bases de datos SQLite** 📂
-- ✅ **Consultas asincrónicas con `aiosqlite`** ⚡
-- ✅ **API documentada automáticamente con Swagger y Redoc** 📜
-- ✅ **Optimización con `lifespan` para gestión de conexiones**
+---
+
+## 🚀 Características principales
+
+- Gestión de múltiples bases SQLite de forma asincrónica (`aiosqlite`)
+- API REST completa para creación, inserción, consulta y eliminación de tablas
+- JWT con FastAPI + OAuth2 (`/token`)
+- CLI para ejecutar acciones sin servidor (`sqliteplus init-db`, etc.)
+- Capa de caché opcional con Redis (soporte en utils)
+- Cifrado compatible con SQLCipher (modo sincrónico en utils)
+
+---
 
 ## 📦 Instalación
-Instala la librería con pip:
+
+```bash
+pip install -e .
+```
+O si quieres publicar:
+
 ```bash
 pip install sqliteplus-enhanced
 ```
 
-## 🌐 Uso Rápido
-### 1️⃣ Iniciar el Servidor API
+# 📡 Ejecutar el servidor
+
 ```bash
-uvicorn sqliteplus.server_async:app --reload --host 0.0.0.0 --port 8000
+uvicorn sqliteplus.main:app --reload
 ```
 
-### 2️⃣ Generar un Token JWT
+Accede a:
+
+Swagger UI: http://localhost:8000/docs
+
+Redoc: http://localhost:8000/redoc
+
+## 🧪 Ejecutar tests
+
 ```bash
-curl -X POST "http://127.0.0.1:8000/token" -d "username=admin&password=admin" -H "Content-Type: application/x-www-form-urlencoded"
+pytest -v
 ```
 
-### 3️⃣ Crear una Tabla
+## 🛠 Uso del CLI
+
+````bash
+sqliteplus init-db
+sqliteplus execute "INSERT INTO logs (action) VALUES ('via CLI')"
+sqliteplus export-csv logs logs.csv
+````
+
+## 🧰 Estructura del proyecto
+
 ```bash
-curl -X POST "http://127.0.0.1:8000/databases/test_db/create_table?table_name=logs" -H "Authorization: Bearer <TOKEN>"
+sqliteplus/
+├── main.py                # Punto de entrada FastAPI
+├── api/                   # Endpoints REST
+├── auth/                  # JWT y seguridad
+├── core/                  # DB async + schemas
+├── utils/                 # Módulos sync/CLI
+└── tests/                 # Tests automatizados
+
 ```
 
-### 4️⃣ Insertar Datos
-```bash
-curl -X POST "http://127.0.0.1:8000/databases/test_db/insert?table_name=logs&data=PrimerRegistro" -H "Authorization: Bearer <TOKEN>"
-```
+## 📝 Licencia
 
-### 5️⃣ Consultar Datos
-```bash
-curl -X GET "http://127.0.0.1:8000/databases/test_db/fetch?table_name=logs" -H "Authorization: Bearer <TOKEN>"
-```
-
-### 6️⃣ Eliminar una Tabla
-```bash
-curl -X DELETE "http://127.0.0.1:8000/databases/test_db/drop_table?table_name=logs" -H "Authorization: Bearer <TOKEN>"
-```
-
-## 📜 Documentación de la API
-- **Swagger UI:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- **Redoc:** [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
-
-## 🔗 Contribución
-Si quieres colaborar, ¡envía un pull request o reporta problemas en el repositorio! 🚀
-
-## 📄 Licencia
-MIT License
+MIT License © Adolfo González

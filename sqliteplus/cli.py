@@ -1,6 +1,7 @@
 import click
-from sqliteplus.core import SQLitePlus
-from sqliteplus.replication import SQLiteReplication
+from sqliteplus.utils.sqliteplus_sync import SQLitePlus
+from sqliteplus.utils.replication_sync import SQLiteReplication
+
 
 @click.group()
 def cli():
