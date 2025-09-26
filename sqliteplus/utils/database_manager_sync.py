@@ -1,6 +1,6 @@
 import sqlite3
 import threading
-import os
+from pathlib import Path
 
 
 class DatabaseManager:
@@ -10,8 +10,8 @@ class DatabaseManager:
     """
 
     def __init__(self, base_dir="databases"):
-        self.base_dir = base_dir
-        os.makedirs(self.base_dir, exist_ok=True)  # Asegura que el directorio exista
+        self.base_dir = Path(base_dir).resolve()
+        self.base_dir.mkdir(parents=True, exist_ok=True)  # Asegura que el directorio exista
         self.connections = {}  # Diccionario de conexiones a bases de datos
         self.locks = {}  # Bloqueos para manejar concurrencia en cada base de datos
 
@@ -20,10 +20,15 @@ class DatabaseManager:
         Obtiene una conexión a la base de datos especificada.
         Si la conexión no existe, la crea.
         """
-        db_path = os.path.join(self.base_dir, f"{db_name}.db")
+        if any(token in db_name for token in ("..", "/", "\\")):
+            raise ValueError("Nombre de base de datos inválido")
+
+        db_path = (self.base_dir / Path(f"{db_name}.db")).resolve()
+        if self.base_dir not in db_path.parents:
+            raise ValueError("Nombre de base de datos fuera del directorio permitido")
 
         if db_name not in self.connections:
-            self.connections[db_name] = sqlite3.connect(db_path, check_same_thread=False)
+            self.connections[db_name] = sqlite3.connect(str(db_path), check_same_thread=False)
             self.connections[db_name].execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
             self.locks[db_name] = threading.Lock()
 
