@@ -4,6 +4,16 @@ import os
 
 from sqliteplus.utils.constants import DEFAULT_DB_PATH
 
+
+class SQLitePlusQueryError(RuntimeError):
+    """Excepción personalizada para errores en consultas SQL."""
+
+    def __init__(self, query: str, original_exception: sqlite3.Error):
+        self.query = query
+        self.original_exception = original_exception
+        message = f"Error al ejecutar la consulta SQL '{query}': {original_exception}"
+        super().__init__(message)
+
 class SQLitePlus:
     """
     Manejador de SQLite mejorado con soporte para concurrencia y manejo seguro de consultas.
@@ -41,8 +51,7 @@ class SQLitePlus:
                     conn.commit()
                     return cursor.lastrowid
                 except sqlite3.Error as e:
-                    print(f"Error en la consulta: {e}")
-                    return None
+                    raise SQLitePlusQueryError(query, e) from e
 
     def fetch_query(self, query, params=()):
         with self.lock:
@@ -52,8 +61,7 @@ class SQLitePlus:
                     cursor.execute(query, params)
                     return cursor.fetchall()
                 except sqlite3.Error as e:
-                    print(f"Error en la consulta: {e}")
-                    return None
+                    raise SQLitePlusQueryError(query, e) from e
 
     def log_action(self, action):
         self.execute_query("INSERT INTO logs (action) VALUES (?)", (action,))
