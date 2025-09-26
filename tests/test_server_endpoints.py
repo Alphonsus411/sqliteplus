@@ -14,13 +14,19 @@ async def test_full_data_flow(client, auth_headers):
     )
     assert res_create.status_code == 200
 
-    # 2. Insertar datos válidos
-    res_insert = await client.post(
-        f"/databases/{DB_NAME}/insert?table_name={TABLE_NAME}",
-        json={"msg": "Dato para probar flujo completo"},
-        headers=auth_headers
-    )
-    assert res_insert.status_code == 200
+    # 2. Insertar datos válidos en formatos plano y anidado
+    payloads = [
+        ("Dato para probar flujo completo", {"msg": "Dato para probar flujo completo"}),
+        ("Dato anidado en flujo completo", {"values": {"msg": "Dato anidado en flujo completo"}}),
+    ]
+
+    for _, payload in payloads:
+        res_insert = await client.post(
+            f"/databases/{DB_NAME}/insert?table_name={TABLE_NAME}",
+            json=payload,
+            headers=auth_headers
+        )
+        assert res_insert.status_code == 200
 
     # 3. Consultar datos
     res_fetch = await client.get(
@@ -29,7 +35,8 @@ async def test_full_data_flow(client, auth_headers):
     )
     assert res_fetch.status_code == 200
     data = res_fetch.json().get("data", [])
-    assert any("flujo completo" in str(row) for row in data)
+    for expected_text, _ in payloads:
+        assert any(expected_text in str(row) for row in data)
 
 
 @pytest.mark.asyncio

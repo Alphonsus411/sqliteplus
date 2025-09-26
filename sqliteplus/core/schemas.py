@@ -1,4 +1,4 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, root_validator, validator
 from typing import Any, ClassVar, Dict
 import re
 
@@ -52,6 +52,14 @@ class InsertDataSchema(BaseModel):
     """Esquema utilizado para insertar datos en una tabla existente."""
 
     values: Dict[str, Any]
+
+    @root_validator(pre=True)
+    def ensure_values_key(cls, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Permite aceptar payloads planos y normalizarlos bajo la clave 'values'."""
+
+        if isinstance(payload, dict) and "values" not in payload:
+            return {"values": payload}
+        return payload
 
     @validator("values")
     def validate_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
