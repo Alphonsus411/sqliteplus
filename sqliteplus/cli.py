@@ -59,7 +59,11 @@ def export_csv(table_name, output_file, db_path):
 def backup():
     """Crea un respaldo de la base de datos."""
     replicator = SQLiteReplication(db_path=DEFAULT_DB_PATH)
-    replicator.backup_database()
+    try:
+        replicator.backup_database()
+    except Exception as exc:
+        raise click.ClickException(str(exc)) from exc
+
     click.echo("Copia de seguridad creada correctamente.")
 
 cli.add_command(init_db)

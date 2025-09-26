@@ -52,8 +52,11 @@ class SQLiteReplication:
         try:
             shutil.copy2(self.db_path, backup_file)
             print(f"Copia de seguridad creada en {backup_file}")
+            return backup_file
         except Exception as e:
-            print(f"Error al realizar la copia de seguridad: {e}")
+            raise RuntimeError(
+                f"Error al realizar la copia de seguridad: {e}"
+            ) from e
 
     def replicate_database(self, target_db_path: str):
         """
