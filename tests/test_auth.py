@@ -1,16 +1,24 @@
 import importlib
+import json
 import os
 import secrets
 import sys
+import time
 
 from datetime import datetime, timedelta, timezone
 
 import pytest
 from httpx import AsyncClient, ASGITransport
 import jwt
+import bcrypt
 
 from sqliteplus.main import app
 from sqliteplus.auth.jwt import SECRET_KEY, ALGORITHM
+from sqliteplus.auth.users import (
+    get_user_service,
+    reload_user_service,
+    reset_user_service_cache,
+)
 
 
 @pytest.mark.asyncio
@@ -69,3 +77,44 @@ def test_jwt_requires_secret_key(monkeypatch):
 
     module = importlib.import_module(module_name)
     assert module.SECRET_KEY == restored_secret
+
+
+def _write_users_file(path, password: str, *, timestamp_offset: float = 0.0) -> None:
+    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    path.write_text(json.dumps({"admin": hashed_password}), encoding="utf-8")
+    new_time = time.time() + timestamp_offset
+    os.utime(path, (new_time, new_time))
+
+
+def test_user_service_reloads_when_file_changes(tmp_path, monkeypatch):
+    users_file = tmp_path / "users.json"
+    _write_users_file(users_file, "old-secret", timestamp_offset=1)
+
+    monkeypatch.setenv("SQLITEPLUS_USERS_FILE", str(users_file))
+    reset_user_service_cache()
+
+    initial_service = get_user_service()
+    assert initial_service.verify_credentials("admin", "old-secret")
+    assert not initial_service.verify_credentials("admin", "new-secret")
+
+    _write_users_file(users_file, "new-secret", timestamp_offset=2)
+
+    refreshed_service = get_user_service()
+    assert refreshed_service.verify_credentials("admin", "new-secret")
+    assert not refreshed_service.verify_credentials("admin", "old-secret")
+
+
+def test_reload_user_service_force_refresh(tmp_path, monkeypatch):
+    users_file = tmp_path / "users.json"
+    _write_users_file(users_file, "initial-pass", timestamp_offset=1)
+
+    monkeypatch.setenv("SQLITEPLUS_USERS_FILE", str(users_file))
+    reset_user_service_cache()
+
+    service = reload_user_service()
+    assert service.verify_credentials("admin", "initial-pass")
+
+    _write_users_file(users_file, "changed-pass", timestamp_offset=2)
+
+    reloaded_service = reload_user_service()
+    assert reloaded_service.verify_credentials("admin", "changed-pass")
