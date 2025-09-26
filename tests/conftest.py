@@ -1,10 +1,38 @@
+import json
+import os
+import tempfile
+from pathlib import Path
+
+import bcrypt
 import pytest
 from httpx import AsyncClient, ASGITransport
 from sqliteplus.main import app  # Importa desde la nueva estructura
-from urllib.parse import quote
+
+from sqliteplus.auth.users import reset_user_service_cache
 
 DB_NAME = "test_db_api"
 TABLE_NAME = "logs"
+
+
+def _prepare_users_file() -> Path:
+    hashed_password = bcrypt.hashpw("admin".encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    tmp_dir = Path(tempfile.gettempdir()) / "sqliteplus_tests"
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    file_path = tmp_dir / "users.json"
+    file_path.write_text(json.dumps({"admin": hashed_password}), encoding="utf-8")
+    os.environ["SQLITEPLUS_USERS_FILE"] = str(file_path)
+    return file_path
+
+
+_USERS_FILE_PATH = _prepare_users_file()
+
+
+@pytest.fixture(autouse=True, scope="function")
+def configure_user_store():
+    reset_user_service_cache()
+    yield
+    reset_user_service_cache()
+
 
 @pytest.fixture(scope="function")
 async def client():

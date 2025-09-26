@@ -1,10 +1,11 @@
 from sqlite3 import OperationalError
-from fastapi import APIRouter, HTTPException, Depends, Body
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
 from sqliteplus.core.db import db_manager
 from sqliteplus.core.schemas import CreateTableSchema, InsertDataSchema
 from sqliteplus.auth.jwt import generate_jwt, verify_jwt
+from sqliteplus.auth.users import get_user_service, UserSourceError
 
 router = APIRouter()
 
@@ -16,9 +17,15 @@ def _escape_identifier(identifier: str) -> str:
 
 @router.post("/token", tags=["Autenticación"], summary="Obtener un token de autenticación", description="Genera un token JWT válido por 1 hora.")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    if form_data.username == "admin" and form_data.password == "admin":
+    try:
+        user_service = get_user_service()
+    except UserSourceError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    if user_service.verify_credentials(form_data.username, form_data.password):
         token = generate_jwt(form_data.username)
         return {"access_token": token, "token_type": "bearer"}
+
     raise HTTPException(status_code=400, detail="Credenciales incorrectas")
 
 
