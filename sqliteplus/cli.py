@@ -1,6 +1,7 @@
 import sqlite3
 
 import click
+from sqliteplus.utils.constants import DEFAULT_DB_PATH
 from sqliteplus.utils.sqliteplus_sync import SQLitePlus
 from sqliteplus.utils.replication_sync import SQLiteReplication
 
@@ -38,7 +39,7 @@ def fetch(query):
 @click.argument("output_file")
 @click.option(
     "--db-path",
-    default="sqliteplus/databases/database.db",
+    default=DEFAULT_DB_PATH,
     show_default=True,
     help="Ruta al archivo de base de datos SQLite.",
 )
@@ -57,7 +58,7 @@ def export_csv(table_name, output_file, db_path):
 @click.command()
 def backup():
     """Crea un respaldo de la base de datos."""
-    replicator = SQLiteReplication()
+    replicator = SQLiteReplication(db_path=DEFAULT_DB_PATH)
     replicator.backup_database()
     click.echo("Copia de seguridad creada correctamente.")
 

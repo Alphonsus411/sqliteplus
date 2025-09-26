@@ -2,12 +2,14 @@ import sqlite3
 import threading
 import os
 
+from sqliteplus.utils.constants import DEFAULT_DB_PATH
+
 class SQLitePlus:
     """
     Manejador de SQLite mejorado con soporte para concurrencia y manejo seguro de consultas.
     """
 
-    def __init__(self, db_path="sqliteplus/databases/database.db"):
+    def __init__(self, db_path=DEFAULT_DB_PATH):
         self.db_path = db_path
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         self.lock = threading.Lock()
