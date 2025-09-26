@@ -140,6 +140,52 @@ async def test_insert_data_with_varied_columns():
 
 
 @pytest.mark.asyncio
+async def test_insert_unique_constraint_violation_returns_conflict():
+    """Verifica que las violaciones de restricciones UNIQUE devuelvan 409."""
+    transport = ASGITransport(app=app)
+    table_name = "logs_unique"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        res_create = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json={
+                "columns": {
+                    "id": "INTEGER PRIMARY KEY",
+                    "email": "TEXT UNIQUE",
+                }
+            },
+            headers=headers,
+        )
+        assert res_create.status_code == 200
+
+        payload = {"values": {"email": "duplicado@example.com"}}
+
+        res_insert_first = await ac.post(
+            f"/databases/{DB_NAME}/insert?table_name={table_name}",
+            json=payload,
+            headers=headers,
+        )
+        assert res_insert_first.status_code == 200
+
+        res_insert_second = await ac.post(
+            f"/databases/{DB_NAME}/insert?table_name={table_name}",
+            json=payload,
+            headers=headers,
+        )
+
+        assert res_insert_second.status_code == 409
+        assert "Violación de restricción" in res_insert_second.json()["detail"]
+
+        res_drop = await ac.delete(
+            f"/databases/{DB_NAME}/drop_table?table_name={table_name}",
+            headers=headers,
+        )
+        assert res_drop.status_code == 200
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "malicious_name",
     ["../escape_api", "..\\escape_api", "nested/evil"],
