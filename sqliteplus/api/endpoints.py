@@ -1,3 +1,4 @@
+import aiosqlite
 from sqlite3 import OperationalError
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
@@ -70,6 +71,8 @@ async def insert_data(db_name: str, table_name: str, schema: InsertDataSchema, u
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (OperationalError, aiosqlite.OperationalError) as exc:
+        raise HTTPException(status_code=404, detail=f"Tabla '{table_name}' no encontrada") from exc
     return {"message": "Datos insertados", "row_id": row_id}
 
 
