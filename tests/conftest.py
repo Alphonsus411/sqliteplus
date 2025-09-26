@@ -1,11 +1,16 @@
 import json
 import os
+import secrets
 import tempfile
 from pathlib import Path
 
 import bcrypt
 import pytest
 from httpx import AsyncClient, ASGITransport
+
+if "SECRET_KEY" not in os.environ:
+    os.environ["SECRET_KEY"] = secrets.token_urlsafe(32)
+
 from sqliteplus.main import app  # Importa desde la nueva estructura
 
 from sqliteplus.auth.users import reset_user_service_cache

@@ -5,7 +5,12 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
 # Configuración de seguridad
-SECRET_KEY = os.getenv("SECRET_KEY", "clave_super_segura")
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+if not SECRET_KEY:
+    raise RuntimeError(
+        "SECRET_KEY debe definirse en el entorno antes de iniciar la aplicación"
+    )
 ALGORITHM = "HS256"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
