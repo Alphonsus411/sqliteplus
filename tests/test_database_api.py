@@ -140,6 +140,22 @@ async def test_insert_data_with_varied_columns():
 
 
 @pytest.mark.asyncio
+async def test_fetch_nonexistent_table_returns_not_found():
+    transport = ASGITransport(app=app)
+    table_name = "tabla_inexistente"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        res_fetch = await ac.get(
+            f"/databases/{DB_NAME}/fetch?table_name={table_name}",
+            headers=headers,
+        )
+
+        assert res_fetch.status_code == 404
+        assert res_fetch.json()["detail"] == f"Tabla '{table_name}' no encontrada"
+
+
+@pytest.mark.asyncio
 async def test_insert_unique_constraint_violation_returns_conflict():
     """Verifica que las violaciones de restricciones UNIQUE devuelvan 409."""
     transport = ASGITransport(app=app)
