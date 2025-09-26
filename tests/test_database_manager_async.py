@@ -37,6 +37,22 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(len(result) > 0)
         self.assertEqual(result[0][1], "Alice")
 
+    async def test_concurrent_connection_creation(self):
+        """Verifica que múltiples solicitudes concurrentes comparten la misma conexión."""
+        manager = AsyncDatabaseManager()
+        db_name = "test_db_async_concurrent"
+
+        async def obtain_connection():
+            return await manager.get_connection(db_name)
+
+        conn1, conn2 = await asyncio.gather(obtain_connection(), obtain_connection())
+
+        self.assertIs(conn1, conn2)
+        self.assertIn(db_name, manager.connections)
+        self.assertEqual(len(manager.connections), 1)
+
+        await manager.close_connections()
+
     async def asyncTearDown(self):
         """ Limpieza después de cada prueba """
         await self.manager.close_connections()

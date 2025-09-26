@@ -14,6 +14,7 @@ class AsyncDatabaseManager:
         self.base_dir.mkdir(parents=True, exist_ok=True)  # Asegura que el directorio exista
         self.connections = {}  # Diccionario de conexiones a bases de datos
         self.locks = {}  # Diccionario de bloqueos asíncronos
+        self._creation_lock = None  # Candado para inicialización perezosa de conexiones
 
     async def get_connection(self, db_name):
         """
@@ -27,11 +28,15 @@ class AsyncDatabaseManager:
         if self.base_dir not in db_path.parents:
             raise ValueError("Nombre de base de datos fuera del directorio permitido")
 
-        if db_name not in self.connections:
-            self.connections[db_name] = await aiosqlite.connect(str(db_path))
-            await self.connections[db_name].execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
-            await self.connections[db_name].commit()
-            self.locks[db_name] = asyncio.Lock()
+        if self._creation_lock is None:
+            self._creation_lock = asyncio.Lock()
+
+        async with self._creation_lock:
+            if db_name not in self.connections:
+                self.connections[db_name] = await aiosqlite.connect(str(db_path))
+                await self.connections[db_name].execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
+                await self.connections[db_name].commit()
+            self.locks.setdefault(db_name, asyncio.Lock())
 
         return self.connections[db_name]
 
