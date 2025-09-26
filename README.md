@@ -31,9 +31,28 @@ O si quieres publicar:
 pip install sqliteplus-enhanced
 ```
 
+# 🔐 Configuración obligatoria
+
+Antes de iniciar la aplicación debes definir la variable de entorno `SECRET_KEY`,
+utilizada para firmar los tokens JWT. La aplicación rechazará el arranque si no
+está configurada.
+
+Genera un valor aleatorio en tu entorno con:
+
+```bash
+export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+```
+
+En Windows (PowerShell):
+
+```powershell
+$Env:SECRET_KEY = python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
 # 📡 Ejecutar el servidor
 
 ```bash
+export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
 uvicorn sqliteplus.main:app --reload
 ```
 
