@@ -10,7 +10,11 @@ class SQLiteReplication:
     Módulo para exportación y replicación de bases de datos SQLitePlus.
     """
 
-    def __init__(self, db_path="database.db", backup_dir="backups"):
+    def __init__(self, db_path=None, backup_dir="backups"):
+        if db_path is None:
+            from sqliteplus.utils.constants import DEFAULT_DB_PATH
+
+            db_path = DEFAULT_DB_PATH
         self.db_path = db_path
         self.backup_dir = backup_dir
         os.makedirs(self.backup_dir, exist_ok=True)

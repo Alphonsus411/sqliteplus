@@ -4,6 +4,7 @@ from pathlib import Path
 from click.testing import CliRunner
 
 from sqliteplus.cli import cli
+from sqliteplus.utils.constants import DEFAULT_DB_PATH
 
 
 def _prepare_database(db_path: Path):
@@ -62,3 +63,21 @@ def test_export_csv_cli_rejects_invalid_table_name(tmp_path):
     assert result.exit_code != 0
     assert "Nombre de tabla inválido" in result.output
     assert not output_path.exists()
+
+
+def test_backup_cli_creates_backup_file():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        db_path = Path(DEFAULT_DB_PATH)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        with sqlite3.connect(db_path) as conn:
+            conn.execute("CREATE TABLE demo (id INTEGER PRIMARY KEY)")
+            conn.execute("INSERT INTO demo DEFAULT VALUES")
+
+        result = runner.invoke(cli, ["backup"])
+
+        assert result.exit_code == 0, result.output
+        backups_dir = Path("backups")
+        backups = sorted(backups_dir.glob("backup_*.db"))
+        assert backups, "No se creó ningún archivo de respaldo"
+        assert backups[0].stat().st_size > 0
