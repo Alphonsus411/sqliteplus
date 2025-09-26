@@ -81,3 +81,15 @@ def test_backup_cli_creates_backup_file():
         backups = sorted(backups_dir.glob("backup_*.db"))
         assert backups, "No se creó ningún archivo de respaldo"
         assert backups[0].stat().st_size > 0
+
+
+def test_backup_cli_reports_missing_source_file():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        result = runner.invoke(cli, ["backup"])
+
+        assert result.exit_code != 0
+        assert "Error al realizar la copia de seguridad" in result.output
+        assert "Copia de seguridad creada correctamente." not in result.output
+        backups_dir = Path("backups")
+        assert not list(backups_dir.glob("backup_*.db"))
