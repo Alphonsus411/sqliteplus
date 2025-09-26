@@ -10,8 +10,10 @@ class SQLitePlus:
     """
 
     def __init__(self, db_path=DEFAULT_DB_PATH):
-        self.db_path = db_path
-        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        self.db_path = os.path.abspath(db_path)
+        directory = os.path.dirname(self.db_path)
+        if directory:
+            os.makedirs(directory, exist_ok=True)
         self.lock = threading.Lock()
         self._initialize_db()
 
