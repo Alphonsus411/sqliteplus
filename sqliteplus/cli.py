@@ -1,3 +1,5 @@
+import sqlite3
+
 import click
 from sqliteplus.utils.sqliteplus_sync import SQLitePlus
 from sqliteplus.utils.replication_sync import SQLiteReplication
@@ -34,10 +36,22 @@ def fetch(query):
 @click.command()
 @click.argument("table_name")
 @click.argument("output_file")
-def export_csv(table_name, output_file):
+@click.option(
+    "--db-path",
+    default="sqliteplus/databases/database.db",
+    show_default=True,
+    help="Ruta al archivo de base de datos SQLite.",
+)
+def export_csv(table_name, output_file, db_path):
     """Exporta una tabla a CSV."""
-    replicator = SQLiteReplication()
-    replicator.export_to_csv(table_name, output_file)
+    replicator = SQLiteReplication(db_path=db_path)
+    try:
+        replicator.export_to_csv(table_name, output_file)
+    except ValueError as exc:
+        raise click.BadParameter(str(exc), param_hint="table_name") from exc
+    except sqlite3.Error as exc:
+        raise click.ClickException(str(exc)) from exc
+
     click.echo(f"Tabla {table_name} exportada a {output_file}")
 
 @click.command()

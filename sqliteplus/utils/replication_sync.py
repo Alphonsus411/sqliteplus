@@ -1,8 +1,7 @@
-import sqlite3
+import csv
 import os
 import shutil
-
-from sqliteplus.utils.sqliteplus_sync import SQLitePlus
+import sqlite3
 
 
 
@@ -20,24 +19,26 @@ class SQLiteReplication:
         """
         Exporta los datos de una tabla a un archivo CSV.
         """
-        conn = SQLitePlus().get_connection()
-        cursor = conn.cursor()
+        if not self._is_valid_table_name(table_name):
+            raise ValueError(f"Nombre de tabla inválido: {table_name}")
+
+        query = f"SELECT * FROM {self._escape_identifier(table_name)}"
 
         try:
-            cursor.execute(f"SELECT * FROM {table_name}")
-            rows = cursor.fetchall()
-            column_names = [desc[0] for desc in cursor.description]
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute(query)
+                rows = cursor.fetchall()
+                column_names = [desc[0] for desc in cursor.description]
 
-            with open(output_file, "w", encoding="utf-8") as f:
-                f.write(",".join(column_names) + "\n")
-                for row in rows:
-                    f.write(",".join(map(str, row)) + "\n")
+            with open(output_file, "w", encoding="utf-8", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(column_names)
+                writer.writerows(rows)
 
             print(f"Datos exportados correctamente a {output_file}")
         except sqlite3.Error as e:
-            print(f"Error al exportar datos: {e}")
-        finally:
-            conn.close()
+            raise sqlite3.Error(f"Error al exportar datos: {e}") from e
 
     def backup_database(self):
         """
@@ -66,6 +67,14 @@ class SQLiteReplication:
         """
         import datetime
         return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    @staticmethod
+    def _is_valid_table_name(table_name: str) -> bool:
+        return bool(table_name) and table_name.isidentifier()
+
+    @staticmethod
+    def _escape_identifier(identifier: str) -> str:
+        return f'"{identifier.replace("\"", "\"\"")}"'
 
 
 if __name__ == "__main__":
