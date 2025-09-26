@@ -29,9 +29,11 @@ class UserCredentialsService:
         if not users_file:
             raise UserSourceError("La variable de entorno 'SQLITEPLUS_USERS_FILE' no está definida")
 
-        path = Path(users_file)
+        path = Path(users_file).expanduser()
         if not path.exists():
             raise UserSourceError(f"El archivo de usuarios '{users_file}' no existe")
+
+        path = path.resolve()
 
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
@@ -61,7 +63,11 @@ _cached_source_signature: Tuple[str, int, int] | None = None
 
 
 def _read_source_signature(path: Path) -> Tuple[str, int, int]:
-    """Obtiene una firma basada en metadatos del archivo para detectar cambios."""
+    """Obtiene una firma basada en metadatos del archivo para detectar cambios.
+
+    Se espera que ``path`` ya esté expandido y, en la medida de lo posible, resuelto
+    antes de invocar esta función, de forma que la firma sea consistente.
+    """
 
     try:
         stat_result = path.stat()
@@ -80,9 +86,11 @@ def get_user_service() -> UserCredentialsService:
     if not users_file:
         raise UserSourceError("La variable de entorno 'SQLITEPLUS_USERS_FILE' no está definida")
 
-    path = Path(users_file)
+    path = Path(users_file).expanduser()
     if not path.exists():
         raise UserSourceError(f"El archivo de usuarios '{users_file}' no existe")
+
+    path = path.resolve()
 
     source_signature = _read_source_signature(path)
 
@@ -104,7 +112,10 @@ def reload_user_service() -> UserCredentialsService:
     if not users_file:
         raise UserSourceError("La variable de entorno 'SQLITEPLUS_USERS_FILE' no está definida")
 
-    path = Path(users_file)
+    path = Path(users_file).expanduser()
+    if path.exists():
+        path = path.resolve()
+
     _cached_service = service
     _cached_source_signature = _read_source_signature(path)
     return service

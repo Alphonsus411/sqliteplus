@@ -86,6 +86,25 @@ def _write_users_file(path, password: str, *, timestamp_offset: float = 0.0) -> 
     os.utime(path, (new_time, new_time))
 
 
+def test_user_service_expands_home_in_env_path(tmp_path, monkeypatch):
+    home_dir = tmp_path / "home"
+    home_dir.mkdir()
+
+    monkeypatch.setenv("HOME", str(home_dir))
+
+    users_file = home_dir / "users.json"
+    _write_users_file(users_file, "home-secret", timestamp_offset=1)
+
+    monkeypatch.setenv("SQLITEPLUS_USERS_FILE", "~/users.json")
+    reset_user_service_cache()
+
+    service = get_user_service()
+    try:
+        assert service.verify_credentials("admin", "home-secret")
+    finally:
+        reset_user_service_cache()
+
+
 def test_user_service_reloads_when_file_changes(tmp_path, monkeypatch):
     users_file = tmp_path / "users.json"
     _write_users_file(users_file, "old-secret", timestamp_offset=1)
