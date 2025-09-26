@@ -202,6 +202,45 @@ async def test_insert_unique_constraint_violation_returns_conflict():
 
 
 @pytest.mark.asyncio
+async def test_insert_with_invalid_column_returns_bad_request():
+    """Las inserciones con columnas inexistentes deben devolver 400 con detalle claro."""
+    transport = ASGITransport(app=app)
+    table_name = "logs_invalid_column"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        res_create = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json={
+                "columns": {
+                    "id": "INTEGER PRIMARY KEY",
+                    "msg": "TEXT NOT NULL",
+                }
+            },
+            headers=headers,
+        )
+        assert res_create.status_code == 200
+
+        res_insert = await ac.post(
+            f"/databases/{DB_NAME}/insert?table_name={table_name}",
+            json={"values": {"msg": "Hola", "extra": "valor"}},
+            headers=headers,
+        )
+
+        assert res_insert.status_code == 400
+        detail = res_insert.json()["detail"]
+        assert "Columna inválida" in detail
+        assert "extra" in detail
+
+        res_drop = await ac.delete(
+            f"/databases/{DB_NAME}/drop_table?table_name={table_name}",
+            headers=headers,
+        )
+        assert res_drop.status_code == 200
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "malicious_name",
     ["../escape_api", "..\\escape_api", "nested/evil"],
