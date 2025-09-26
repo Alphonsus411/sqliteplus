@@ -92,8 +92,8 @@ async def fetch_data(db_name: str, table_name: str, user: str = Depends(verify_j
         data = await db_manager.fetch_query(db_name, query)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except OperationalError:
-        raise HTTPException(status_code=404, detail=f"Tabla '{table_name}' no encontrada")
+    except (OperationalError, aiosqlite.OperationalError) as exc:
+        raise HTTPException(status_code=404, detail=f"Tabla '{table_name}' no encontrada") from exc
     return {"data": data}
 
 
