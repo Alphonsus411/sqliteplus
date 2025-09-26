@@ -71,6 +71,11 @@ async def insert_data(db_name: str, table_name: str, schema: InsertDataSchema, u
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except aiosqlite.IntegrityError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Violación de restricción: {exc}",
+        ) from exc
     except (OperationalError, aiosqlite.OperationalError) as exc:
         raise HTTPException(status_code=404, detail=f"Tabla '{table_name}' no encontrada") from exc
     return {"message": "Datos insertados", "row_id": row_id}
