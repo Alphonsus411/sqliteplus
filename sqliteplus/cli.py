@@ -2,7 +2,7 @@ import sqlite3
 
 import click
 from sqliteplus.utils.constants import DEFAULT_DB_PATH
-from sqliteplus.utils.sqliteplus_sync import SQLitePlus
+from sqliteplus.utils.sqliteplus_sync import SQLitePlus, SQLitePlusQueryError
 from sqliteplus.utils.replication_sync import SQLiteReplication
 
 
@@ -23,7 +23,11 @@ def init_db():
 def execute(query):
     """Ejecuta una consulta SQL de escritura."""
     db = SQLitePlus()
-    result = db.execute_query(query)
+    try:
+        result = db.execute_query(query)
+    except SQLitePlusQueryError as exc:
+        raise click.ClickException(str(exc)) from exc
+
     click.echo(f"Consulta ejecutada. ID insertado: {result}")
 
 @click.command()
@@ -31,7 +35,11 @@ def execute(query):
 def fetch(query):
     """Ejecuta una consulta SQL de lectura."""
     db = SQLitePlus()
-    result = db.fetch_query(query)
+    try:
+        result = db.fetch_query(query)
+    except SQLitePlusQueryError as exc:
+        raise click.ClickException(str(exc)) from exc
+
     click.echo(result)
 
 @click.command()
