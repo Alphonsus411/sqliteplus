@@ -8,6 +8,12 @@ from sqliteplus.auth.jwt import generate_jwt, verify_jwt
 
 router = APIRouter()
 
+
+def _escape_identifier(identifier: str) -> str:
+    """Escapa identificadores siguiendo las reglas de SQLite."""
+
+    return f'"{identifier.replace("\"", "\"\"")}"'
+
 @router.post("/token", tags=["Autenticación"], summary="Obtener un token de autenticación", description="Genera un token JWT válido por 1 hora.")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if form_data.username == "admin" and form_data.password == "admin":
@@ -21,8 +27,15 @@ async def create_table(db_name: str, table_name: str, schema: CreateTableSchema,
     if not table_name.isidentifier():
         raise HTTPException(status_code=400, detail="Nombre de tabla inválido")
 
-    columns_def = ", ".join(f'"{k}" {v}' for k, v in schema.columns.items())
-    query = f'CREATE TABLE IF NOT EXISTS "{table_name}" ({columns_def})'
+    try:
+        sanitized_columns = schema.normalized_columns()
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    columns_def = ", ".join(
+        f"{_escape_identifier(column)} {column_type}" for column, column_type in sanitized_columns.items()
+    )
+    query = f"CREATE TABLE IF NOT EXISTS {_escape_identifier(table_name)} ({columns_def})"
     try:
         await db_manager.execute_query(db_name, query)
     except ValueError as exc:

@@ -48,3 +48,107 @@ async def test_insert_without_auth(client):
         json={"msg": "Sin token"}
     )
     assert res.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_create_table_rejects_malicious_column_type(client, auth_headers):
+    db_name = "test_db_injection_type"
+    safe_table = "safe_logs"
+    malicious_table = "maliciosa"
+
+    for table in (safe_table, malicious_table):
+        await client.delete(
+            f"/databases/{db_name}/drop_table?table_name={table}",
+            headers=auth_headers,
+        )
+
+    try:
+        res_create_safe = await client.post(
+            f"/databases/{db_name}/create_table",
+            params={"table_name": safe_table},
+            json={"columns": {"id": "INTEGER PRIMARY KEY", "msg": "TEXT"}},
+            headers=auth_headers,
+        )
+        assert res_create_safe.status_code == 200
+
+        res_insert = await client.post(
+            f"/databases/{db_name}/insert?table_name={safe_table}",
+            json={"msg": "registro seguro"},
+            headers=auth_headers,
+        )
+        assert res_insert.status_code == 200
+
+        malicious_columns = {"msg": "TEXT); DROP TABLE safe_logs;--"}
+        res_malicious = await client.post(
+            f"/databases/{db_name}/create_table",
+            params={"table_name": malicious_table},
+            json={"columns": malicious_columns},
+            headers=auth_headers,
+        )
+        assert res_malicious.status_code == 400
+
+        res_fetch = await client.get(
+            f"/databases/{db_name}/fetch?table_name={safe_table}",
+            headers=auth_headers,
+        )
+        assert res_fetch.status_code == 200
+        data = res_fetch.json().get("data", [])
+        assert any("registro seguro" in str(row) for row in data)
+    finally:
+        for table in (safe_table, malicious_table):
+            await client.delete(
+                f"/databases/{db_name}/drop_table?table_name={table}",
+                headers=auth_headers,
+            )
+
+
+@pytest.mark.asyncio
+async def test_create_table_rejects_malicious_column_name(client, auth_headers):
+    db_name = "test_db_injection_name"
+    safe_table = "safe_logs"
+    malicious_table = "maliciosa"
+
+    for table in (safe_table, malicious_table):
+        await client.delete(
+            f"/databases/{db_name}/drop_table?table_name={table}",
+            headers=auth_headers,
+        )
+
+    try:
+        res_create_safe = await client.post(
+            f"/databases/{db_name}/create_table",
+            params={"table_name": safe_table},
+            json={"columns": {"id": "INTEGER PRIMARY KEY", "msg": "TEXT"}},
+            headers=auth_headers,
+        )
+        assert res_create_safe.status_code == 200
+
+        res_insert = await client.post(
+            f"/databases/{db_name}/insert?table_name={safe_table}",
+            json={"msg": "registro seguro"},
+            headers=auth_headers,
+        )
+        assert res_insert.status_code == 200
+
+        malicious_columns = {"msg); DROP TABLE safe_logs;--": "TEXT"}
+        res_malicious = await client.post(
+            f"/databases/{db_name}/create_table",
+            params={"table_name": malicious_table},
+            json={"columns": malicious_columns},
+            headers=auth_headers,
+        )
+        assert res_malicious.status_code == 400
+
+        res_fetch = await client.get(
+            f"/databases/{db_name}/fetch?table_name={safe_table}",
+            headers=auth_headers,
+        )
+        assert res_fetch.status_code == 200
+        data = res_fetch.json().get("data", [])
+        assert any("registro seguro" in str(row) for row in data)
+    finally:
+        for table in (safe_table, malicious_table):
+            await client.delete(
+                f"/databases/{db_name}/drop_table?table_name={table}",
+                headers=auth_headers,
+            )
