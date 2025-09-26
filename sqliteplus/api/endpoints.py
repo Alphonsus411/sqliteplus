@@ -55,9 +55,19 @@ async def insert_data(db_name: str, table_name: str, schema: InsertDataSchema, u
     if not table_name.isidentifier():
         raise HTTPException(status_code=400, detail="Nombre de tabla inválido")
 
-    query = f'INSERT INTO "{table_name}" (msg) VALUES (?)'
+    columns = list(schema.values.keys())
+    escaped_columns = ", ".join(_escape_identifier(column) for column in columns)
+    placeholders = ", ".join(["?"] * len(columns))
+    query = (
+        f"INSERT INTO {_escape_identifier(table_name)} ({escaped_columns}) "
+        f"VALUES ({placeholders})"
+    )
     try:
-        row_id = await db_manager.execute_query(db_name, query, (schema.msg,))
+        row_id = await db_manager.execute_query(
+            db_name,
+            query,
+            tuple(schema.values[column] for column in columns),
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return {"message": "Datos insertados", "row_id": row_id}

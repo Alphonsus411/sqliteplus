@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import ClassVar, Dict
+from pydantic import BaseModel, validator
+from typing import Any, ClassVar, Dict
 import re
 
 class CreateTableSchema(BaseModel):
@@ -49,4 +49,23 @@ class CreateTableSchema(BaseModel):
         return sanitized_columns
 
 class InsertDataSchema(BaseModel):
-    msg: str
+    """Esquema utilizado para insertar datos en una tabla existente."""
+
+    values: Dict[str, Any]
+
+    @validator("values")
+    def validate_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if not values:
+            raise ValueError("Se requiere al menos un par columna/valor para insertar datos")
+
+        sanitized_values: Dict[str, Any] = {}
+        for column, value in values.items():
+            if not isinstance(column, str):
+                raise TypeError("Los nombres de columna deben ser cadenas de texto")
+
+            if not column.strip():
+                raise ValueError("Los nombres de columna no pueden estar vacíos")
+
+            sanitized_values[column] = value
+
+        return sanitized_values
