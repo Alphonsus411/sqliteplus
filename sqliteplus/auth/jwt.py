@@ -27,8 +27,13 @@ def verify_jwt(token: str = Depends(oauth2_scheme)) -> str:
     """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload["sub"]
+        subject = payload.get("sub") if isinstance(payload, dict) else None
+        if not subject:
+            raise HTTPException(
+                status_code=401, detail="Token inválido: sujeto no disponible"
+            )
+        return subject
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expirado")
-    except jwt.InvalidTokenError:
+    except (jwt.InvalidTokenError, KeyError):
         raise HTTPException(status_code=401, detail="Token inválido")

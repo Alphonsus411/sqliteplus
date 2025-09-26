@@ -3,9 +3,14 @@ import os
 import secrets
 import sys
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from httpx import AsyncClient, ASGITransport
+import jwt
+
 from sqliteplus.main import app
+from sqliteplus.auth.jwt import SECRET_KEY, ALGORITHM
 
 
 @pytest.mark.asyncio
@@ -25,6 +30,26 @@ async def test_jwt_token_failure():
         res = await ac.post("/token", data={"username": "invalid", "password": "wrong"})
         assert res.status_code == 400
         assert res.json()["detail"] == "Credenciales incorrectas"
+
+
+@pytest.mark.asyncio
+async def test_protected_endpoint_requires_subject_claim():
+    token_without_sub = jwt.encode(
+        {"exp": datetime.now(timezone.utc) + timedelta(minutes=5)},
+        SECRET_KEY,
+        algorithm=ALGORITHM,
+    )
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.get(
+            "/databases/test_db/fetch",
+            params={"table_name": "validname"},
+            headers={"Authorization": f"Bearer {token_without_sub}"},
+        )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Token inválido: sujeto no disponible"
 
 
 def test_jwt_requires_secret_key(monkeypatch):
