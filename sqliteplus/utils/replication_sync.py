@@ -50,7 +50,19 @@ class SQLiteReplication:
         """
         backup_file = os.path.join(self.backup_dir, f"backup_{self._get_timestamp()}.db")
         try:
-            shutil.copy2(self.db_path, backup_file)
+            if not os.path.exists(self.db_path):
+                raise FileNotFoundError(
+                    f"No se encontró la base de datos origen: {self.db_path}"
+                )
+
+            os.makedirs(os.path.dirname(backup_file), exist_ok=True)
+
+            with sqlite3.connect(self.db_path) as source_conn:
+                with sqlite3.connect(backup_file) as backup_conn:
+                    source_conn.backup(backup_conn)
+
+            self._copy_wal_and_shm(self.db_path, backup_file)
+
             print(f"Copia de seguridad creada en {backup_file}")
             return backup_file
         except Exception as e:
@@ -63,8 +75,23 @@ class SQLiteReplication:
         Replica la base de datos en otra ubicación.
         """
         try:
-            shutil.copy2(self.db_path, target_db_path)
+            if not os.path.exists(self.db_path):
+                raise FileNotFoundError(
+                    f"No se encontró la base de datos origen: {self.db_path}"
+                )
+
+            target_dir = os.path.dirname(target_db_path)
+            if target_dir:
+                os.makedirs(target_dir, exist_ok=True)
+
+            with sqlite3.connect(self.db_path) as source_conn:
+                with sqlite3.connect(target_db_path) as target_conn:
+                    source_conn.backup(target_conn)
+
+            self._copy_wal_and_shm(self.db_path, target_db_path)
+
             print(f"Base de datos replicada en {target_db_path}")
+            return target_db_path
         except Exception as e:
             raise RuntimeError(f"Error en la replicación: {e}") from e
 
@@ -82,6 +109,22 @@ class SQLiteReplication:
     @staticmethod
     def _escape_identifier(identifier: str) -> str:
         return f'"{identifier.replace("\"", "\"\"")}"'
+
+    @staticmethod
+    def _copy_wal_and_shm(source_path: str, target_path: str):
+        """Replica los archivos WAL y SHM asociados cuando existen."""
+        base_source = source_path
+        base_target = target_path
+        copied_files = []
+        for suffix in ("-wal", "-shm"):
+            src_file = f"{base_source}{suffix}"
+            if os.path.exists(src_file):
+                dest_file = f"{base_target}{suffix}"
+                if os.path.exists(dest_file):
+                    os.remove(dest_file)
+                shutil.copy2(src_file, dest_file)
+                copied_files.append(dest_file)
+        return copied_files
 
 
 if __name__ == "__main__":

@@ -107,3 +107,32 @@ def test_replicate_database_raises_runtime_error(tmp_path):
 
     assert "Error en la replicación" in str(excinfo.value)
     assert not target_path.exists()
+
+
+def test_backup_and_replication_preserve_wal_changes(tmp_path):
+    db_path = tmp_path / "wal_source.db"
+    with sqlite3.connect(db_path) as conn:
+        conn.execute("PRAGMA journal_mode=WAL;").fetchone()
+        conn.execute(
+            "CREATE TABLE data (id INTEGER PRIMARY KEY AUTOINCREMENT, value TEXT)"
+        )
+        conn.execute("INSERT INTO data (value) VALUES (?)", ("desde_wal",))
+        conn.commit()
+
+    wal_path = Path(str(db_path) + "-wal")
+    assert wal_path.exists(), "Se esperaba la creación del archivo WAL"
+
+    replicator = SQLiteReplication(
+        db_path=str(db_path), backup_dir=str(tmp_path / "backups")
+    )
+
+    backup_file = Path(replicator.backup_database())
+    with sqlite3.connect(backup_file) as conn:
+        values = conn.execute("SELECT value FROM data").fetchall()
+    assert values == [("desde_wal",)]
+
+    replica_path = tmp_path / "replicas" / "replica.db"
+    replicated_file = Path(replicator.replicate_database(str(replica_path)))
+    with sqlite3.connect(replicated_file) as conn:
+        values = conn.execute("SELECT value FROM data").fetchall()
+    assert values == [("desde_wal",)]
