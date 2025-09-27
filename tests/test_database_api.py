@@ -317,6 +317,23 @@ async def test_insert_with_invalid_column_returns_bad_request():
 
 
 @pytest.mark.asyncio
+async def test_drop_sqlite_master_returns_bad_request():
+    """Eliminar tablas protegidas debe devolver un error controlado."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        response = await ac.delete(
+            f"/databases/{DB_NAME}/drop_table?table_name=sqlite_master",
+            headers=headers,
+        )
+
+        assert response.status_code == 400
+        detail = response.json()["detail"].lower()
+        assert "no se puede eliminar" in detail
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "malicious_name",
     ["../escape_api", "..\\escape_api", "nested/evil"],
