@@ -76,6 +76,56 @@ async def test_create_table_and_insert_data():
 
 
 @pytest.mark.asyncio
+async def test_create_table_with_default_injection_returns_bad_request():
+    """La API debe rechazar expresiones DEFAULT maliciosas."""
+    transport = ASGITransport(app=app)
+    table_name = "logs_injection"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        malicious_body = {
+            "columns": {
+                "id": "INTEGER PRIMARY KEY",
+                "message": "TEXT DEFAULT 0); DROP TABLE logs;--",
+            }
+        }
+
+        res_malicious = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json=malicious_body,
+            headers=headers,
+        )
+
+        assert res_malicious.status_code == 400
+        detail = res_malicious.json()["detail"].lower()
+        assert "default" in detail
+
+        safe_body = {
+            "columns": {
+                "id": "INTEGER PRIMARY KEY",
+                "message": "TEXT NOT NULL",
+            }
+        }
+
+        res_safe = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json=safe_body,
+            headers=headers,
+        )
+
+        assert res_safe.status_code == 200
+
+        res_drop = await ac.delete(
+            f"/databases/{DB_NAME}/drop_table?table_name={table_name}",
+            headers=headers,
+        )
+
+        assert res_drop.status_code == 200
+
+
+@pytest.mark.asyncio
 async def test_create_table_with_multiple_primary_keys_returns_bad_request():
     """La API debe rechazar tablas con más de una columna PRIMARY KEY."""
     transport = ASGITransport(app=app)
