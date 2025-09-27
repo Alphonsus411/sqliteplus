@@ -1,3 +1,9 @@
+"""Utilidades de seguridad que requieren SQLCipher para proteger la base de datos.
+
+Si el motor SQLite utilizado no soporta SQLCipher, el script debe abortar para evitar
+continuar con una base de datos sin cifrar.
+"""
+
 import datetime
 import os
 import sqlite3
@@ -94,12 +100,14 @@ def get_encrypted_connection(db_path="database.db"):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     db_key = get_db_key()
+    escaped_key = db_key.replace("'", "''")
     try:
-        cursor.execute("PRAGMA key = ?", (db_key,))  # Establece la clave de cifrado de forma segura
+        cursor.execute(f"PRAGMA key = '{escaped_key}'")
     except sqlite3.OperationalError as error:
-        # Si SQLCipher no está disponible, la sentencia parametrizada puede no ser reconocida.
-        if 'near "?"' not in str(error):
-            raise
+        conn.close()
+        raise RuntimeError(
+            "SQLCipher no está disponible; abortando para evitar crear la base de datos sin cifrar."
+        ) from error
     return conn
 
 def create_users_table(db_path="database.db"):
@@ -124,13 +132,13 @@ def create_users_table(db_path="database.db"):
 if __name__ == "__main__":
     try:
         ensure_required_environment()
-    except EnvironmentError as error:
+        create_users_table()
+    except (EnvironmentError, RuntimeError) as error:
         sys.exit(
             "No se puede inicializar el módulo de seguridad: "
             f"{error} Establece las variables y vuelve a intentarlo."
         )
 
-    create_users_table()
     print(
         "Módulo de seguridad inicializado con cifrado SQLCipher y claves obtenidas desde el entorno."
     )
