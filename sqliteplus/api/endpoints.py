@@ -40,6 +40,14 @@ def _map_sql_error(exc: Exception, table_name: str) -> HTTPException:
             detail=f"Error de sintaxis en la instrucción SQL: {message}",
         )
 
+    if "more than one primary key" in normalized:
+        return HTTPException(
+            status_code=400,
+            detail=(
+                f"Definición inválida de clave primaria para la tabla '{table_name}': {message}"
+            ),
+        )
+
     logger.exception(
         "Error operacional inesperado durante operación SQL en la tabla %s: %s",
         table_name,
@@ -82,6 +90,8 @@ async def create_table(db_name: str, table_name: str, schema: CreateTableSchema,
         await db_manager.execute_query(db_name, query)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (OperationalError, aiosqlite.OperationalError) as exc:
+        raise _map_sql_error(exc, table_name) from exc
     return {"message": f"Tabla '{table_name}' creada en la base '{db_name}'."}
 
 

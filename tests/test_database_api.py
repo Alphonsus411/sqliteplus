@@ -76,6 +76,32 @@ async def test_create_table_and_insert_data():
 
 
 @pytest.mark.asyncio
+async def test_create_table_with_multiple_primary_keys_returns_bad_request():
+    """La API debe rechazar tablas con más de una columna PRIMARY KEY."""
+    transport = ASGITransport(app=app)
+    table_name = "duplicated_pk"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        res_create = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json={
+                "columns": {
+                    "id": "INTEGER PRIMARY KEY",
+                    "other_id": "INTEGER PRIMARY KEY",
+                }
+            },
+            headers=headers,
+        )
+
+        assert res_create.status_code == 400
+        detail = res_create.json()["detail"].lower()
+        assert "clave primaria" in detail
+        assert "more than one primary key" in detail
+
+
+@pytest.mark.asyncio
 async def test_insert_data_with_varied_columns():
     transport = ASGITransport(app=app)
     table_name = "logs_varied"
