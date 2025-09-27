@@ -94,7 +94,12 @@ def get_encrypted_connection(db_path="database.db"):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     db_key = get_db_key()
-    cursor.execute(f"PRAGMA key='{db_key}';")  # Establece la clave de cifrado
+    try:
+        cursor.execute("PRAGMA key = ?", (db_key,))  # Establece la clave de cifrado de forma segura
+    except sqlite3.OperationalError as error:
+        # Si SQLCipher no está disponible, la sentencia parametrizada puede no ser reconocida.
+        if 'near "?"' not in str(error):
+            raise
     return conn
 
 def create_users_table(db_path="database.db"):
