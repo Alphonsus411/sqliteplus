@@ -66,7 +66,7 @@ class SQLiteReplication:
             shutil.copy2(self.db_path, target_db_path)
             print(f"Base de datos replicada en {target_db_path}")
         except Exception as e:
-            print(f"Error en la replicación: {e}")
+            raise RuntimeError(f"Error en la replicación: {e}") from e
 
     def _get_timestamp(self):
         """

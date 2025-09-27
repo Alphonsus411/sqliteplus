@@ -5,6 +5,9 @@ from click.testing import CliRunner
 
 from sqliteplus.cli import cli
 from sqliteplus.utils.constants import DEFAULT_DB_PATH
+from sqliteplus.utils.replication_sync import SQLiteReplication
+
+import pytest
 
 
 def _prepare_database(db_path: Path):
@@ -93,3 +96,14 @@ def test_backup_cli_reports_missing_source_file():
         assert "Copia de seguridad creada correctamente." not in result.output
         backups_dir = Path("backups")
         assert not list(backups_dir.glob("backup_*.db"))
+
+
+def test_replicate_database_raises_runtime_error(tmp_path):
+    replicator = SQLiteReplication(db_path=tmp_path / "missing.db")
+    target_path = tmp_path / "replica.db"
+
+    with pytest.raises(RuntimeError) as excinfo:
+        replicator.replicate_database(str(target_path))
+
+    assert "Error en la replicación" in str(excinfo.value)
+    assert not target_path.exists()
