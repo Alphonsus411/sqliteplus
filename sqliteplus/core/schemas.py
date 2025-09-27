@@ -23,6 +23,29 @@ class CreateTableSchema(BaseModel):
 
     _column_name_pattern: ClassVar[re.Pattern[str]] = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
     _allowed_base_types: ClassVar[set[str]] = {"INTEGER", "TEXT", "REAL", "BLOB", "NUMERIC"}
+    _default_expr_numeric_pattern: ClassVar[re.Pattern[str]] = re.compile(
+        r"^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$"
+    )
+    _default_expr_string_pattern: ClassVar[re.Pattern[str]] = re.compile(r"^'(?:''|[^'])*'$")
+    _default_expr_allowed_literals: ClassVar[set[str]] = {"NULL", "TRUE", "FALSE"}
+    _default_expr_allowed_functions: ClassVar[set[str]] = {
+        "CURRENT_TIMESTAMP",
+        "CURRENT_DATE",
+        "CURRENT_TIME",
+    }
+    _default_expr_disallowed_tokens: ClassVar[tuple[str, ...]] = (";", "--", "/*", "*/")
+    _default_expr_disallowed_keywords: ClassVar[tuple[str, ...]] = (
+        " ATTACH ",
+        " DETACH ",
+        " SELECT ",
+        " INSERT ",
+        " UPDATE ",
+        " DELETE ",
+        " DROP ",
+        " ALTER ",
+        " CREATE ",
+        " PRAGMA ",
+    )
 
     def normalized_columns(self) -> Dict[str, str]:
         """Valida y normaliza los nombres y tipos de columna permitidos."""
@@ -144,11 +167,44 @@ class CreateTableSchema(BaseModel):
             if unique:
                 normalized_parts.append("UNIQUE")
             if default_expr is not None:
+                if not self._is_safe_default_expr(default_expr):
+                    raise ValueError(
+                        f"Expresión DEFAULT potencialmente insegura para columna '{raw_name}'"
+                    )
                 normalized_parts.append(f"DEFAULT {default_expr}")
 
             sanitized_columns[raw_name] = " ".join(normalized_parts)
 
         return sanitized_columns
+
+    @classmethod
+    def _is_safe_default_expr(cls, expr: str) -> bool:
+        sanitized = expr.strip()
+        upper = f" {sanitized.upper()} "
+
+        for token in cls._default_expr_disallowed_tokens:
+            if token in sanitized:
+                return False
+
+        for keyword in cls._default_expr_disallowed_keywords:
+            if keyword in upper:
+                return False
+
+        if cls._default_expr_numeric_pattern.match(sanitized):
+            return True
+
+        if sanitized.upper() in cls._default_expr_allowed_literals:
+            return True
+
+        if cls._default_expr_string_pattern.match(sanitized):
+            return True
+
+        function_match = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*)(?:\s*\(\s*\))?", sanitized)
+        if function_match:
+            if function_match.group(1).upper() in cls._default_expr_allowed_functions:
+                return True
+
+        return False
 
 class InsertDataSchema(BaseModel):
     """Esquema utilizado para insertar datos en una tabla existente."""
@@ -164,12 +220,12 @@ class InsertDataSchema(BaseModel):
         return payload
 
     @validator("values")
-    def validate_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        if not values:
+    def validate_values(cls, v: Dict[str, Any]) -> Dict[str, Any]:
+        if not v:
             raise ValueError("Se requiere al menos un par columna/valor para insertar datos")
 
         sanitized_values: Dict[str, Any] = {}
-        for column, value in values.items():
+        for column, value in v.items():
             if not isinstance(column, str):
                 raise TypeError("Los nombres de columna deben ser cadenas de texto")
 
