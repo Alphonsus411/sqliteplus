@@ -34,6 +34,14 @@ def _map_sql_error(exc: Exception, table_name: str) -> HTTPException:
             detail=f"Columna inválida para la tabla '{table_name}': {message}",
         )
 
+    if "may not be dropped" in normalized:
+        return HTTPException(
+            status_code=400,
+            detail=(
+                f"No se puede eliminar la tabla '{table_name}': {message}"
+            ),
+        )
+
     if "syntax error" in normalized:
         return HTTPException(
             status_code=400,
@@ -153,4 +161,6 @@ async def drop_table(db_name: str, table_name: str, user: str = Depends(verify_j
         await db_manager.execute_query(db_name, query)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (OperationalError, aiosqlite.OperationalError) as exc:
+        raise _map_sql_error(exc, table_name) from exc
     return {"message": f"Tabla '{table_name}' eliminada de la base '{db_name}'."}
