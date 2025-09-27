@@ -58,5 +58,28 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
         await self.manager.close_connections()
 
 
+class TestAsyncDatabaseManagerLoopReuse(unittest.TestCase):
+    def test_reuse_after_closing_connections_in_new_loop(self):
+        manager = AsyncDatabaseManager()
+        db_name = "test_db_async_loop_reuse"
+
+        async def use_manager_in_loop():
+            await manager.execute_query(
+                db_name,
+                "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)",
+            )
+            await manager.execute_query(
+                db_name,
+                "INSERT INTO logs (action) VALUES (?)",
+                ("loop_reuse",),
+            )
+            results = await manager.fetch_query(db_name, "SELECT COUNT(*) FROM logs")
+            self.assertTrue(results)
+            await manager.close_connections()
+
+        asyncio.run(use_manager_in_loop())
+        asyncio.run(use_manager_in_loop())
+
+
 if __name__ == "__main__":
     unittest.main()

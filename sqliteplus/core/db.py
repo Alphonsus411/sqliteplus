@@ -15,6 +15,7 @@ class AsyncDatabaseManager:
         self.connections = {}  # Diccionario de conexiones a bases de datos
         self.locks = {}  # Diccionario de bloqueos asíncronos
         self._creation_lock = None  # Candado para inicialización perezosa de conexiones
+        self._creation_lock_loop = None  # Bucle asociado al candado de creación
 
     async def get_connection(self, db_name):
         """
@@ -28,8 +29,11 @@ class AsyncDatabaseManager:
         if self.base_dir not in db_path.parents:
             raise ValueError("Nombre de base de datos fuera del directorio permitido")
 
-        if self._creation_lock is None:
+        current_loop = asyncio.get_running_loop()
+
+        if self._creation_lock is None or self._creation_lock_loop is not current_loop:
             self._creation_lock = asyncio.Lock()
+            self._creation_lock_loop = current_loop
 
         async with self._creation_lock:
             if db_name not in self.connections:
@@ -72,6 +76,8 @@ class AsyncDatabaseManager:
             await conn.close()
         self.connections.clear()
         self.locks.clear()
+        self._creation_lock = None
+        self._creation_lock_loop = None
 
 db_manager = AsyncDatabaseManager()
 
