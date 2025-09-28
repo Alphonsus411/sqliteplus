@@ -76,6 +76,82 @@ async def test_create_table_and_insert_data():
 
 
 @pytest.mark.asyncio
+async def test_create_table_with_default_injection_returns_bad_request():
+    """La API debe rechazar expresiones DEFAULT maliciosas."""
+    transport = ASGITransport(app=app)
+    table_name = "logs_injection"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        malicious_body = {
+            "columns": {
+                "id": "INTEGER PRIMARY KEY",
+                "message": "TEXT DEFAULT 0); DROP TABLE logs;--",
+            }
+        }
+
+        res_malicious = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json=malicious_body,
+            headers=headers,
+        )
+
+        assert res_malicious.status_code == 400
+        detail = res_malicious.json()["detail"].lower()
+        assert "default" in detail
+
+        safe_body = {
+            "columns": {
+                "id": "INTEGER PRIMARY KEY",
+                "message": "TEXT NOT NULL",
+            }
+        }
+
+        res_safe = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json=safe_body,
+            headers=headers,
+        )
+
+        assert res_safe.status_code == 200
+
+        res_drop = await ac.delete(
+            f"/databases/{DB_NAME}/drop_table?table_name={table_name}",
+            headers=headers,
+        )
+
+        assert res_drop.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_create_table_with_multiple_primary_keys_returns_bad_request():
+    """La API debe rechazar tablas con más de una columna PRIMARY KEY."""
+    transport = ASGITransport(app=app)
+    table_name = "duplicated_pk"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        res_create = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json={
+                "columns": {
+                    "id": "INTEGER PRIMARY KEY",
+                    "other_id": "INTEGER PRIMARY KEY",
+                }
+            },
+            headers=headers,
+        )
+
+        assert res_create.status_code == 400
+        detail = res_create.json()["detail"].lower()
+        assert "clave primaria" in detail
+        assert "more than one primary key" in detail
+
+
+@pytest.mark.asyncio
 async def test_insert_data_with_varied_columns():
     transport = ASGITransport(app=app)
     table_name = "logs_varied"
@@ -137,6 +213,124 @@ async def test_insert_data_with_varied_columns():
             headers=headers,
         )
         assert res_drop.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_fetch_nonexistent_table_returns_not_found():
+    transport = ASGITransport(app=app)
+    table_name = "tabla_inexistente"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        res_fetch = await ac.get(
+            f"/databases/{DB_NAME}/fetch?table_name={table_name}",
+            headers=headers,
+        )
+
+        assert res_fetch.status_code == 404
+        assert res_fetch.json()["detail"] == f"Tabla '{table_name}' no encontrada"
+
+
+@pytest.mark.asyncio
+async def test_insert_unique_constraint_violation_returns_conflict():
+    """Verifica que las violaciones de restricciones UNIQUE devuelvan 409."""
+    transport = ASGITransport(app=app)
+    table_name = "logs_unique"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        res_create = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json={
+                "columns": {
+                    "id": "INTEGER PRIMARY KEY",
+                    "email": "TEXT UNIQUE",
+                }
+            },
+            headers=headers,
+        )
+        assert res_create.status_code == 200
+
+        payload = {"values": {"email": "duplicado@example.com"}}
+
+        res_insert_first = await ac.post(
+            f"/databases/{DB_NAME}/insert?table_name={table_name}",
+            json=payload,
+            headers=headers,
+        )
+        assert res_insert_first.status_code == 200
+
+        res_insert_second = await ac.post(
+            f"/databases/{DB_NAME}/insert?table_name={table_name}",
+            json=payload,
+            headers=headers,
+        )
+
+        assert res_insert_second.status_code == 409
+        assert "Violación de restricción" in res_insert_second.json()["detail"]
+
+        res_drop = await ac.delete(
+            f"/databases/{DB_NAME}/drop_table?table_name={table_name}",
+            headers=headers,
+        )
+        assert res_drop.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_insert_with_invalid_column_returns_bad_request():
+    """Las inserciones con columnas inexistentes deben devolver 400 con detalle claro."""
+    transport = ASGITransport(app=app)
+    table_name = "logs_invalid_column"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        res_create = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json={
+                "columns": {
+                    "id": "INTEGER PRIMARY KEY",
+                    "msg": "TEXT NOT NULL",
+                }
+            },
+            headers=headers,
+        )
+        assert res_create.status_code == 200
+
+        res_insert = await ac.post(
+            f"/databases/{DB_NAME}/insert?table_name={table_name}",
+            json={"values": {"msg": "Hola", "extra": "valor"}},
+            headers=headers,
+        )
+
+        assert res_insert.status_code == 400
+        detail = res_insert.json()["detail"]
+        assert "Columna inválida" in detail
+        assert "extra" in detail
+
+        res_drop = await ac.delete(
+            f"/databases/{DB_NAME}/drop_table?table_name={table_name}",
+            headers=headers,
+        )
+        assert res_drop.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_drop_sqlite_master_returns_bad_request():
+    """Eliminar tablas protegidas debe devolver un error controlado."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        response = await ac.delete(
+            f"/databases/{DB_NAME}/drop_table?table_name=sqlite_master",
+            headers=headers,
+        )
+
+        assert response.status_code == 400
+        detail = response.json()["detail"].lower()
+        assert "no se puede eliminar" in detail
 
 
 @pytest.mark.asyncio

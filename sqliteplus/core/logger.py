@@ -1,6 +1,6 @@
 import aiosqlite
 import asyncio
-import os
+from pathlib import Path
 
 class AsyncSQLitePlus:
     """
@@ -8,7 +8,9 @@ class AsyncSQLitePlus:
     """
 
     def __init__(self, db_path="sqliteplus/databases/database.db"):
-        self.db_path = db_path
+        path = Path(db_path).expanduser().resolve()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self.db_path = path
         self.lock = asyncio.Lock()
         self.initialized = False
 
@@ -16,7 +18,7 @@ class AsyncSQLitePlus:
         if self.initialized:
             return
         async with self.lock:
-            async with aiosqlite.connect(self.db_path) as conn:
+            async with aiosqlite.connect(str(self.db_path)) as conn:
                 await conn.execute("""
                     CREATE TABLE IF NOT EXISTS logs (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,7 +31,7 @@ class AsyncSQLitePlus:
 
     async def execute_query(self, query, params=()):
         async with self.lock:
-            async with aiosqlite.connect(self.db_path) as conn:
+            async with aiosqlite.connect(str(self.db_path)) as conn:
                 try:
                     cursor = await conn.execute(query, params)
                     await conn.commit()
@@ -40,7 +42,7 @@ class AsyncSQLitePlus:
 
     async def fetch_query(self, query, params=()):
         async with self.lock:
-            async with aiosqlite.connect(self.db_path) as conn:
+            async with aiosqlite.connect(str(self.db_path)) as conn:
                 try:
                     cursor = await conn.execute(query, params)
                     return await cursor.fetchall()

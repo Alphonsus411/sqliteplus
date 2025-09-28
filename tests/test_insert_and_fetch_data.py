@@ -16,7 +16,7 @@ async def test_insert_and_fetch_data(client, auth_headers):
     assert res_create.status_code == 200
 
     # Insertar mensaje con JSON conforme a InsertDataSchema
-    insert_payload = {"msg": "Hola desde test async"}
+    insert_payload = {"values": {"msg": "Hola desde test async"}}
     res_insert = await client.post(
         f"/databases/{DB_NAME}/insert?table_name={TABLE_NAME}",
         json=insert_payload,
@@ -33,3 +33,16 @@ async def test_insert_and_fetch_data(client, auth_headers):
     assert res_fetch.status_code == 200
     data = res_fetch.json().get("data", [])
     assert any("Hola desde test async" in str(row) for row in data)
+
+
+@pytest.mark.asyncio
+async def test_insert_into_missing_table_returns_404(client, auth_headers):
+    missing_table = "tabla_inexistente"
+    res_insert = await client.post(
+        f"/databases/{DB_NAME}/insert?table_name={missing_table}",
+        json={"values": {"msg": "hola"}},
+        headers=auth_headers,
+    )
+
+    assert res_insert.status_code == 404
+    assert res_insert.json()["detail"] == f"Tabla '{missing_table}' no encontrada"

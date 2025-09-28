@@ -6,7 +6,7 @@ import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Tuple
 
 import bcrypt
 
@@ -29,9 +29,11 @@ class UserCredentialsService:
         if not users_file:
             raise UserSourceError("La variable de entorno 'SQLITEPLUS_USERS_FILE' no está definida")
 
-        path = Path(users_file)
+        path = Path(users_file).expanduser()
         if not path.exists():
             raise UserSourceError(f"El archivo de usuarios '{users_file}' no existe")
+
+        path = path.resolve()
 
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
@@ -57,19 +59,71 @@ class UserCredentialsService:
 
 
 _cached_service: UserCredentialsService | None = None
+_cached_source_signature: Tuple[str, int, int] | None = None
+
+
+def _read_source_signature(path: Path) -> Tuple[str, int, int]:
+    """Obtiene una firma basada en metadatos del archivo para detectar cambios.
+
+    Se espera que ``path`` ya esté expandido y, en la medida de lo posible, resuelto
+    antes de invocar esta función, de forma que la firma sea consistente.
+    """
+
+    try:
+        stat_result = path.stat()
+    except OSError as exc:
+        raise UserSourceError(f"No se puede acceder al archivo de usuarios: {exc}") from exc
+
+    return (str(path), int(stat_result.st_mtime_ns), stat_result.st_size)
 
 
 def get_user_service() -> UserCredentialsService:
     """Obtiene (con caché) el servicio configurado de credenciales."""
 
-    global _cached_service
-    if _cached_service is None:
-        _cached_service = UserCredentialsService.from_env()
+    global _cached_service, _cached_source_signature
+
+    users_file = os.getenv("SQLITEPLUS_USERS_FILE")
+    if not users_file:
+        raise UserSourceError("La variable de entorno 'SQLITEPLUS_USERS_FILE' no está definida")
+
+    path = Path(users_file).expanduser()
+    if not path.exists():
+        raise UserSourceError(f"El archivo de usuarios '{users_file}' no existe")
+
+    path = path.resolve()
+
+    source_signature = _read_source_signature(path)
+
+    if _cached_service is None or _cached_source_signature != source_signature:
+        service = UserCredentialsService.from_env()
+        _cached_service = service
+        _cached_source_signature = source_signature
+
     return _cached_service
+
+
+def reload_user_service() -> UserCredentialsService:
+    """Fuerza la recarga inmediata del servicio de credenciales desde el archivo."""
+
+    global _cached_service, _cached_source_signature
+
+    service = UserCredentialsService.from_env()
+    users_file = os.getenv("SQLITEPLUS_USERS_FILE")
+    if not users_file:
+        raise UserSourceError("La variable de entorno 'SQLITEPLUS_USERS_FILE' no está definida")
+
+    path = Path(users_file).expanduser()
+    if path.exists():
+        path = path.resolve()
+
+    _cached_service = service
+    _cached_source_signature = _read_source_signature(path)
+    return service
 
 
 def reset_user_service_cache() -> None:
     """Reinicia la caché del servicio para pruebas o recarga de configuración."""
 
-    global _cached_service
+    global _cached_service, _cached_source_signature
     _cached_service = None
+    _cached_source_signature = None

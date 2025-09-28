@@ -22,6 +22,8 @@
 
 ## 📦 Instalación
 
+> **Requisito:** Necesitas Python 3.10 o superior antes de continuar con la instalación.
+
 ```bash
 pip install -e .
 ```
@@ -33,26 +35,33 @@ pip install sqliteplus-enhanced
 
 # 🔐 Configuración obligatoria
 
-Antes de iniciar la aplicación debes definir la variable de entorno `SECRET_KEY`,
-utilizada para firmar los tokens JWT. La aplicación rechazará el arranque si no
-está configurada.
+Antes de iniciar la aplicación (o ejecutar utilidades como `tests/test3.py`) debes
+definir dos variables de entorno críticas:
 
-Genera un valor aleatorio en tu entorno con:
+- `SECRET_KEY`: se utiliza para firmar los tokens JWT.
+- `SQLITE_DB_KEY`: se emplea para abrir bases de datos protegidas con SQLCipher.
+
+La aplicación y los scripts rechazarán la ejecución si no las proporcionas.
+
+Genera valores aleatorios en tu entorno con:
 
 ```bash
 export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+export SQLITE_DB_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
 ```
 
 En Windows (PowerShell):
 
 ```powershell
 $Env:SECRET_KEY = python -c "import secrets; print(secrets.token_urlsafe(32))"
+$Env:SQLITE_DB_KEY = python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
 # 📡 Ejecutar el servidor
 
 ```bash
 export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+export SQLITE_DB_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
 uvicorn sqliteplus.main:app --reload
 ```
 
@@ -70,9 +79,14 @@ pytest -v
 
 ## 🛠 Uso del CLI
 
+Antes de operar con bases cifradas puedes definir la clave vía variable de entorno
+`SQLITE_DB_KEY` o proporcionarla explícitamente con `--cipher-key`.
+
 ````bash
+export SQLITE_DB_KEY="$(python -c "import secrets; print(secrets.token_hex(32))")"
 sqliteplus init-db
 sqliteplus execute "INSERT INTO logs (action) VALUES ('via CLI')"
+sqliteplus --cipher-key "$SQLITE_DB_KEY" backup
 sqliteplus export-csv logs logs.csv
 ````
 

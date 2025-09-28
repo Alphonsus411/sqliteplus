@@ -1,0 +1,5 @@
+.venv
+dist
+site
+databases
+sqliteplus_enhanced.egg-info

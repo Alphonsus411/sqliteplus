@@ -1,6 +1,13 @@
 import aiosqlite
 import asyncio
+import logging
+import os
 from pathlib import Path
+
+from fastapi import HTTPException
+
+
+logger = logging.getLogger(__name__)
 
 
 class AsyncDatabaseManager:
@@ -14,6 +21,9 @@ class AsyncDatabaseManager:
         self.base_dir.mkdir(parents=True, exist_ok=True)  # Asegura que el directorio exista
         self.connections = {}  # Diccionario de conexiones a bases de datos
         self.locks = {}  # Diccionario de bloqueos asíncronos
+        self._connection_loops = {}  # Bucle de evento asociado a cada conexión
+        self._creation_lock = None  # Candado para inicialización perezosa de conexiones
+        self._creation_lock_loop = None  # Bucle asociado al candado de creación
 
     async def get_connection(self, db_name):
         """
@@ -27,11 +37,49 @@ class AsyncDatabaseManager:
         if self.base_dir not in db_path.parents:
             raise ValueError("Nombre de base de datos fuera del directorio permitido")
 
-        if db_name not in self.connections:
-            self.connections[db_name] = await aiosqlite.connect(str(db_path))
-            await self.connections[db_name].execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
-            await self.connections[db_name].commit()
-            self.locks[db_name] = asyncio.Lock()
+        current_loop = asyncio.get_running_loop()
+
+        if self._creation_lock is None or self._creation_lock_loop is not current_loop:
+            self._creation_lock = asyncio.Lock()
+            self._creation_lock_loop = current_loop
+
+        async with self._creation_lock:
+            recreate_connection = False
+
+            if db_name in self.connections:
+                stored_loop = self._connection_loops.get(db_name)
+                if stored_loop is not current_loop:
+                    await self.connections[db_name].close()
+                    recreate_connection = True
+            else:
+                recreate_connection = True
+
+            if recreate_connection:
+                encryption_key = os.getenv("SQLITE_DB_KEY", "").strip()
+                if not encryption_key:
+                    logger.error(
+                        "No se encontró la clave de cifrado requerida en la variable de entorno 'SQLITE_DB_KEY'."
+                    )
+                    raise HTTPException(
+                        status_code=503,
+                        detail="Base de datos no disponible: falta la clave de cifrado requerida",
+                    )
+
+                connection = await aiosqlite.connect(str(db_path))
+                try:
+                    await connection.execute("PRAGMA key = ?", (encryption_key,))
+                    await connection.execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
+                    await connection.commit()
+                except Exception:
+                    await connection.close()
+                    raise
+
+                self.connections[db_name] = connection
+                self._connection_loops[db_name] = current_loop
+                self.locks[db_name] = asyncio.Lock()
+            else:
+                self.locks.setdefault(db_name, asyncio.Lock())
+                self._connection_loops.setdefault(db_name, current_loop)
 
         return self.connections[db_name]
 
@@ -67,6 +115,9 @@ class AsyncDatabaseManager:
             await conn.close()
         self.connections.clear()
         self.locks.clear()
+        self._connection_loops.clear()
+        self._creation_lock = None
+        self._creation_lock_loop = None
 
 db_manager = AsyncDatabaseManager()
 

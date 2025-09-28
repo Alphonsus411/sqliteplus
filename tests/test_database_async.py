@@ -25,15 +25,19 @@ async def test_insert_and_fetch_data(client, auth_headers):
         headers=auth_headers
     )
 
-    # Insertar mensaje (como JSON válido)
-    insert_payload = {"msg": "Hola desde test async"}
-    res_insert = await client.post(
-        f"/databases/{DB_NAME}/insert?table_name={TABLE_NAME}",
-        json=insert_payload,
-        headers=auth_headers
-    )
-    assert res_insert.status_code == 200
-    assert "row_id" in res_insert.json()
+    payloads = [
+        ("Hola desde test async", {"msg": "Hola desde test async"}),
+        ("Hola desde payload anidado", {"values": {"msg": "Hola desde payload anidado"}}),
+    ]
+
+    for expected_text, payload in payloads:
+        res_insert = await client.post(
+            f"/databases/{DB_NAME}/insert?table_name={TABLE_NAME}",
+            json=payload,
+            headers=auth_headers
+        )
+        assert res_insert.status_code == 200
+        assert "row_id" in res_insert.json()
 
     # Consultar y validar inserción
     res_fetch = await client.get(
@@ -43,7 +47,8 @@ async def test_insert_and_fetch_data(client, auth_headers):
     assert res_fetch.status_code == 200
     data = res_fetch.json().get("data", [])
     assert isinstance(data, list)
-    assert any("Hola desde test async" in str(row) for row in data)
+    for expected_text, _ in payloads:
+        assert any(expected_text in str(row) for row in data)
 
 
 @pytest.mark.asyncio
