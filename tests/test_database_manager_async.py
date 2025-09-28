@@ -80,6 +80,29 @@ class TestAsyncDatabaseManagerLoopReuse(unittest.TestCase):
         asyncio.run(use_manager_in_loop())
         asyncio.run(use_manager_in_loop())
 
+    def test_reuse_without_closing_connections_in_new_loop(self):
+        manager = AsyncDatabaseManager()
+        db_name = "test_db_async_loop_reuse_no_close"
+
+        async def use_manager_in_loop(action_value):
+            await manager.execute_query(
+                db_name,
+                "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)",
+            )
+            await manager.execute_query(
+                db_name,
+                "INSERT INTO logs (action) VALUES (?)",
+                (action_value,),
+            )
+            results = await manager.fetch_query(db_name, "SELECT COUNT(*) FROM logs")
+            self.assertTrue(results)
+
+        asyncio.run(use_manager_in_loop("first_run"))
+        try:
+            asyncio.run(use_manager_in_loop("second_run"))
+        except RuntimeError as exc:  # pragma: no cover - explicit verification
+            self.fail(f"Se produjo RuntimeError al reutilizar el gestor en un nuevo bucle: {exc}")
+
 
 if __name__ == "__main__":
     unittest.main()
