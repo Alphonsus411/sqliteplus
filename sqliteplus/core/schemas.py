@@ -1,3 +1,4 @@
+from pydantic import BaseModel, validator
 from pydantic import BaseModel, root_validator, validator
 from typing import Any, ClassVar, Dict
 import re
@@ -211,6 +212,14 @@ class InsertDataSchema(BaseModel):
 
     values: Dict[str, Any]
 
+    @validator("values")
+    def validate_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if not values:
+            raise ValueError("Se requiere al menos un par columna/valor para insertar datos")
+
+        sanitized_values: Dict[str, Any] = {}
+        for column, value in values.items():
+          
     @root_validator(pre=True)
     def ensure_values_key(cls, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Permite aceptar payloads planos y normalizarlos bajo la clave 'values'."""
