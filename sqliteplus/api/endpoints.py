@@ -1,3 +1,4 @@
+import logging
 import aiosqlite
 from sqlite3 import OperationalError
 from fastapi import APIRouter, HTTPException, Depends
@@ -9,12 +10,61 @@ from sqliteplus.auth.jwt import generate_jwt, verify_jwt
 from sqliteplus.auth.users import get_user_service, UserSourceError
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 def _escape_identifier(identifier: str) -> str:
     """Escapa identificadores siguiendo las reglas de SQLite."""
 
     return f'"{identifier.replace("\"", "\"\"")}"'
+
+
+def _map_sql_error(exc: Exception, table_name: str) -> HTTPException:
+    """Mapea errores operacionales de SQLite a respuestas HTTP apropiadas."""
+
+    message = str(exc)
+    normalized = message.lower()
+
+    if "no such table" in normalized:
+        return HTTPException(status_code=404, detail=f"Tabla '{table_name}' no encontrada")
+
+    if "no such column" in normalized or "has no column named" in normalized:
+        return HTTPException(
+            status_code=400,
+            detail=f"Columna inválida para la tabla '{table_name}': {message}",
+        )
+
+    if "may not be dropped" in normalized:
+        return HTTPException(
+            status_code=400,
+            detail=(
+                f"No se puede eliminar la tabla '{table_name}': {message}"
+            ),
+        )
+
+    if "syntax error" in normalized:
+        return HTTPException(
+            status_code=400,
+            detail=f"Error de sintaxis en la instrucción SQL: {message}",
+        )
+
+    if "more than one primary key" in normalized:
+        return HTTPException(
+            status_code=400,
+            detail=(
+                f"Definición inválida de clave primaria para la tabla '{table_name}': {message}"
+            ),
+        )
+
+    logger.exception(
+        "Error operacional inesperado durante operación SQL en la tabla %s: %s",
+        table_name,
+        message,
+    )
+    return HTTPException(
+        status_code=500,
+        detail="Error interno al ejecutar la operación en la base de datos",
+    )
 
 @router.post("/token", tags=["Autenticación"], summary="Obtener un token de autenticación", description="Genera un token JWT válido por 1 hora.")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -48,6 +98,8 @@ async def create_table(db_name: str, table_name: str, schema: CreateTableSchema,
         await db_manager.execute_query(db_name, query)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (OperationalError, aiosqlite.OperationalError) as exc:
+        raise _map_sql_error(exc, table_name) from exc
     return {"message": f"Tabla '{table_name}' creada en la base '{db_name}'."}
 
 
@@ -56,7 +108,9 @@ async def insert_data(db_name: str, table_name: str, schema: InsertDataSchema, u
     if not table_name.isidentifier():
         raise HTTPException(status_code=400, detail="Nombre de tabla inválido")
 
-    columns = list(schema.values.keys())
+    payload_values = schema.values
+
+    columns = list(payload_values.keys())
     escaped_columns = ", ".join(_escape_identifier(column) for column in columns)
     placeholders = ", ".join(["?"] * len(columns))
     query = (
@@ -67,7 +121,7 @@ async def insert_data(db_name: str, table_name: str, schema: InsertDataSchema, u
         row_id = await db_manager.execute_query(
             db_name,
             query,
-            tuple(schema.values[column] for column in columns),
+            tuple(payload_values[column] for column in columns),
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -77,7 +131,7 @@ async def insert_data(db_name: str, table_name: str, schema: InsertDataSchema, u
             detail=f"Violación de restricción: {exc}",
         ) from exc
     except (OperationalError, aiosqlite.OperationalError) as exc:
-        raise HTTPException(status_code=404, detail=f"Tabla '{table_name}' no encontrada") from exc
+        raise _map_sql_error(exc, table_name) from exc
     return {"message": "Datos insertados", "row_id": row_id}
 
 
@@ -93,7 +147,11 @@ async def fetch_data(db_name: str, table_name: str, user: str = Depends(verify_j
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except (OperationalError, aiosqlite.OperationalError) as exc:
+
         raise HTTPException(status_code=404, detail=f"Tabla '{table_name}' no encontrada") from exc
+
+        raise _map_sql_error(exc, table_name) from exc
+        
     return {"data": data}
 
 
@@ -107,4 +165,6 @@ async def drop_table(db_name: str, table_name: str, user: str = Depends(verify_j
         await db_manager.execute_query(db_name, query)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (OperationalError, aiosqlite.OperationalError) as exc:
+        raise _map_sql_error(exc, table_name) from exc
     return {"message": f"Tabla '{table_name}' eliminada de la base '{db_name}'."}
