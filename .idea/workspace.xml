@@ -5,10 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4c359cdc-b091-4c1b-b23e-f29138a2231f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/clean_build.ps1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqliteplus.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqliteplus.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/sqliteplus_enhanced-1.0.4-py3-none-any.whl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/sqliteplus_enhanced-1.0.4.tar.gz" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,7 +33,7 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/Alphonsus411/sqliteplus.git&quot;,
-    &quot;accountId&quot;: &quot;7af5defb-2700-4693-a29c-286cfa5a109f&quot;
+    &quot;accountId&quot;: &quot;a7de6ecb-7954-41ec-9cce-a13ceae4e992&quot;
   }
 }</component>
   <component name="ProjectColorInfo">{
@@ -53,11 +52,12 @@
     "Python tests.Python tests in test_insert_and_fetch_data.py.executor": "Run",
     "Python tests.Python tests in test_server_endpoints.py.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "full.screen.before.presentation.mode": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/Users/Adolfo/PycharmProjects/sqliteplus/sqliteplus",
-    "settings.editor.selected.configurable": "advanced.settings"
+    "last_opened_file_path": "C:/Users/Adolfo/PycharmProjects/sqliteplus",
+    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -118,6 +118,7 @@
     <recent_temporary>
       <list>
         <item itemvalue="PowerShell.clean_build.ps1" />
+        <item itemvalue="PowerShell.clean_build.ps1" />
         <item itemvalue="Python tests.Python tests in test_server_endpoints.py" />
         <item itemvalue="Python tests.Python tests in test_database_async.py" />
         <item itemvalue="Python tests.Python tests in test_insert_and_fetch_data.py" />
@@ -127,7 +128,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-dfff61a61320-9cdd278e9d02-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-251.25410.159" />
+        <option value="bundled-python-sdk-ce6832f46686-7b97d883f26b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.25557.178" />
       </set>
     </attachedChunks>
   </component>
