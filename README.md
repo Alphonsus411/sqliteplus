@@ -22,6 +22,8 @@
 
 ## 📦 Instalación
 
+> **Requisito:** Necesitas Python 3.10 o superior antes de continuar con la instalación.
+
 ```bash
 pip install -e .
 ```
