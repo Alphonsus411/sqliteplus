@@ -14,6 +14,7 @@ class AsyncDatabaseManager:
         self.base_dir.mkdir(parents=True, exist_ok=True)  # Asegura que el directorio exista
         self.connections = {}  # Diccionario de conexiones a bases de datos
         self.locks = {}  # Diccionario de bloqueos asíncronos
+        self._connection_loops = {}  # Bucle de evento asociado a cada conexión
         self._creation_lock = None  # Candado para inicialización perezosa de conexiones
         self._creation_lock_loop = None  # Bucle asociado al candado de creación
 
@@ -36,11 +37,25 @@ class AsyncDatabaseManager:
             self._creation_lock_loop = current_loop
 
         async with self._creation_lock:
-            if db_name not in self.connections:
+            recreate_connection = False
+
+            if db_name in self.connections:
+                stored_loop = self._connection_loops.get(db_name)
+                if stored_loop is not current_loop:
+                    await self.connections[db_name].close()
+                    recreate_connection = True
+            else:
+                recreate_connection = True
+
+            if recreate_connection:
                 self.connections[db_name] = await aiosqlite.connect(str(db_path))
                 await self.connections[db_name].execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
                 await self.connections[db_name].commit()
-            self.locks.setdefault(db_name, asyncio.Lock())
+                self._connection_loops[db_name] = current_loop
+                self.locks[db_name] = asyncio.Lock()
+            else:
+                self.locks.setdefault(db_name, asyncio.Lock())
+                self._connection_loops.setdefault(db_name, current_loop)
 
         return self.connections[db_name]
 
@@ -76,6 +91,7 @@ class AsyncDatabaseManager:
             await conn.close()
         self.connections.clear()
         self.locks.clear()
+        self._connection_loops.clear()
         self._creation_lock = None
         self._creation_lock_loop = None
 
