@@ -1,5 +1,10 @@
-import unittest
 import asyncio
+import os
+import unittest
+from unittest import mock
+
+from fastapi import HTTPException
+
 from sqliteplus.core.db import AsyncDatabaseManager
 
 
@@ -11,6 +16,8 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
 
     async def asyncSetUp(self):
         """ Configuración inicial antes de cada prueba """
+        self.key_patch = mock.patch.dict(os.environ, {"SQLITE_DB_KEY": "clave-de-prueba"}, clear=False)
+        self.key_patch.start()
         self.manager = AsyncDatabaseManager()
         self.db_name = "test_db_async"
         await self.manager.execute_query(self.db_name,
@@ -56,6 +63,34 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
     async def asyncTearDown(self):
         """ Limpieza después de cada prueba """
         await self.manager.close_connections()
+        self.key_patch.stop()
+        self.manager = None
+
+    async def test_missing_encryption_key_raises_http_exception(self):
+        """Verifica que sin clave se devuelve un error controlado."""
+        await self.manager.close_connections()
+        with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": ""}, clear=False):
+            with self.assertRaises(HTTPException) as exc_info:
+                await self.manager.get_connection("test_db_async_missing_key")
+
+        self.assertEqual(exc_info.exception.status_code, 503)
+        self.assertIn("clave de cifrado", exc_info.exception.detail)
+
+    async def test_encrypted_database_reopens_with_valid_key(self):
+        """Confirma que con clave válida se puede operar sobre la base cifrada."""
+        db_name = "test_db_async_encrypted"
+        await self.manager.execute_query(db_name,
+                                         "CREATE TABLE IF NOT EXISTS secure (id INTEGER PRIMARY KEY, data TEXT)")
+        await self.manager.execute_query(db_name, "INSERT INTO secure (data) VALUES (?)", ("seguro",))
+        result = await self.manager.fetch_query(db_name, "SELECT COUNT(*) FROM secure")
+        self.assertEqual(result[0][0], 1)
+
+        await self.manager.close_connections()
+
+        # Reabrir con la misma clave debe funcionar.
+        self.manager = AsyncDatabaseManager()
+        result = await self.manager.fetch_query(db_name, "SELECT COUNT(*) FROM secure")
+        self.assertEqual(result[0][0], 1)
 
 
 class TestAsyncDatabaseManagerLoopReuse(unittest.TestCase):
