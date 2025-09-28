@@ -3,6 +3,7 @@ import os
 import shutil
 import sqlite3
 
+from sqliteplus.utils.sqliteplus_sync import apply_cipher_key, SQLitePlusCipherError
 
 
 class SQLiteReplication:
@@ -10,13 +11,14 @@ class SQLiteReplication:
     Módulo para exportación y replicación de bases de datos SQLitePlus.
     """
 
-    def __init__(self, db_path=None, backup_dir="backups"):
+    def __init__(self, db_path=None, backup_dir="backups", cipher_key: str | None = None):
         if db_path is None:
             from sqliteplus.utils.constants import DEFAULT_DB_PATH
 
             db_path = DEFAULT_DB_PATH
         self.db_path = db_path
         self.backup_dir = backup_dir
+        self.cipher_key = cipher_key if cipher_key is not None else os.getenv("SQLITE_DB_KEY")
         os.makedirs(self.backup_dir, exist_ok=True)
 
     def export_to_csv(self, table_name: str, output_file: str):
@@ -30,6 +32,7 @@ class SQLiteReplication:
 
         try:
             with sqlite3.connect(self.db_path) as conn:
+                apply_cipher_key(conn, self.cipher_key)
                 cursor = conn.cursor()
                 cursor.execute(query)
                 rows = cursor.fetchall()
@@ -41,6 +44,8 @@ class SQLiteReplication:
                 writer.writerows(rows)
 
             print(f"Datos exportados correctamente a {output_file}")
+        except SQLitePlusCipherError as exc:
+            raise RuntimeError(str(exc)) from exc
         except sqlite3.Error as e:
             raise sqlite3.Error(f"Error al exportar datos: {e}") from e
 
@@ -58,13 +63,17 @@ class SQLiteReplication:
             os.makedirs(os.path.dirname(backup_file), exist_ok=True)
 
             with sqlite3.connect(self.db_path) as source_conn:
+                apply_cipher_key(source_conn, self.cipher_key)
                 with sqlite3.connect(backup_file) as backup_conn:
+                    apply_cipher_key(backup_conn, self.cipher_key)
                     source_conn.backup(backup_conn)
 
             self._copy_wal_and_shm(self.db_path, backup_file)
 
             print(f"Copia de seguridad creada en {backup_file}")
             return backup_file
+        except SQLitePlusCipherError as exc:
+            raise RuntimeError(str(exc)) from exc
         except Exception as e:
             raise RuntimeError(
                 f"Error al realizar la copia de seguridad: {e}"
@@ -85,13 +94,17 @@ class SQLiteReplication:
                 os.makedirs(target_dir, exist_ok=True)
 
             with sqlite3.connect(self.db_path) as source_conn:
+                apply_cipher_key(source_conn, self.cipher_key)
                 with sqlite3.connect(target_db_path) as target_conn:
+                    apply_cipher_key(target_conn, self.cipher_key)
                     source_conn.backup(target_conn)
 
             self._copy_wal_and_shm(self.db_path, target_db_path)
 
             print(f"Base de datos replicada en {target_db_path}")
             return target_db_path
+        except SQLitePlusCipherError as exc:
+            raise RuntimeError(str(exc)) from exc
         except Exception as e:
             raise RuntimeError(f"Error en la replicación: {e}") from e
 
