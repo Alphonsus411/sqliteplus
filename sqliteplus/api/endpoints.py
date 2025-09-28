@@ -147,7 +147,11 @@ async def fetch_data(db_name: str, table_name: str, user: str = Depends(verify_j
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except (OperationalError, aiosqlite.OperationalError) as exc:
+
+        raise HTTPException(status_code=404, detail=f"Tabla '{table_name}' no encontrada") from exc
+
         raise _map_sql_error(exc, table_name) from exc
+        
     return {"data": data}
 
 
