@@ -1,15 +1,17 @@
 Metadata-Version: 2.4
 Name: sqliteplus-enhanced
-Version: 1.0.4
+Version: 1.0.5
 Summary: SQLite mejorado con cifrado SQLCipher, caché en Redis y API REST asincrónica con FastAPI
 Author-email: Adolfo González Hernández <adolfogonzal@gmail.com>
 License: MIT
 Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
 Classifier: Framework :: FastAPI
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
 Classifier: Development Status :: 5 - Production/Stable
-Requires-Python: >=3.7
+Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 License-File: LICENSE.md
 Requires-Dist: click
@@ -46,6 +48,8 @@ Dynamic: license-file
 
 ## 📦 Instalación
 
+> **Requisito:** Necesitas Python 3.10 o superior antes de continuar con la instalación.
+
 ```bash
 pip install -e .
 ```
@@ -55,9 +59,35 @@ O si quieres publicar:
 pip install sqliteplus-enhanced
 ```
 
+# 🔐 Configuración obligatoria
+
+Antes de iniciar la aplicación (o ejecutar utilidades como `tests/test3.py`) debes
+definir dos variables de entorno críticas:
+
+- `SECRET_KEY`: se utiliza para firmar los tokens JWT.
+- `SQLITE_DB_KEY`: se emplea para abrir bases de datos protegidas con SQLCipher.
+
+La aplicación y los scripts rechazarán la ejecución si no las proporcionas.
+
+Genera valores aleatorios en tu entorno con:
+
+```bash
+export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+export SQLITE_DB_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
+```
+
+En Windows (PowerShell):
+
+```powershell
+$Env:SECRET_KEY = python -c "import secrets; print(secrets.token_urlsafe(32))"
+$Env:SQLITE_DB_KEY = python -c "import secrets; print(secrets.token_hex(32))"
+```
+
 # 📡 Ejecutar el servidor
 
 ```bash
+export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+export SQLITE_DB_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
 uvicorn sqliteplus.main:app --reload
 ```
 
