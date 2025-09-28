@@ -1,6 +1,13 @@
 import aiosqlite
 import asyncio
+import logging
+import os
 from pathlib import Path
+
+from fastapi import HTTPException
+
+
+logger = logging.getLogger(__name__)
 
 
 class AsyncDatabaseManager:
@@ -48,9 +55,26 @@ class AsyncDatabaseManager:
                 recreate_connection = True
 
             if recreate_connection:
-                self.connections[db_name] = await aiosqlite.connect(str(db_path))
-                await self.connections[db_name].execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
-                await self.connections[db_name].commit()
+                encryption_key = os.getenv("SQLITE_DB_KEY", "").strip()
+                if not encryption_key:
+                    logger.error(
+                        "No se encontró la clave de cifrado requerida en la variable de entorno 'SQLITE_DB_KEY'."
+                    )
+                    raise HTTPException(
+                        status_code=503,
+                        detail="Base de datos no disponible: falta la clave de cifrado requerida",
+                    )
+
+                connection = await aiosqlite.connect(str(db_path))
+                try:
+                    await connection.execute("PRAGMA key = ?", (encryption_key,))
+                    await connection.execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
+                    await connection.commit()
+                except Exception:
+                    await connection.close()
+                    raise
+
+                self.connections[db_name] = connection
                 self._connection_loops[db_name] = current_loop
                 self.locks[db_name] = asyncio.Lock()
             else:
