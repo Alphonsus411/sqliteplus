@@ -105,9 +105,14 @@ pytest -v
 
 ## 🛠 Uso del CLI
 
+Antes de operar con bases cifradas puedes definir la clave vía variable de entorno
+`SQLITE_DB_KEY` o proporcionarla explícitamente con `--cipher-key`.
+
 ````bash
+export SQLITE_DB_KEY="$(python -c "import secrets; print(secrets.token_hex(32))")"
 sqliteplus init-db
 sqliteplus execute "INSERT INTO logs (action) VALUES ('via CLI')"
+sqliteplus --cipher-key "$SQLITE_DB_KEY" backup
 sqliteplus export-csv logs logs.csv
 ````
 

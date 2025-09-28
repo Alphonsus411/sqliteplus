@@ -5,9 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4c359cdc-b091-4c1b-b23e-f29138a2231f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sqliteplus.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqliteplus.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus/sqliteplus_enhanced.egg-info/PKG-INFO" beforeDir="false" afterPath="$PROJECT_DIR$/sqliteplus/sqliteplus_enhanced.egg-info/PKG-INFO" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqliteplus/sqliteplus_enhanced.egg-info/SOURCES.txt" beforeDir="false" afterPath="$PROJECT_DIR$/sqliteplus/sqliteplus_enhanced.egg-info/SOURCES.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,22 +45,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "PowerShell.clean_build.ps1.executor": "Run",
-    "Python tests.Python tests in test_database_async.py.executor": "Run",
-    "Python tests.Python tests in test_insert_and_fetch_data.py.executor": "Run",
-    "Python tests.Python tests in test_server_endpoints.py.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "full.screen.before.presentation.mode": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/Users/Adolfo/PycharmProjects/sqliteplus",
-    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;PowerShell.clean_build.ps1.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_database_async.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_insert_and_fetch_data.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_server_endpoints.py.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;full.screen.before.presentation.mode&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Adolfo/PycharmProjects/sqliteplus&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Adolfo\PycharmProjects\sqliteplus\sqliteplus" />
