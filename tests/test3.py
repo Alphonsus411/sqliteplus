@@ -140,5 +140,5 @@ if __name__ == "__main__":
         )
 
     print(
-        "Módulo de seguridad inicializado con cifrado SQLCipher y claves obtenidas desde el entorno."
+        "Módulo de seguridad inicializado con cifrado habilitado y claves obtenidas desde el entorno."
     )

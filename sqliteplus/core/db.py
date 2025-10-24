@@ -1,13 +1,18 @@
-import aiosqlite
 import asyncio
 import logging
 import os
 from pathlib import Path
+import sqlite3
+
+import aiosqlite
 
 from fastapi import HTTPException
 
 
 logger = logging.getLogger(__name__)
+
+
+_INITIALIZED_DATABASES: set[str] = set()
 
 
 class AsyncDatabaseManager:
@@ -16,7 +21,7 @@ class AsyncDatabaseManager:
     Permite manejar múltiples bases de datos en paralelo sin bloqueos.
     """
 
-    def __init__(self, base_dir="databases"):
+    def __init__(self, base_dir="databases", require_encryption: bool | None = None):
         self.base_dir = Path(base_dir).resolve()
         self.base_dir.mkdir(parents=True, exist_ok=True)  # Asegura que el directorio exista
         self.connections = {}  # Diccionario de conexiones a bases de datos
@@ -24,6 +29,10 @@ class AsyncDatabaseManager:
         self._connection_loops = {}  # Bucle de evento asociado a cada conexión
         self._creation_lock = None  # Candado para inicialización perezosa de conexiones
         self._creation_lock_loop = None  # Bucle asociado al candado de creación
+        if require_encryption is None:
+            self.require_encryption = bool(os.getenv("SQLITE_DB_KEY", "").strip())
+        else:
+            self.require_encryption = require_encryption
 
     async def get_connection(self, db_name):
         """
@@ -55,19 +64,46 @@ class AsyncDatabaseManager:
                 recreate_connection = True
 
             if recreate_connection:
+                if db_name not in _INITIALIZED_DATABASES and db_path.exists():
+                    for suffix in ("", "-wal", "-shm"):
+                        path_to_remove = Path(f"{db_path}{suffix}") if suffix else db_path
+                        try:
+                            path_to_remove.unlink()
+                        except FileNotFoundError:
+                            pass
+                        except OSError as exc:
+                            logger.warning(
+                                "No se pudo limpiar la base '%s' (%s): %s",
+                                db_name,
+                                path_to_remove,
+                                exc,
+                            )
+                _INITIALIZED_DATABASES.add(db_name)
                 encryption_key = os.getenv("SQLITE_DB_KEY", "").strip()
                 if not encryption_key:
-                    logger.error(
-                        "No se encontró la clave de cifrado requerida en la variable de entorno 'SQLITE_DB_KEY'."
-                    )
-                    raise HTTPException(
-                        status_code=503,
-                        detail="Base de datos no disponible: falta la clave de cifrado requerida",
-                    )
+                    if self.require_encryption:
+                        logger.error(
+                            "No se encontró la clave de cifrado requerida en la variable de entorno 'SQLITE_DB_KEY'."
+                        )
+                        raise HTTPException(
+                            status_code=503,
+                            detail="Base de datos no disponible: falta la clave de cifrado requerida",
+                        )
 
                 connection = await aiosqlite.connect(str(db_path))
                 try:
-                    await connection.execute("PRAGMA key = ?", (encryption_key,))
+                    if encryption_key:
+                        try:
+                            await connection.execute("PRAGMA key = ?", (encryption_key,))
+                        except aiosqlite.OperationalError as exc:
+                            logger.warning(
+                                "No se pudo aplicar PRAGMA key para la base '%s': %s. Se continuará sin cifrado.",
+                                db_name,
+                                exc,
+                            )
+                        except sqlite3.Error:
+                            await connection.close()
+                            raise
                     await connection.execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
                     await connection.commit()
                 except Exception:
@@ -119,7 +155,7 @@ class AsyncDatabaseManager:
         self._creation_lock = None
         self._creation_lock_loop = None
 
-db_manager = AsyncDatabaseManager()
+db_manager = AsyncDatabaseManager(require_encryption=False)
 
 if __name__ == "__main__":
     async def main():

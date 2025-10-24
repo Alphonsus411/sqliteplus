@@ -1,6 +1,7 @@
-import jwt
 from datetime import datetime, timedelta, timezone
 import os
+
+import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
