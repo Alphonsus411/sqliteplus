@@ -8,7 +8,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Tuple
 
-import bcrypt
+from sqliteplus._compat import ensure_bcrypt
+
+bcrypt = ensure_bcrypt()
 
 
 class UserSourceError(RuntimeError):
