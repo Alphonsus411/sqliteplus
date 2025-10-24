@@ -19,9 +19,27 @@ class AsyncDatabaseManager:
     """
     Gestor de bases de datos SQLite asíncrono con `aiosqlite`.
     Permite manejar múltiples bases de datos en paralelo sin bloqueos.
+
+    Parameters
+    ----------
+    base_dir:
+        Directorio donde se almacenarán los archivos de las bases de datos.
+    require_encryption:
+        Obliga a que exista una clave ``SQLITE_DB_KEY`` en el entorno antes de abrir
+        conexiones. Si es ``None`` se detecta automáticamente.
+    reset_on_init:
+        Cuando es ``True`` se elimina la base de datos existente antes de
+        inicializarla de nuevo. Por defecto se activa sólo durante la ejecución
+        de las pruebas (detectado a través de ``PYTEST_CURRENT_TEST``) para evitar
+        que queden datos residuales entre ejecuciones repetidas.
     """
 
-    def __init__(self, base_dir="databases", require_encryption: bool | None = None):
+    def __init__(
+        self,
+        base_dir="databases",
+        require_encryption: bool | None = None,
+        reset_on_init: bool | None = None,
+    ):
         self.base_dir = Path(base_dir).resolve()
         self.base_dir.mkdir(parents=True, exist_ok=True)  # Asegura que el directorio exista
         self.connections = {}  # Diccionario de conexiones a bases de datos
@@ -33,6 +51,10 @@ class AsyncDatabaseManager:
             self.require_encryption = bool(os.getenv("SQLITE_DB_KEY", "").strip())
         else:
             self.require_encryption = require_encryption
+        if reset_on_init is None:
+            self._reset_on_init = bool(os.getenv("PYTEST_CURRENT_TEST"))
+        else:
+            self._reset_on_init = reset_on_init
 
     async def get_connection(self, db_name):
         """
@@ -64,18 +86,27 @@ class AsyncDatabaseManager:
                 recreate_connection = True
 
             if recreate_connection:
-                if db_name not in _INITIALIZED_DATABASES and db_path.exists():
-                    for suffix in ("", "-wal", "-shm"):
-                        path_to_remove = Path(f"{db_path}{suffix}") if suffix else db_path
+                if db_name not in _INITIALIZED_DATABASES:
+                    if self._reset_on_init and db_path.exists():
                         try:
-                            path_to_remove.unlink()
-                        except FileNotFoundError:
-                            pass
+                            db_path.unlink()
                         except OSError as exc:
                             logger.warning(
-                                "No se pudo limpiar la base '%s' (%s): %s",
+                                "No se pudo eliminar la base '%s' antes de reinicializarla: %s",
                                 db_name,
-                                path_to_remove,
+                                exc,
+                            )
+                    wal_shm_paths = [Path(f"{db_path}{suffix}") for suffix in ("-wal", "-shm")]
+                    for extra_path in wal_shm_paths:
+                        try:
+                            extra_path.unlink()
+                        except FileNotFoundError:
+                            continue
+                        except OSError as exc:
+                            logger.warning(
+                                "No se pudo eliminar el archivo auxiliar '%s' para la base '%s': %s",
+                                extra_path,
+                                db_name,
                                 exc,
                             )
                 _INITIALIZED_DATABASES.add(db_name)

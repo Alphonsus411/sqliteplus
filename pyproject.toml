@@ -38,8 +38,13 @@ classifiers = [
 [project.scripts]
 sqliteplus = "sqliteplus.cli:cli"
 
+[tool.setuptools]
+package-dir = {"" = "."}
+
 [tool.setuptools.packages.find]
-where = ["sqliteplus"]
+where = ["."]
+include = ["sqliteplus*"]
+exclude = ["tests*", "site*", "backups*", "databases*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
