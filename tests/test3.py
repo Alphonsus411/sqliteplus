@@ -9,7 +9,23 @@ import os
 import sqlite3
 import sys
 
-import bcrypt
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+try:
+    import bcrypt  # type: ignore[import-not-found]
+except ModuleNotFoundError:
+    from sqliteplus._compat import ensure_bcrypt
+
+    bcrypt = ensure_bcrypt()
+else:
+    from sqliteplus._compat import ensure_bcrypt
+
+    bcrypt = ensure_bcrypt()
+
 import jwt
 
 
