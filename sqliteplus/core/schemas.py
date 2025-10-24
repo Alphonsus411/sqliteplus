@@ -1,7 +1,8 @@
-from pydantic import BaseModel, validator
-from pydantic import BaseModel, root_validator, validator
-from typing import Any, ClassVar, Dict
 import re
+from typing import Any, ClassVar, Dict
+
+from pydantic import BaseModel, field_validator, model_validator
+
 
 class CreateTableSchema(BaseModel):
     """Esquema recibido al crear una tabla.
@@ -207,20 +208,14 @@ class CreateTableSchema(BaseModel):
 
         return False
 
+
 class InsertDataSchema(BaseModel):
     """Esquema utilizado para insertar datos en una tabla existente."""
 
     values: Dict[str, Any]
 
-    @validator("values")
-    def validate_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        if not values:
-            raise ValueError("Se requiere al menos un par columna/valor para insertar datos")
-
-        sanitized_values: Dict[str, Any] = {}
-        for column, value in values.items():
-          
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def ensure_values_key(cls, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Permite aceptar payloads planos y normalizarlos bajo la clave 'values'."""
 
@@ -228,19 +223,21 @@ class InsertDataSchema(BaseModel):
             return {"values": payload}
         return payload
 
-    @validator("values")
-    def validate_values(cls, v: Dict[str, Any]) -> Dict[str, Any]:
-        if not v:
+    @field_validator("values")
+    @classmethod
+    def validate_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if not values:
             raise ValueError("Se requiere al menos un par columna/valor para insertar datos")
 
         sanitized_values: Dict[str, Any] = {}
-        for column, value in v.items():
+        for column, value in values.items():
             if not isinstance(column, str):
                 raise TypeError("Los nombres de columna deben ser cadenas de texto")
 
-            if not column.strip():
+            normalized_column = column.strip()
+            if not normalized_column:
                 raise ValueError("Los nombres de columna no pueden estar vacíos")
 
-            sanitized_values[column] = value
+            sanitized_values[normalized_column] = value
 
         return sanitized_values

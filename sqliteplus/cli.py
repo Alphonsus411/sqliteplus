@@ -1,11 +1,12 @@
 import sqlite3
 
 import click
+
 from sqliteplus.utils.constants import DEFAULT_DB_PATH
 from sqliteplus.utils.sqliteplus_sync import (
     SQLitePlus,
-    SQLitePlusQueryError,
     SQLitePlusCipherError,
+    SQLitePlusQueryError,
 )
 from sqliteplus.utils.replication_sync import SQLiteReplication
 
