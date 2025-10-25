@@ -12,6 +12,7 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     raise SystemExit()
 
 import os
+import re
 import sqlite3
 import threading
 from datetime import datetime
@@ -57,6 +58,8 @@ def apply_cipher_key(connection: sqlite3.Connection, cipher_key: str | None) -> 
 
 class SQLitePlus:
     """Manejador de SQLite con soporte para cifrado y concurrencia."""
+
+    _identifier_pattern = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
     def __init__(
         self,
@@ -181,14 +184,28 @@ class SQLitePlus:
 
                 return results
 
+    @classmethod
+    def _escape_identifier(cls, table_name: str) -> str:
+        sanitized = table_name.strip()
+        if not sanitized:
+            raise ValueError("El nombre de la tabla no puede estar vacío.")
+
+        if not cls._identifier_pattern.match(sanitized):
+            raise ValueError(f"Nombre de tabla inválido: {table_name}")
+
+        return sanitized.replace('"', '""')
+
     def describe_table(self, table_name: str):
         """Describe la estructura de una tabla, sus índices y claves foráneas."""
 
         with self.lock:
             with self.get_connection() as conn:
                 cursor = conn.cursor()
+                escaped_name = self._escape_identifier(table_name)
+                quoted_name = f'"{escaped_name}"'
+
                 try:
-                    cursor.execute("PRAGMA table_info(?)", (table_name,))
+                    cursor.execute(f"PRAGMA table_info({quoted_name})")
                     columns = cursor.fetchall()
                 except sqlite3.Error as e:
                     raise SQLitePlusQueryError(f"PRAGMA table_info({table_name})", e) from e
@@ -197,18 +214,18 @@ class SQLitePlus:
                     raise ValueError(f"La tabla '{table_name}' no existe en la base de datos actual.")
 
                 try:
-                    cursor.execute("PRAGMA index_list(?)", (table_name,))
+                    cursor.execute(f"PRAGMA index_list({quoted_name})")
                     indexes = cursor.fetchall()
                 except sqlite3.Error as e:
                     raise SQLitePlusQueryError(f"PRAGMA index_list({table_name})", e) from e
 
                 try:
-                    cursor.execute("PRAGMA foreign_key_list(?)", (table_name,))
+                    cursor.execute(f"PRAGMA foreign_key_list({quoted_name})")
                     foreign_keys = cursor.fetchall()
                 except sqlite3.Error as e:
                     raise SQLitePlusQueryError(f"PRAGMA foreign_key_list({table_name})", e) from e
 
-                identifier = table_name.replace('"', '""')
+                identifier = escaped_name
                 row_count = None
                 try:
                     count_cursor = conn.execute(f'SELECT COUNT(*) FROM "{identifier}"')
