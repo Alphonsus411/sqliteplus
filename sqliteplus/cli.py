@@ -18,12 +18,8 @@ from pathlib import Path
 from typing import Iterable
 
 import click
-from rich import box
-from rich.console import Console
-from rich.panel import Panel
-from rich.syntax import Syntax
-from rich.table import Table
-from rich.text import Text
+
+from sqliteplus.utils.rich_compat import Console, Panel, Syntax, Table, Text, box
 
 from sqliteplus.utils.constants import DEFAULT_DB_PATH
 from sqliteplus.utils.sqliteplus_sync import (
