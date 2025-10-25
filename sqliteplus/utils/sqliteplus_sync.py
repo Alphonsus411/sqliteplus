@@ -2,8 +2,18 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import sys
 import threading
 from pathlib import Path
+
+if __package__ in {None, ""}:
+    _current_file = Path(__file__).resolve()
+    for parent in _current_file.parents:
+        if parent.name == "sqliteplus":
+            project_root = parent.parent
+            if str(project_root) not in sys.path:
+                sys.path.insert(0, str(project_root))
+            break
 
 from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
 
