@@ -14,6 +14,9 @@ if __name__ == "__main__" and __package__ in {None, ""}:
 import csv
 import json
 import sqlite3
+import webbrowser
+from decimal import Decimal
+from numbers import Number
 from pathlib import Path
 from typing import Iterable
 
@@ -30,7 +33,16 @@ from sqliteplus.utils.sqliteplus_sync import (
 from sqliteplus.utils.replication_sync import SQLiteReplication
 
 
-def _launch_fletplus_viewer(columns: list[str] | None, rows: Iterable[Iterable[object]]) -> None:
+def _launch_fletplus_viewer(
+    columns: list[str] | None,
+    rows: Iterable[Iterable[object]],
+    *,
+    title: str = "Resultados de SQLitePlus",
+    description: str | None = None,
+    theme_mode: str = "system",
+    page_size: int | None = None,
+    virtualized: bool = False,
+) -> None:
     """Abre un visor interactivo con FletPlus para mostrar los resultados."""
 
     try:
@@ -44,79 +56,238 @@ def _launch_fletplus_viewer(columns: list[str] | None, rows: Iterable[Iterable[o
         ) from exc
 
     materialized_rows = [tuple(row) for row in rows]
-    normalized_columns = columns or [
-        f"columna {index + 1}" for index in range(len(materialized_rows[0]))
-    ] if materialized_rows else ["columna 1"]
+    normalized_columns = (
+        columns
+        or [f"columna {index + 1}" for index in range(len(materialized_rows[0]))]
+        if materialized_rows
+        else ["columna 1"]
+    )
+    total_rows = len(materialized_rows)
+    resolved_page_size = page_size or (10 if total_rows >= 10 else max(total_rows, 1))
+    resolved_virtualized = virtualized and total_rows > resolved_page_size
 
-    data_rows = [
-        ft.DataRow(
+    def _create_data_row(record: tuple[object, ...], font_size: int) -> ft.DataRow:
+        return ft.DataRow(
             cells=[
                 ft.DataCell(
                     ft.Text(
                         "NULL" if value is None else str(value),
                         selectable=True,
+                        size=font_size,
                     )
                 )
                 for value in record
             ]
         )
-        for record in materialized_rows
-    ]
-
-    page_size = 10 if len(data_rows) >= 10 else max(len(data_rows), 1)
 
     def main(page: ft.Page) -> None:
-        page.title = "Resultados de SQLitePlus"
+        theme_map = {
+            "system": ft.ThemeMode.SYSTEM,
+            "light": ft.ThemeMode.LIGHT,
+            "dark": ft.ThemeMode.DARK,
+        }
+        page.title = title
         page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
-        page.theme_mode = ft.ThemeMode.DARK
-        page.padding = 20
+        page.padding = 24
+        page.scroll = ft.ScrollMode.AUTO
+        page.theme_mode = theme_map.get(theme_mode.lower(), ft.ThemeMode.SYSTEM)
+
+        font_size_state = {"value": 14}
+        filtered_rows = materialized_rows.copy()
+
+        def _data_provider(start: int, end: int) -> list[ft.DataRow]:
+            subset = filtered_rows[start:end]
+            return [_create_data_row(record, font_size_state["value"]) for record in subset]
 
         table = SmartTable(
             columns=normalized_columns,
-            rows=data_rows,
-            page_size=page_size,
+            rows=None if resolved_virtualized else [
+                _create_data_row(record, font_size_state["value"])
+                for record in filtered_rows
+            ],
+            page_size=resolved_page_size,
+            virtualized=resolved_virtualized,
+            data_provider=_data_provider if resolved_virtualized else None,
+            total_rows=len(filtered_rows),
             style=Style(
                 bgcolor=ft.Colors.SURFACE_CONTAINER,
-                border_radius=16,
-                padding=20,
+                border_radius=20,
+                padding=ft.Padding(16, 20, 16, 24),
                 shadow=ft.BoxShadow(
                     spread_radius=1,
-                    blur_radius=18,
-                    color=ft.Colors.with_opacity(0.2, ft.Colors.BLACK),
+                    blur_radius=22,
+                    color=ft.Colors.with_opacity(0.18, ft.Colors.BLACK),
                 ),
             ),
         )
 
-        header = ft.Text(
-            "Resultados interactivos",
-            weight=ft.FontWeight.BOLD,
-            size=24,
-        )
-        description = ft.Text(
-            "Explora, ordena y navega por los datos devueltos por tu consulta.",
-            size=14,
-            opacity=0.7,
+        header = ft.Column(
+            [
+                ft.Text(title, weight=ft.FontWeight.BOLD, size=26),
+                ft.Text(
+                    description
+                    or "Explora, ordena y navega por los datos devueltos por tu consulta.",
+                    size=14,
+                    opacity=0.75,
+                ),
+            ],
+            spacing=4,
         )
 
-        page.add(
-            ft.Column(
-                controls=[
-                    header,
-                    description,
-                    table.build(),
-                    ft.Text(
-                        f"{len(materialized_rows)} fila(s) disponibles",
-                        size=12,
-                        italic=True,
-                        opacity=0.6,
+        table_container = table.build()
+        data_table = table_container.controls[0]
+
+        footer_text = ft.Text(
+            f"{len(filtered_rows)} fila(s) disponibles",
+            size=12,
+            italic=True,
+            opacity=0.6,
+        )
+
+        theme_dropdown = ft.Dropdown(
+            label="Tema visual",
+            options=[
+                ft.dropdown.Option("system", "Sistema"),
+                ft.dropdown.Option("light", "Claro"),
+                ft.dropdown.Option("dark", "Oscuro"),
+            ],
+            value=theme_mode.lower() if theme_mode else "system",
+            on_change=lambda e: _set_theme(e.control.value or "system"),
+            dense=True,
+        )
+
+        search_field = ft.TextField(
+            label="Filtrar filas",
+            hint_text="Introduce texto para filtrar las filas mostradas",
+            prefix_icon=ft.Icons.SEARCH,
+            on_change=lambda _: _apply_filters(),
+            on_submit=lambda _: _apply_filters(),
+            disabled=resolved_virtualized,
+        )
+
+        font_slider = ft.Slider(
+            min=12,
+            max=24,
+            divisions=6,
+            value=font_size_state["value"],
+            label="{value} pt",
+            on_change=lambda e: _update_font(int(e.control.value)),
+            expand=True,
+        )
+
+        info_bar = ft.InfoBar(
+            title=ft.Text("Modo virtual" if resolved_virtualized else "Modo local"),
+            severity=ft.InfoBarSeverity.INFO,
+            bgcolor=ft.Colors.with_opacity(0.05, ft.Colors.PRIMARY),
+            content=ft.Text(
+                "La búsqueda rápida está deshabilitada al virtualizar los datos."
+                if resolved_virtualized
+                else "Usa el filtro para localizar registros al instante.",
+                size=12,
+            ),
+        )
+
+        def _set_theme(value: str) -> None:
+            page.theme_mode = theme_map.get(value.lower(), ft.ThemeMode.SYSTEM)
+            page.update()
+
+        def _update_table_rows() -> None:
+            table.total_rows = len(filtered_rows)
+            table.current_page = 0
+            if resolved_virtualized:
+                data_table.rows = table._get_page_rows()
+            else:
+                table.rows = [
+                    _create_data_row(record, font_size_state["value"])
+                    for record in filtered_rows
+                ]
+                data_table.rows = table._get_page_rows()
+            footer_text.value = f"{len(filtered_rows)} fila(s) disponibles"
+            footer_text.update()
+            page.update()
+
+        def _apply_filters() -> None:
+            if resolved_virtualized:
+                return
+            query = (search_field.value or "").strip().lower()
+            if not query:
+                filtered_rows[:] = materialized_rows
+            else:
+                filtered_rows[:] = [
+                    record
+                    for record in materialized_rows
+                    if any(
+                        query in ("" if value is None else str(value).lower())
+                        for value in record
+                    )
+                ]
+            _update_table_rows()
+
+        def _update_font(size: int) -> None:
+            font_size_state["value"] = size
+            if resolved_virtualized:
+                data_table.rows = table._get_page_rows()
+            else:
+                for row in table.rows:
+                    for cell in row.cells:
+                        if hasattr(cell.content, "size"):
+                            cell.content.size = size
+                data_table.rows = table._get_page_rows()
+            page.update()
+
+        controls = [
+            header,
+            ft.ResponsiveRow(
+                [
+                    ft.Container(theme_dropdown, col=12, padding=0),
+                    ft.Container(search_field, col=12, padding=0),
+                    ft.Container(
+                        ft.Column(
+                            [
+                                ft.Text("Tamaño de texto", size=12, opacity=0.7),
+                                font_slider,
+                            ]
+                        ),
+                        col=12,
                     ),
                 ],
-                expand=True,
-                spacing=20,
-            )
-        )
+                run_spacing=12,
+            ),
+            info_bar,
+            table_container,
+            footer_text,
+        ]
+
+        page.add(ft.Column(controls=controls, expand=True, spacing=18))
 
     ft.app(target=main)
+
+
+def _coerce_numeric(value: object) -> float | None:
+    """Intenta convertir ``value`` en un flotante utilizable para estadísticas."""
+
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, Number) and not isinstance(value, complex):
+        return float(value)
+    if isinstance(value, str):
+        candidate = value.strip().replace(",", ".")
+        if not candidate:
+            return None
+        try:
+            return float(candidate)
+        except ValueError:
+            return None
+    return None
+
+
+def _format_numeric(value: float) -> str:
+    """Devuelve una cadena amigable para mostrar métricas numéricas."""
+
+    formatted = f"{value:,.4f}" if abs(value) < 1000 else f"{value:,.2f}"
+    return formatted.replace(",", ".")
 
 
 console = Console()
@@ -211,9 +382,45 @@ def execute(ctx, query):
     default=False,
     help="Abre un visor interactivo con FletPlus para explorar el resultado.",
 )
+@click.option(
+    "--viewer-theme",
+    type=click.Choice(["system", "light", "dark"], case_sensitive=False),
+    default="system",
+    show_default=True,
+    help="Tema inicial utilizado en el visor interactivo.",
+)
+@click.option(
+    "--viewer-page-size",
+    type=click.IntRange(5, 100),
+    default=15,
+    show_default=True,
+    help="Filas por página dentro del visor visual.",
+)
+@click.option(
+    "--viewer-virtual/--viewer-materialized",
+    "viewer_virtualized",
+    default=False,
+    help="Activa la carga virtual de filas en el visor para conjuntos muy grandes.",
+)
+@click.option(
+    "--summary/--no-summary",
+    "show_summary",
+    default=False,
+    help="Calcula un resumen estadístico rápido para columnas numéricas.",
+)
 @click.argument("query", nargs=-1, required=True)
 @click.pass_context
-def fetch(ctx, limit, output, show_viewer, query):
+def fetch(
+    ctx,
+    limit,
+    output,
+    show_viewer,
+    viewer_theme,
+    viewer_page_size,
+    viewer_virtualized,
+    show_summary,
+    query,
+):
     """Ejecuta una consulta SQL de lectura."""
     sql = " ".join(query)
     db = SQLitePlus(
@@ -229,10 +436,10 @@ def fetch(ctx, limit, output, show_viewer, query):
 
     console_obj = ctx.obj["console"]
     total_rows = len(result)
-    displayed_rows = result
+    displayed_rows = list(result)
     truncated = False
     if limit is not None and total_rows > limit:
-        displayed_rows = result[:limit]
+        displayed_rows = displayed_rows[:limit]
         truncated = True
 
     if not displayed_rows:
@@ -245,10 +452,22 @@ def fetch(ctx, limit, output, show_viewer, query):
         )
         return
 
+    displayed_rows = [tuple(row) for row in displayed_rows]
+
+    if columns:
+        normalized_columns = [
+            column or f"columna {index + 1}"
+            for index, column in enumerate(columns)
+        ]
+    elif displayed_rows:
+        normalized_columns = [f"columna {index + 1}" for index in range(len(displayed_rows[0]))]
+    else:
+        normalized_columns = []
+
     if output.lower() == "json":
-        if columns:
+        if normalized_columns:
             payload = [
-                {columns[idx] or f"columna_{idx + 1}": row[idx] for idx in range(len(row))}
+                {normalized_columns[idx]: row[idx] for idx in range(len(row))}
                 for row in displayed_rows
             ]
         else:
@@ -263,8 +482,8 @@ def fetch(ctx, limit, output, show_viewer, query):
         )
     elif output.lower() == "plain":
         lines = []
-        if columns:
-            lines.append(" | ".join(column or f"columna {index + 1}" for index, column in enumerate(columns)))
+        if normalized_columns:
+            lines.append(" | ".join(normalized_columns))
         for row in displayed_rows:
             lines.append(" | ".join("NULL" if value is None else str(value) for value in row))
         console_obj.print(
@@ -276,12 +495,9 @@ def fetch(ctx, limit, output, show_viewer, query):
         )
     else:
         table = Table(box=box.MINIMAL_DOUBLE_HEAD, title="Resultados", header_style="bold magenta")
-        if columns:
-            for column in columns:
-                table.add_column(column or "columna", overflow="fold")
-        else:
-            for idx in range(len(displayed_rows[0])):
-                table.add_column(f"columna {idx + 1}", overflow="fold")
+        if normalized_columns:
+            for column in normalized_columns:
+                table.add_column(column, overflow="fold")
 
         for row in displayed_rows:
             table.add_row(*("NULL" if value is None else str(value) for value in row))
@@ -292,6 +508,61 @@ def fetch(ctx, limit, output, show_viewer, query):
     if truncated:
         footer_message += f" de un total de {total_rows}. Usa --limit para ajustar."
     console_obj.print(footer_message)
+
+    if show_summary and normalized_columns:
+        numeric_summary: list[tuple[str, int, float, float, float]] = []
+        for index, column_name in enumerate(normalized_columns):
+            numeric_values: list[float] = []
+            for row in displayed_rows:
+                if index >= len(row):
+                    continue
+                coerced = _coerce_numeric(row[index])
+                if coerced is not None:
+                    numeric_values.append(coerced)
+            if numeric_values:
+                numeric_summary.append(
+                    (
+                        column_name,
+                        len(numeric_values),
+                        min(numeric_values),
+                        sum(numeric_values) / len(numeric_values),
+                        max(numeric_values),
+                    )
+                )
+
+        if numeric_summary:
+            summary_table = Table(
+                title="Resumen numérico",
+                header_style="bold blue",
+                box=box.MINIMAL_DOUBLE_HEAD,
+            )
+            summary_table.add_column("Columna", style="bold")
+            summary_table.add_column("Valores", justify="right")
+            summary_table.add_column("Mínimo", justify="right")
+            summary_table.add_column("Promedio", justify="right")
+            summary_table.add_column("Máximo", justify="right")
+
+            for name, count, minimum, average, maximum in numeric_summary:
+                summary_table.add_row(
+                    name,
+                    str(count),
+                    _format_numeric(minimum),
+                    _format_numeric(average),
+                    _format_numeric(maximum),
+                )
+
+            console_obj.print(summary_table)
+        else:
+            console_obj.print(
+                Panel.fit(
+                    Text(
+                        "No se detectaron columnas numéricas para generar estadísticas.",
+                        style="bold yellow",
+                    ),
+                    border_style="yellow",
+                    title="Resumen no disponible",
+                )
+            )
 
     if show_viewer:
         console_obj.print(
@@ -304,7 +575,15 @@ def fetch(ctx, limit, output, show_viewer, query):
                 title="Modo interactivo",
             )
         )
-        _launch_fletplus_viewer(columns, displayed_rows)
+        _launch_fletplus_viewer(
+            normalized_columns or None,
+            displayed_rows,
+            title="Resultados de la consulta",
+            description="Visualiza y filtra los datos devueltos por la sentencia SQL.",
+            theme_mode=viewer_theme,
+            page_size=viewer_page_size,
+            virtualized=viewer_virtualized,
+        )
 
 
 @click.command(help="Guarda una tabla como archivo CSV para compartirla fácilmente.")
@@ -464,8 +743,28 @@ def backup(ctx, db_path):
     default=False,
     help="Incluye vistas dentro del listado.",
 )
+@click.option(
+    "--viewer/--no-viewer",
+    "show_viewer",
+    default=False,
+    help="Abre una vista enriquecida con FletPlus para explorar el inventario.",
+)
+@click.option(
+    "--viewer-theme",
+    type=click.Choice(["system", "light", "dark"], case_sensitive=False),
+    default="system",
+    show_default=True,
+    help="Tema inicial del visor visual.",
+)
+@click.option(
+    "--viewer-page-size",
+    type=click.IntRange(5, 50),
+    default=12,
+    show_default=True,
+    help="Filas por página dentro del visor visual.",
+)
 @click.pass_context
-def list_tables(ctx, include_views):
+def list_tables(ctx, include_views, show_viewer, viewer_theme, viewer_page_size):
     """Lista las tablas de la base de datos actual."""
 
     db = SQLitePlus(
@@ -503,6 +802,48 @@ def list_tables(ctx, include_views):
         table.add_row(item["name"], item["type"].title(), row_count)
 
     console_obj.print(table)
+
+    total_tables = sum(1 for item in tables if item["type"] == "table")
+    total_views = sum(1 for item in tables if item["type"] == "view")
+    known_counts = [item["row_count"] for item in tables if item["row_count"] is not None]
+    summary = Table(show_header=False, box=box.MINIMAL)
+    summary.add_row("Tablas", str(total_tables))
+    summary.add_row("Vistas", str(total_views))
+    if known_counts:
+        total_count = sum(known_counts)
+        summary.add_row("Filas conocidas", f"{total_count:,}".replace(",", "."))
+
+    console_obj.print(
+        Panel(summary, title="Resumen de objetos", border_style="cyan")
+    )
+
+    if show_viewer:
+        console_obj.print(
+            Panel.fit(
+                Text(
+                    "Abriendo catálogo interactivo para navegar por tablas y vistas.",
+                    style="bold cyan",
+                ),
+                border_style="cyan",
+                title="Modo visual",
+            )
+        )
+        viewer_rows = [
+            (
+                item["name"],
+                "Tabla" if item["type"] == "table" else "Vista",
+                item["row_count"] if item["row_count"] is not None else "(sin dato)",
+            )
+            for item in tables
+        ]
+        _launch_fletplus_viewer(
+            ["Nombre", "Tipo", "Filas"],
+            viewer_rows,
+            title="Inventario de objetos",
+            description="Consulta de forma accesible las tablas y vistas disponibles.",
+            theme_mode=viewer_theme,
+            page_size=viewer_page_size,
+        )
 
 
 @click.command(name="describe-table", help="Detalla la estructura de una tabla existente.")
@@ -646,8 +987,21 @@ def database_info(ctx):
     show_default=True,
     help="Número máximo de filas a renderizar en la vista visual.",
 )
+@click.option(
+    "--theme",
+    type=click.Choice(["system", "light", "dark"], case_sensitive=False),
+    default="system",
+    show_default=True,
+    help="Tema inicial del panel visual.",
+)
+@click.option(
+    "--accent-color",
+    default="BLUE_400",
+    show_default=True,
+    help="Color primario para resaltar métricas en el panel.",
+)
 @click.pass_context
-def visual_dashboard(ctx, include_views, read_only, max_rows):
+def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_color):
     """Lanza una experiencia accesible e interactiva usando la librería FletPlus."""
 
     try:
@@ -661,6 +1015,29 @@ def visual_dashboard(ctx, include_views, read_only, max_rows):
     db_path = ctx.obj.get("db_path")
     cipher_key = ctx.obj.get("cipher_key")
 
+    def _resolve_color_name(name: str, fallback: str) -> str:
+        if not name:
+            return fallback
+        candidate = name.strip().upper()
+        color_value = getattr(ft.Colors, candidate, None)
+        if color_value:
+            return color_value
+        if name.startswith("#"):
+            return name
+        return fallback
+
+    resolved_theme = theme.lower() if theme else "system"
+    primary_color = _resolve_color_name(accent_color, ft.Colors.BLUE_400)
+    commands = {}
+
+    def _open_docs() -> None:
+        documentation_path = Path(__file__).resolve().parent.parent / "docs" / "index.md"
+        target = documentation_path.as_uri() if documentation_path.exists() else "https://pypi.org/project/sqliteplus-enhanced/"
+        webbrowser.open(target)
+
+    commands["Abrir documentación de SQLitePlus"] = _open_docs
+    commands["Visitar FletPlus en PyPI"] = lambda: webbrowser.open("https://pypi.org/project/fletplus/")
+
     def _apply_preset(event, target_field, preset_map):
         selected = event.control.value
         if selected and selected in preset_map:
@@ -671,6 +1048,27 @@ def visual_dashboard(ctx, include_views, read_only, max_rows):
         database = SQLitePlus(db_path=db_path, cipher_key=cipher_key)
         stats = database.get_database_statistics(include_views=include_views)
         tables = database.list_tables(include_views=include_views, include_row_counts=True)
+
+        def tinted(color: str, opacity: float = 0.18) -> str:
+            try:
+                return ft.Colors.with_opacity(opacity, color)
+            except Exception:
+                return color
+
+        highlight_palette = [
+            ("Tablas", str(stats["table_count"]), tinted(primary_color)),
+            ("Vistas", str(stats["view_count"]), tinted(ft.Colors.PURPLE_200)),
+            (
+                "Filas totales",
+                f"{stats['total_rows']:,}".replace(",", "."),
+                tinted(ft.Colors.GREEN_300),
+            ),
+            (
+                "Tamaño",
+                f"{stats['size_in_bytes'] / 1024:.1f} KB",
+                tinted(ft.Colors.AMBER_200),
+            ),
+        ]
 
         cards = ft.ResponsiveRow(
             [
@@ -687,16 +1085,19 @@ def visual_dashboard(ctx, include_views, read_only, max_rows):
                     border_radius=12,
                     col=12 if idx >= 2 else 6,
                 )
-                for idx, (label, value, color) in enumerate(
-                    [
-                        ("Tablas", str(stats["table_count"]), ft.Colors.BLUE_200),
-                        ("Vistas", str(stats["view_count"]), ft.Colors.PURPLE_200),
-                        ("Filas totales", f"{stats['total_rows']:,}".replace(",", "."), ft.Colors.GREEN_200),
-                        ("Tamaño", f"{stats['size_in_bytes'] / 1024:.1f} KB", ft.Colors.AMBER_200),
-                    ]
-                )
+                for idx, (label, value, color) in enumerate(highlight_palette)
             ],
             vertical_alignment=ft.CrossAxisAlignment.START,
+        )
+
+        header_notice = ft.InfoBar(
+            title=ft.Text("Accesibilidad mejorada"),
+            severity=ft.InfoBarSeverity.SUCCESS,
+            content=ft.Text(
+                "Ajusta tema y color desde la CLI y usa Ctrl+K para abrir la paleta de comandos.",
+                size=12,
+            ),
+            open=True,
         )
 
         rows = [
@@ -739,6 +1140,7 @@ def visual_dashboard(ctx, include_views, read_only, max_rows):
                 [
                     ft.Text("SQLitePlus Studio", size=24, weight=ft.FontWeight.BOLD),
                     ft.Text(f"Ruta actual: {stats['path']}", selectable=True, size=14),
+                    header_notice,
                     ft.Divider(),
                     cards,
                     ft.Divider(),
@@ -905,29 +1307,83 @@ def visual_dashboard(ctx, include_views, read_only, max_rows):
             expand=True,
         )
 
+    def build_accessibility_view():
+        tips = [
+            "Pulsa Ctrl+K para abrir rápidamente la paleta de comandos.",
+            "Activa el modo oscuro con --theme dark para mejorar el contraste.",
+            "Ajusta el tamaño de texto dentro de las tablas interactivas desde el control deslizante.",
+            "Utiliza --accent-color para personalizar los elementos destacados a tu preferencia.",
+        ]
+
+        tip_list = ft.ListView(
+            controls=[
+                ft.ListTile(
+                    leading=ft.Icon(ft.Icons.CHECK_CIRCLE_OUTLINE, color=primary_color),
+                    title=ft.Text(message, selectable=True),
+                )
+                for message in tips
+            ],
+            expand=True,
+            spacing=4,
+        )
+
+        badges = ft.Wrap(
+            [
+                ft.Chip(label=ft.Text("Ctrl + K"), avatar=ft.Icon(ft.Icons.KEYBOARD_COMMAND_KEY)),
+                ft.Chip(label=ft.Text("Ctrl + Enter"), avatar=ft.Icon(ft.Icons.PLAY_ARROW)),
+                ft.Chip(label=ft.Text("Ctrl + S"), avatar=ft.Icon(ft.Icons.SAVE)),
+            ],
+            spacing=12,
+            run_spacing=12,
+        )
+
+        info_cards = ft.Column(
+            [
+                ft.Text("Atajos y ayudas", size=22, weight=ft.FontWeight.BOLD),
+                ft.Text(
+                    "SQLitePlus Studio integra accesos rápidos y elementos accesibles para acelerar tu trabajo diario.",
+                    opacity=0.8,
+                ),
+                ft.Divider(),
+                badges,
+                ft.Divider(),
+                tip_list,
+            ],
+            spacing=12,
+            expand=True,
+        )
+
+        return ft.Container(content=info_cards, padding=24, expand=True)
+
     routes = {
         "Resumen": build_summary_view,
         "Consultas": build_query_view,
         "Historial": build_log_view,
+        "Accesibilidad": build_accessibility_view,
     }
 
     sidebar_items = [
         {"title": "Resumen", "icon": ft.Icons.DASHBOARD},
         {"title": "Consultas", "icon": ft.Icons.TERMINAL},
         {"title": "Historial", "icon": ft.Icons.HISTORY},
+        {"title": "Accesibilidad", "icon": ft.Icons.ACCESSIBILITY_NEW},
     ]
 
     theme_config = {
         "tokens": {
-            "primary": ft.Colors.BLUE_400,
+            "primary": primary_color,
             "secondary": ft.Colors.PURPLE_200,
             "surface": ft.Colors.SURFACE,
         }
     }
 
+    if resolved_theme in {"light", "dark"}:
+        theme_config["palette_mode"] = resolved_theme
+
     FletPlusApp.start(
         routes=routes,
         sidebar_items=sidebar_items,
+        commands=commands,
         title="SQLitePlus Studio",
         theme_config=theme_config,
     )

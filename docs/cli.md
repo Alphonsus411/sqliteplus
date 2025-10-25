@@ -29,13 +29,17 @@ sqliteplus fetch SELECT * FROM logs
 
 Los resultados aparecen fila a fila. Si la consulta no devuelve datos el programa lo avisa para evitar confusiones.
 
+- Usa `--summary` para generar una tabla adicional con mínimos, máximos y promedios de las columnas numéricas.
+- Con `--viewer` se abre un visor accesible construido con FletPlus; admite filtros en vivo, cambio de tema (`--viewer-theme`) y ajuste del tamaño del texto.
+- Si necesitas paginar conjuntos grandes, combina `--viewer` con `--viewer-page-size` o `--viewer-virtual` para cargar filas bajo demanda.
+
 ### Listar tablas disponibles
 
 ```bash
 sqliteplus list-tables
 ```
 
-Muestra una tabla con todas las tablas de usuario y el número de filas registradas. Añade `--include-views` si también quieres ver las vistas definidas.
+Muestra una tabla con todas las tablas de usuario y el número de filas registradas. Añade `--include-views` si también quieres ver las vistas definidas. Con `--viewer` obtienes un catálogo visual donde puedes ordenar y navegar por los objetos con ayuda de la última versión de FletPlus.
 
 ### Describir la estructura de una tabla
 
@@ -52,6 +56,14 @@ sqliteplus db-info
 ```
 
 Imprime la ruta del archivo activo, su tamaño en disco y el total de tablas, vistas y filas.
+
+### Panel visual con FletPlus
+
+```bash
+sqliteplus visual-dashboard --theme dark --accent-color BLUE_200
+```
+
+Abre un panel enriquecido que aprovecha la nueva actualización de FletPlus. Puedes elegir el tema (`--theme`), personalizar el color primario (`--accent-color`) y navegar por vistas dedicadas a resumen, consultas, historial y ayudas de accesibilidad. Desde el propio panel es posible acceder a la paleta de comandos (Ctrl+K) o consultar los consejos incorporados.
 
 ## Exportar una tabla a CSV
 
