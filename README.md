@@ -99,8 +99,13 @@ Comandos disponibles:
 - `sqliteplus init-db` crea la base y deja constancia en la tabla `logs`.
 - `sqliteplus execute INSERT ...` ejecuta instrucciones de escritura y muestra el último ID insertado cuando aplica.
 - `sqliteplus fetch SELECT ...` muestra los resultados fila por fila, avisando si no hay datos.
+- `sqliteplus list-tables` presenta en una tabla rica todas las tablas disponibles y sus recuentos de filas.
+- `sqliteplus describe-table <tabla>` resume las columnas, índices y relaciones de la tabla indicada.
+- `sqliteplus db-info` muestra un resumen del archivo activo (ruta, tamaño, tablas, vistas y filas totales).
 - `sqliteplus export-csv <tabla> <archivo.csv>` guarda la tabla en un CSV con encabezados.
 - `sqliteplus backup` genera un respaldo fechado en la carpeta `backups/`. Puedes especificar otra ruta con `--db-path`.
+
+Gracias a la integración con [Rich](https://rich.readthedocs.io/en/stable/) todos los mensajes de la CLI se muestran con colores, paneles y tablas que facilitan su lectura y accesibilidad.
 
 Ejemplo combinando opciones:
 
