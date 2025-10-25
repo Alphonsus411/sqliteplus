@@ -7,6 +7,17 @@ y semántica de versiones [SemVer](https://semver.org/lang/es/).
 
 ---
 
+## [Unreleased]
+### Añadido
+- Comandos `list-tables`, `describe-table` y `db-info` para inspeccionar la base desde la CLI.
+- Salida enriquecida con Rich (tablas, paneles y colores) para mejorar la accesibilidad.
+- Métodos sincronizados para listar, describir y obtener estadísticas de la base de datos.
+
+### Cambiado
+- El comando `fetch` ahora muestra los resultados en tablas con formato y reporta el número de filas devueltas.
+
+---
+
 ## [1.0.7] - 2025-06-01
 ### Cambiado
 - Documentación reescrita para reflejar el uso de `SQLITEPLUS_USERS_FILE`, el gestor asincrónico y la CLI `sqliteplus`.

@@ -29,6 +29,30 @@ sqliteplus fetch SELECT * FROM logs
 
 Los resultados aparecen fila a fila. Si la consulta no devuelve datos el programa lo avisa para evitar confusiones.
 
+### Listar tablas disponibles
+
+```bash
+sqliteplus list-tables
+```
+
+Muestra una tabla con todas las tablas de usuario y el número de filas registradas. Añade `--include-views` si también quieres ver las vistas definidas.
+
+### Describir la estructura de una tabla
+
+```bash
+sqliteplus describe-table logs
+```
+
+Obtendrás un resumen con el número de filas, columnas, índices y claves foráneas de la tabla seleccionada.
+
+### Ver estadísticas generales
+
+```bash
+sqliteplus db-info
+```
+
+Imprime la ruta del archivo activo, su tamaño en disco y el total de tablas, vistas y filas.
+
 ## Exportar una tabla a CSV
 
 ```bash
@@ -52,3 +76,7 @@ sqliteplus --cipher-key "$SQLITE_DB_KEY" backup
 ```
 
 Si la clave es incorrecta o el intérprete no soporta SQLCipher, la CLI mostrará un error fácil de entender para guiarte en la corrección.
+
+## Nuevo aspecto con Rich
+
+Gracias a la librería [Rich](https://rich.readthedocs.io/en/stable/), todos los comandos muestran tablas, paneles y colores que facilitan la lectura, especialmente en pantallas oscuras o cuando necesitas compartir los resultados por terminal.
