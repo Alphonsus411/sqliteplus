@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from .api.endpoints import router
-from .core.db import db_manager
+from sqliteplus.api.endpoints import router
+from sqliteplus.core.db import db_manager
 
 
 @asynccontextmanager

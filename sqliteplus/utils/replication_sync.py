@@ -6,8 +6,8 @@ import shutil
 import sqlite3
 from pathlib import Path
 
-from .constants import DEFAULT_DB_PATH, resolve_default_db_path
-from .sqliteplus_sync import apply_cipher_key, SQLitePlusCipherError
+from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
+from sqliteplus.utils.sqliteplus_sync import apply_cipher_key, SQLitePlusCipherError
 
 
 class SQLiteReplication:

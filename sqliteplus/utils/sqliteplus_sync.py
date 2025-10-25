@@ -5,7 +5,7 @@ import sqlite3
 import threading
 from pathlib import Path
 
-from .constants import DEFAULT_DB_PATH, resolve_default_db_path
+from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
 
 
 class SQLitePlusQueryError(RuntimeError):
