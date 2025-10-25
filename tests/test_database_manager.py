@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 from sqliteplus.utils.database_manager_sync import DatabaseManager
 
@@ -35,6 +36,17 @@ class TestDatabaseManager(unittest.TestCase):
         self.assertIsInstance(result, list)
         self.assertTrue(len(result) > 0)
         self.assertEqual(result[0][1], "Alice")
+
+    def test_accepts_names_with_db_extension(self):
+        """Permite gestionar nombres que ya incluyen la extensión .db."""
+        db_name_with_ext = "custom_sync.db"
+        self.manager.execute_query(
+            db_name_with_ext,
+            "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)",
+        )
+
+        db_path = (self.manager.base_dir / Path(db_name_with_ext)).resolve()
+        self.assertTrue(db_path.exists())
 
     @classmethod
     def tearDownClass(cls):

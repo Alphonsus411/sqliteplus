@@ -29,31 +29,43 @@ class DatabaseManager:
         self.connections = {}  # Diccionario de conexiones a bases de datos
         self.locks = {}  # Bloqueos para manejar concurrencia en cada base de datos
 
-    def get_connection(self, db_name):
+    def _normalize_db_name(self, raw_name: str) -> tuple[str, Path]:
+        sanitized = raw_name.strip()
+        if not sanitized:
+            raise ValueError("Nombre de base de datos inválido")
+
+        if any(token in sanitized for token in ("..", "/", "\\")):
+            raise ValueError("Nombre de base de datos inválido")
+
+        file_name = sanitized if sanitized.endswith(".db") else f"{sanitized}.db"
+        db_path = (self.base_dir / Path(file_name)).resolve()
+        if self.base_dir not in db_path.parents:
+            raise ValueError("Nombre de base de datos fuera del directorio permitido")
+
+        return db_path.stem, db_path
+
+    def get_connection(self, db_name, *, _normalized: tuple[str, Path] | None = None):
         """
         Obtiene una conexión a la base de datos especificada.
         Si la conexión no existe, la crea.
         """
-        if any(token in db_name for token in ("..", "/", "\\")):
-            raise ValueError("Nombre de base de datos inválido")
+        canonical_name, db_path = _normalized or self._normalize_db_name(db_name)
 
-        db_path = (self.base_dir / Path(f"{db_name}.db")).resolve()
-        if self.base_dir not in db_path.parents:
-            raise ValueError("Nombre de base de datos fuera del directorio permitido")
+        if canonical_name not in self.connections:
+            self.connections[canonical_name] = sqlite3.connect(str(db_path), check_same_thread=False)
+            self.connections[canonical_name].execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
+            self.locks[canonical_name] = threading.Lock()
 
-        if db_name not in self.connections:
-            self.connections[db_name] = sqlite3.connect(str(db_path), check_same_thread=False)
-            self.connections[db_name].execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
-            self.locks[db_name] = threading.Lock()
-
-        return self.connections[db_name]
+        return self.connections[canonical_name]
 
     def execute_query(self, db_name, query, params=()):
         """
         Ejecuta una consulta de escritura en la base de datos especificada.
         """
-        conn = self.get_connection(db_name)
-        lock = self.locks[db_name]
+        normalized = self._normalize_db_name(db_name)
+        conn = self.get_connection(db_name, _normalized=normalized)
+        canonical_name, _ = normalized
+        lock = self.locks[canonical_name]
 
         with lock:
             cursor = conn.cursor()
@@ -69,8 +81,10 @@ class DatabaseManager:
         """
         Ejecuta una consulta de lectura en la base de datos especificada.
         """
-        conn = self.get_connection(db_name)
-        lock = self.locks[db_name]
+        normalized = self._normalize_db_name(db_name)
+        conn = self.get_connection(db_name, _normalized=normalized)
+        canonical_name, _ = normalized
+        lock = self.locks[canonical_name]
 
         with lock:
             cursor = conn.cursor()
