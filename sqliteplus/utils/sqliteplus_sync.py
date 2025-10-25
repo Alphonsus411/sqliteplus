@@ -1,23 +1,11 @@
 from __future__ import annotations
 
-if __package__ in {None, ""}:
-    import sys
-    from pathlib import Path
-
-    _current_path = Path(__file__).resolve()
-    for parent in _current_path.parents:
-        if parent.name == "sqliteplus":
-            project_root = parent.parent
-            if str(project_root) not in sys.path:
-                sys.path.insert(0, str(project_root))
-            break
-
 import os
 import sqlite3
 import threading
 from pathlib import Path
 
-from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
+from .constants import DEFAULT_DB_PATH, resolve_default_db_path
 
 
 class SQLitePlusQueryError(RuntimeError):
