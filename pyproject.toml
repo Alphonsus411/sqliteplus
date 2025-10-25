@@ -23,6 +23,7 @@ dependencies = [
     "python-multipart",
     "httpx",
     "rich",
+    "fletplus",
     "pytest",
     "setuptools"
 ]
