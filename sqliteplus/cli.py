@@ -30,67 +30,99 @@ from sqliteplus.utils.replication_sync import SQLiteReplication
     envvar="SQLITE_DB_KEY",
     help="Clave SQLCipher a utilizar al abrir las bases de datos.",
 )
-@click.pass_context
-def cli(ctx, cipher_key):
-    """Interfaz de Línea de Comandos para SQLitePlus."""
-    ctx.ensure_object(dict)
-    ctx.obj["cipher_key"] = cipher_key
-
-
-@click.command()
-@click.pass_context
-def init_db(ctx):
-    """Inicializa la base de datos SQLitePlus."""
-    db = SQLitePlus(cipher_key=ctx.obj.get("cipher_key"))
-    db.log_action("Inicialización de la base de datos desde CLI")
-    click.echo("Base de datos inicializada correctamente.")
-
-
-@click.command()
-@click.argument("query")
-@click.pass_context
-def execute(ctx, query):
-    """Ejecuta una consulta SQL de escritura."""
-    db = SQLitePlus(cipher_key=ctx.obj.get("cipher_key"))
-    try:
-        result = db.execute_query(query)
-    except SQLitePlusQueryError as exc:
-        raise click.ClickException(str(exc)) from exc
-    except SQLitePlusCipherError as exc:
-        raise click.ClickException(str(exc)) from exc
-
-    click.echo(f"Consulta ejecutada. ID insertado: {result}")
-
-
-@click.command()
-@click.argument("query")
-@click.pass_context
-def fetch(ctx, query):
-    """Ejecuta una consulta SQL de lectura."""
-    db = SQLitePlus(cipher_key=ctx.obj.get("cipher_key"))
-    try:
-        result = db.fetch_query(query)
-    except SQLitePlusQueryError as exc:
-        raise click.ClickException(str(exc)) from exc
-    except SQLitePlusCipherError as exc:
-        raise click.ClickException(str(exc)) from exc
-
-    click.echo(result)
-
-
-@click.command()
-@click.argument("table_name")
-@click.argument("output_file")
 @click.option(
     "--db-path",
     default=DEFAULT_DB_PATH,
     show_default=True,
-    help="Ruta al archivo de base de datos SQLite.",
+    type=click.Path(dir_okay=False, resolve_path=True, path_type=str),
+    help="Ruta del archivo de base de datos a utilizar en todos los comandos.",
+)
+@click.pass_context
+def cli(ctx, cipher_key, db_path):
+    """Herramientas de consola para trabajar con SQLitePlus sin programar."""
+    ctx.ensure_object(dict)
+    ctx.obj["cipher_key"] = cipher_key
+    ctx.obj["db_path"] = db_path
+
+
+@click.command(help="Crea la base de datos si no existe y registra la acción en el historial.")
+@click.pass_context
+def init_db(ctx):
+    """Inicializa la base de datos SQLitePlus."""
+    db = SQLitePlus(
+        db_path=ctx.obj.get("db_path"),
+        cipher_key=ctx.obj.get("cipher_key"),
+    )
+    db.log_action("Inicialización de la base de datos desde CLI")
+    click.echo(f"Base de datos preparada en {db.db_path}.")
+
+
+@click.command(help="Ejecuta instrucciones de inserción, actualización o borrado.")
+@click.argument("query", nargs=-1, required=True)
+@click.pass_context
+def execute(ctx, query):
+    """Ejecuta una consulta SQL de escritura."""
+    sql = " ".join(query)
+    db = SQLitePlus(
+        db_path=ctx.obj.get("db_path"),
+        cipher_key=ctx.obj.get("cipher_key"),
+    )
+    try:
+        result = db.execute_query(sql)
+    except SQLitePlusQueryError as exc:
+        raise click.ClickException(str(exc)) from exc
+    except SQLitePlusCipherError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    click.echo("Consulta ejecutada correctamente.")
+    if result is not None:
+        click.echo(f"ID insertado: {result}")
+
+
+@click.command(help="Recupera datos y los muestra en pantalla fila por fila.")
+@click.argument("query", nargs=-1, required=True)
+@click.pass_context
+def fetch(ctx, query):
+    """Ejecuta una consulta SQL de lectura."""
+    sql = " ".join(query)
+    db = SQLitePlus(
+        db_path=ctx.obj.get("db_path"),
+        cipher_key=ctx.obj.get("cipher_key"),
+    )
+    try:
+        result = db.fetch_query(sql)
+    except SQLitePlusQueryError as exc:
+        raise click.ClickException(str(exc)) from exc
+    except SQLitePlusCipherError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    if not result:
+        click.echo("No se encontraron filas.")
+        return
+
+    click.echo("Resultados:")
+    for row in result:
+        click.echo(" | ".join(str(value) for value in row))
+
+
+@click.command(help="Guarda una tabla como archivo CSV para compartirla fácilmente.")
+@click.argument("table_name")
+@click.argument("output_file")
+@click.option(
+    "--db-path",
+    default=None,
+    show_default=False,
+    type=click.Path(dir_okay=False, resolve_path=True, path_type=str),
+    help="Ruta específica de la base que quieres exportar (por defecto usa la global).",
 )
 @click.pass_context
 def export_csv(ctx, table_name, output_file, db_path):
     """Exporta una tabla a CSV."""
-    replicator = SQLiteReplication(db_path=db_path, cipher_key=ctx.obj.get("cipher_key"))
+    resolved_db_path = db_path or ctx.obj.get("db_path")
+    replicator = SQLiteReplication(
+        db_path=resolved_db_path,
+        cipher_key=ctx.obj.get("cipher_key"),
+    )
     try:
         replicator.export_to_csv(table_name, output_file)
     except ValueError as exc:
@@ -103,19 +135,28 @@ def export_csv(ctx, table_name, output_file, db_path):
     click.echo(f"Tabla {table_name} exportada a {output_file}")
 
 
-@click.command()
+@click.command(help="Genera un respaldo fechado de la base indicada.")
+@click.option(
+    "--db-path",
+    default=None,
+    show_default=False,
+    type=click.Path(dir_okay=False, resolve_path=True, path_type=str),
+    help="Ruta específica de la base a respaldar (por defecto usa la global).",
+)
 @click.pass_context
-def backup(ctx):
+def backup(ctx, db_path):
     """Crea un respaldo de la base de datos."""
+    resolved_db_path = db_path or ctx.obj.get("db_path")
     replicator = SQLiteReplication(
-        db_path=DEFAULT_DB_PATH, cipher_key=ctx.obj.get("cipher_key")
+        db_path=resolved_db_path,
+        cipher_key=ctx.obj.get("cipher_key"),
     )
     try:
-        replicator.backup_database()
+        backup_path = replicator.backup_database()
     except Exception as exc:
         raise click.ClickException(str(exc)) from exc
 
-    click.echo("Copia de seguridad creada correctamente.")
+    click.echo(f"Copia de seguridad creada en {backup_path}.")
 
 cli.add_command(init_db)
 cli.add_command(execute)
