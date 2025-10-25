@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: sqliteplus-enhanced
-Version: 1.0.5
+Version: 1.0.7
 Summary: SQLite mejorado con cifrado SQLCipher, caché en Redis y API REST asincrónica con FastAPI
 Author-email: Adolfo González Hernández <adolfogonzal@gmail.com>
 License: MIT
