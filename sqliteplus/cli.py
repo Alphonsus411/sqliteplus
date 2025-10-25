@@ -11,12 +11,14 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     run_module("sqliteplus.cli", run_name="__main__")
     raise SystemExit()
 
+import json
 import sqlite3
 
 import click
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
+from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
 
@@ -102,9 +104,22 @@ def execute(ctx, query):
 
 
 @click.command(help="Recupera datos y los muestra en pantalla fila por fila.")
+@click.option(
+    "--limit",
+    type=click.IntRange(1),
+    default=None,
+    help="Limita el número de filas mostradas sin modificar la consulta original.",
+)
+@click.option(
+    "--output",
+    type=click.Choice(["table", "json", "plain"], case_sensitive=False),
+    default="table",
+    show_default=True,
+    help="Formato de salida accesible a tus necesidades.",
+)
 @click.argument("query", nargs=-1, required=True)
 @click.pass_context
-def fetch(ctx, query):
+def fetch(ctx, limit, output, query):
     """Ejecuta una consulta SQL de lectura."""
     sql = " ".join(query)
     db = SQLitePlus(
@@ -119,8 +134,14 @@ def fetch(ctx, query):
         raise click.ClickException(str(exc)) from exc
 
     console_obj = ctx.obj["console"]
+    total_rows = len(result)
+    displayed_rows = result
+    truncated = False
+    if limit is not None and total_rows > limit:
+        displayed_rows = result[:limit]
+        truncated = True
 
-    if not result:
+    if not displayed_rows:
         console_obj.print(
             Panel.fit(
                 Text("No se encontraron filas.", style="bold yellow"),
@@ -130,19 +151,53 @@ def fetch(ctx, query):
         )
         return
 
-    table = Table(box=box.MINIMAL_DOUBLE_HEAD, title="Resultados", header_style="bold magenta")
-    if columns:
-        for column in columns:
-            table.add_column(column or "columna", overflow="fold")
+    if output.lower() == "json":
+        if columns:
+            payload = [
+                {columns[idx] or f"columna_{idx + 1}": row[idx] for idx in range(len(row))}
+                for row in displayed_rows
+            ]
+        else:
+            payload = [list(row) for row in displayed_rows]
+        json_text = json.dumps(payload, ensure_ascii=False, indent=2)
+        console_obj.print(
+            Panel(
+                Syntax(json_text, "json", indent_guides=True),
+                title="Resultado JSON",
+                border_style="blue",
+            )
+        )
+    elif output.lower() == "plain":
+        lines = []
+        if columns:
+            lines.append(" | ".join(column or f"columna {index + 1}" for index, column in enumerate(columns)))
+        for row in displayed_rows:
+            lines.append(" | ".join("NULL" if value is None else str(value) for value in row))
+        console_obj.print(
+            Panel.fit(
+                Text("\n".join(lines), style="bold white"),
+                title="Resultado plano",
+                border_style="cyan",
+            )
+        )
     else:
-        for idx in range(len(result[0])):
-            table.add_column(f"columna {idx + 1}", overflow="fold")
+        table = Table(box=box.MINIMAL_DOUBLE_HEAD, title="Resultados", header_style="bold magenta")
+        if columns:
+            for column in columns:
+                table.add_column(column or "columna", overflow="fold")
+        else:
+            for idx in range(len(displayed_rows[0])):
+                table.add_column(f"columna {idx + 1}", overflow="fold")
 
-    for row in result:
-        table.add_row(*("NULL" if value is None else str(value) for value in row))
+        for row in displayed_rows:
+            table.add_row(*("NULL" if value is None else str(value) for value in row))
 
-    console_obj.print(table)
-    console_obj.print(f"[green]{len(result)}[/green] fila(s) devueltas.")
+        console_obj.print(table)
+
+    footer_message = f"[green]{len(displayed_rows)}[/green] fila(s) mostradas"
+    if truncated:
+        footer_message += f" de un total de {total_rows}. Usa --limit para ajustar."
+    console_obj.print(footer_message)
 
 
 @click.command(help="Guarda una tabla como archivo CSV para compartirla fácilmente.")
@@ -379,6 +434,313 @@ def database_info(ctx):
 
     console_obj.print(Panel(info_table, title="Base de datos", border_style="magenta"))
 
+@click.command(name="visual-dashboard", help="Abre un panel visual construido con FletPlus para explorar la base.")
+@click.option(
+    "--include-views/--exclude-views",
+    default=True,
+    show_default=True,
+    help="Incluye vistas dentro del panel de resumen.",
+)
+@click.option(
+    "--read-only/--allow-write",
+    default=True,
+    show_default=True,
+    help="Controla si la sección de consultas permite operaciones de escritura.",
+)
+@click.option(
+    "--max-rows",
+    type=click.IntRange(10, 2000),
+    default=200,
+    show_default=True,
+    help="Número máximo de filas a renderizar en la vista visual.",
+)
+@click.pass_context
+def visual_dashboard(ctx, include_views, read_only, max_rows):
+    """Lanza una experiencia accesible e interactiva usando la librería FletPlus."""
+
+    try:
+        from fletplus.core import FletPlusApp
+        import flet as ft
+    except ModuleNotFoundError as exc:  # pragma: no cover - depende del entorno del usuario
+        raise click.ClickException(
+            "La funcionalidad visual requiere el paquete fletplus. Instálalo con 'pip install fletplus'."
+        ) from exc
+
+    db_path = ctx.obj.get("db_path")
+    cipher_key = ctx.obj.get("cipher_key")
+
+    def _apply_preset(event, target_field, preset_map):
+        selected = event.control.value
+        if selected and selected in preset_map:
+            target_field.value = preset_map[selected]
+            target_field.update()
+
+    def build_summary_view():
+        database = SQLitePlus(db_path=db_path, cipher_key=cipher_key)
+        stats = database.get_database_statistics(include_views=include_views)
+        tables = database.list_tables(include_views=include_views, include_row_counts=True)
+
+        cards = ft.ResponsiveRow(
+            [
+                ft.Container(
+                    content=ft.Column(
+                        [
+                            ft.Text(label, size=16, weight=ft.FontWeight.W_600),
+                            ft.Text(value, size=26, weight=ft.FontWeight.BOLD),
+                        ],
+                        spacing=4,
+                    ),
+                    bgcolor=color,
+                    padding=16,
+                    border_radius=12,
+                    col=12 if idx >= 2 else 6,
+                )
+                for idx, (label, value, color) in enumerate(
+                    [
+                        ("Tablas", str(stats["table_count"]), ft.Colors.BLUE_200),
+                        ("Vistas", str(stats["view_count"]), ft.Colors.PURPLE_200),
+                        ("Filas totales", f"{stats['total_rows']:,}".replace(",", "."), ft.Colors.GREEN_200),
+                        ("Tamaño", f"{stats['size_in_bytes'] / 1024:.1f} KB", ft.Colors.AMBER_200),
+                    ]
+                )
+            ],
+            vertical_alignment=ft.CrossAxisAlignment.START,
+        )
+
+        rows = [
+            ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text(item["name"])),
+                    ft.DataCell(ft.Text("Tabla" if item["type"] == "table" else "Vista")),
+                    ft.DataCell(
+                        ft.Text(
+                            "-"
+                            if item["row_count"] is None
+                            else f"{item['row_count']:,}".replace(",", ".")
+                        )
+                    ),
+                ]
+            )
+            for item in tables
+        ]
+
+        tables_section = ft.Column(
+            [
+                ft.Text("Objetos disponibles", weight=ft.FontWeight.BOLD, size=18),
+                ft.Divider(),
+                ft.DataTable(
+                    columns=[
+                        ft.DataColumn(ft.Text("Nombre")),
+                        ft.DataColumn(ft.Text("Tipo")),
+                        ft.DataColumn(ft.Text("Filas")),
+                    ],
+                    rows=rows,
+                    column_spacing=24,
+                    heading_row_color=ft.Colors.SURFACE_VARIANT,
+                ),
+            ],
+            spacing=8,
+        )
+
+        return ft.Container(
+            content=ft.Column(
+                [
+                    ft.Text("SQLitePlus Studio", size=24, weight=ft.FontWeight.BOLD),
+                    ft.Text(f"Ruta actual: {stats['path']}", selectable=True, size=14),
+                    ft.Divider(),
+                    cards,
+                    ft.Divider(),
+                    tables_section,
+                ],
+                spacing=12,
+                scroll=ft.ScrollMode.AUTO,
+            ),
+            expand=True,
+            padding=20,
+        )
+
+    def build_query_view():
+        database = SQLitePlus(db_path=db_path, cipher_key=cipher_key)
+        query_field = ft.TextField(
+            label="Consulta SQL",
+            hint_text="Escribe una sentencia SELECT o manipulación de datos",
+            multiline=True,
+            autofocus=True,
+            min_lines=3,
+            max_lines=6,
+            expand=True,
+        )
+        status_text = ft.Text("", size=14)
+        progress_bar = ft.ProgressBar(width=400, visible=False)
+
+        result_table = ft.DataTable(columns=[], rows=[], column_spacing=24)
+        result_container = ft.Container(
+            content=result_table,
+            bgcolor=ft.Colors.SURFACE,
+            padding=12,
+            border_radius=12,
+            expand=True,
+        )
+
+        presets = {
+            "Listar tablas": "SELECT name, type FROM sqlite_master WHERE type IN ('table','view') ORDER BY name",
+            "Últimos registros del log": "SELECT action, timestamp FROM logs ORDER BY timestamp DESC LIMIT 50",
+        }
+
+        preset_dropdown = ft.Dropdown(
+            label="Plantillas rápidas",
+            options=[ft.dropdown.Option(key) for key in presets],
+            on_change=lambda e: _apply_preset(e, query_field, presets),
+            width=350,
+        )
+
+        def run_query(event):
+            sql = (query_field.value or "").strip()
+            if not sql:
+                status_text.value = "Escribe una consulta para ejecutarla."
+                status_text.color = ft.Colors.AMBER
+                status_text.update()
+                return
+
+            keyword = sql.split(maxsplit=1)[0].lower()
+            progress_bar.visible = True
+            event.page.update()
+
+            try:
+                if keyword in {"select", "pragma", "with"}:
+                    columns, rows = database.fetch_query_with_columns(sql)
+                    limited_rows = rows[:max_rows]
+                    result_table.columns = [
+                        ft.DataColumn(ft.Text(column or f"columna {index + 1}"))
+                        for index, column in enumerate(columns or [])
+                    ]
+                    if not result_table.columns:
+                        first_row_length = len(limited_rows[0]) if limited_rows else 0
+                        result_table.columns = [
+                            ft.DataColumn(ft.Text(f"columna {index + 1}"))
+                            for index in range(first_row_length)
+                        ]
+                    result_table.rows = [
+                        ft.DataRow(
+                            cells=[
+                                ft.DataCell(ft.Text("NULL" if value is None else str(value)))
+                                for value in row
+                            ]
+                        )
+                        for row in limited_rows
+                    ]
+                    status_text.value = f"Se muestran {len(limited_rows)} de {len(rows)} fila(s)."
+                    status_text.color = ft.Colors.GREEN
+                elif read_only:
+                    status_text.value = "La interfaz está en modo solo lectura. Usa --allow-write para habilitar cambios."
+                    status_text.color = ft.Colors.RED
+                    result_table.rows = []
+                    result_table.columns = []
+                else:
+                    last_id = database.execute_query(sql)
+                    result_table.rows = []
+                    result_table.columns = []
+                    status_text.value = (
+                        "Operación de escritura completada." if last_id is None else f"ID afectado: {last_id}"
+                    )
+                    status_text.color = ft.Colors.GREEN
+            except (SQLitePlusQueryError, SQLitePlusCipherError) as exc:
+                status_text.value = str(exc)
+                status_text.color = ft.Colors.RED
+                result_table.rows = []
+                result_table.columns = []
+            finally:
+                progress_bar.visible = False
+                event.page.update()
+
+        run_button = ft.FilledButton("Ejecutar", icon=ft.Icons.PLAY_ARROW, on_click=run_query)
+
+        return ft.Container(
+            content=ft.Column(
+                [
+                    ft.Row([query_field], expand=True),
+                    ft.Row([preset_dropdown, run_button, progress_bar], alignment=ft.MainAxisAlignment.START, spacing=16),
+                    result_container,
+                    status_text,
+                ],
+                expand=True,
+                spacing=12,
+            ),
+            expand=True,
+            padding=20,
+        )
+
+    def build_log_view():
+        database = SQLitePlus(db_path=db_path, cipher_key=cipher_key)
+        columns, rows = database.fetch_query_with_columns(
+            "SELECT action AS Acción, timestamp AS Momento FROM logs ORDER BY timestamp DESC LIMIT ?",
+            params=(max_rows,),
+        )
+
+        if not rows:
+            empty_state = ft.Column(
+                [
+                    ft.Icon(ft.Icons.HISTORY, size=48, color=ft.Colors.AMBER),
+                    ft.Text("El historial aún no tiene eventos registrados.", size=16),
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                expand=True,
+            )
+            return ft.Container(content=empty_state, expand=True, padding=20)
+
+        log_table = ft.DataTable(
+            columns=[ft.DataColumn(ft.Text(column)) for column in columns],
+            rows=[
+                ft.DataRow(cells=[ft.DataCell(ft.Text("NULL" if value is None else str(value))) for value in row])
+                for row in rows
+            ],
+            heading_row_color=ft.Colors.SURFACE_VARIANT,
+            column_spacing=32,
+        )
+
+        return ft.Container(
+            content=ft.Column(
+                [
+                    ft.Text("Historial de eventos", size=22, weight=ft.FontWeight.BOLD),
+                    ft.Text("Consulta las últimas acciones registradas por SQLitePlus."),
+                    ft.Divider(),
+                    log_table,
+                ],
+                spacing=12,
+            ),
+            padding=20,
+            expand=True,
+        )
+
+    routes = {
+        "Resumen": build_summary_view,
+        "Consultas": build_query_view,
+        "Historial": build_log_view,
+    }
+
+    sidebar_items = [
+        {"title": "Resumen", "icon": ft.Icons.DASHBOARD},
+        {"title": "Consultas", "icon": ft.Icons.TERMINAL},
+        {"title": "Historial", "icon": ft.Icons.HISTORY},
+    ]
+
+    theme_config = {
+        "tokens": {
+            "primary": ft.Colors.BLUE_400,
+            "secondary": ft.Colors.PURPLE_200,
+            "surface": ft.Colors.SURFACE,
+        }
+    }
+
+    FletPlusApp.start(
+        routes=routes,
+        sidebar_items=sidebar_items,
+        title="SQLitePlus Studio",
+        theme_config=theme_config,
+    )
+
+
 cli.add_command(init_db)
 cli.add_command(execute)
 cli.add_command(fetch)
@@ -387,6 +749,7 @@ cli.add_command(backup)
 cli.add_command(list_tables)
 cli.add_command(describe_table)
 cli.add_command(database_info)
+cli.add_command(visual_dashboard)
 
 if __name__ == "__main__":
     cli()
