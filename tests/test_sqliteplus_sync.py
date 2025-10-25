@@ -83,3 +83,22 @@ def test_sqliteplus_raises_cipher_error_when_key_fails(monkeypatch, tmp_path):
 
     with pytest.raises(SQLitePlusCipherError):
         SQLitePlus(db_path=tmp_path / "encrypted.db", cipher_key="secret")
+
+
+def test_describe_table_uses_safe_pragma(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    db = SQLitePlus(db_path="meta.db")
+    db.execute_query(
+        "CREATE TABLE registros (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL)"
+    )
+
+    details = db.describe_table("registros")
+
+    assert details["row_count"] == 0
+    assert [column["name"] for column in details["columns"]] == [
+        "id",
+        "nombre",
+    ]
+
+    with pytest.raises(ValueError):
+        db.describe_table("tabla con espacios")
