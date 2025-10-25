@@ -4,13 +4,13 @@ import sqlite3
 
 import click
 
-from .utils.constants import DEFAULT_DB_PATH
-from .utils.sqliteplus_sync import (
+from sqliteplus.utils.constants import DEFAULT_DB_PATH
+from sqliteplus.utils.sqliteplus_sync import (
     SQLitePlus,
     SQLitePlusCipherError,
     SQLitePlusQueryError,
 )
-from .utils.replication_sync import SQLiteReplication
+from sqliteplus.utils.replication_sync import SQLiteReplication
 
 
 @click.group()
