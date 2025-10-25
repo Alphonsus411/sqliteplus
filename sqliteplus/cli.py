@@ -1,31 +1,16 @@
 from __future__ import annotations
 
-if __package__ in {None, ""}:
-    # Permite ejecutar el módulo directamente (`python sqliteplus/cli.py`)
-    # añadiendo la raíz del proyecto a ``sys.path`` para que las
-    # importaciones absolutas funcionen.
-    import sys
-    from pathlib import Path
-
-    _current_path = Path(__file__).resolve()
-    for parent in _current_path.parents:
-        if parent.name == "sqliteplus":
-            project_root = parent.parent
-            if str(project_root) not in sys.path:
-                sys.path.insert(0, str(project_root))
-            break
-
 import sqlite3
 
 import click
 
-from sqliteplus.utils.constants import DEFAULT_DB_PATH
-from sqliteplus.utils.sqliteplus_sync import (
+from .utils.constants import DEFAULT_DB_PATH
+from .utils.sqliteplus_sync import (
     SQLitePlus,
     SQLitePlusCipherError,
     SQLitePlusQueryError,
 )
-from sqliteplus.utils.replication_sync import SQLiteReplication
+from .utils.replication_sync import SQLiteReplication
 
 
 @click.group()
