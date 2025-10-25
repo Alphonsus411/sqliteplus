@@ -1,8 +1,10 @@
 import os
+from pathlib import Path
 
 import pytest
 
 from sqliteplus.utils import sqliteplus_sync
+from sqliteplus.utils.replication_sync import SQLiteReplication
 from sqliteplus.utils.sqliteplus_sync import SQLitePlus, SQLitePlusCipherError
 
 
@@ -13,6 +15,17 @@ def test_sqliteplus_creates_database_file(tmp_path, monkeypatch):
     SQLitePlus(db_path=db_filename)
 
     assert os.path.isfile(tmp_path / db_filename)
+
+
+def test_sqliteplus_expands_user_home(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
+
+    home_db = Path("~") / "custom.sqlite"
+    db = SQLitePlus(db_path=str(home_db))
+
+    assert Path(db.db_path) == (tmp_path / "custom.sqlite").resolve()
+    assert Path(db.db_path).exists()
 
 
 class _DummyCursor:
@@ -69,6 +82,31 @@ def test_sqliteplus_applies_cipher_key(monkeypatch, tmp_path):
     connection = db.get_connection()
     assert ("conn", "PRAGMA key = 'mi''clave';") in executed
     connection.close()
+
+
+def test_replication_expands_user_paths(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
+
+    source_db = tmp_path / "source.db"
+    database = SQLitePlus(db_path=source_db)
+    database.log_action("seed")
+
+    replicator = SQLiteReplication(
+        db_path=str(Path("~") / "source.db"),
+        backup_dir=str(Path("~") / "backups"),
+    )
+
+    assert Path(replicator.db_path) == source_db.resolve()
+
+    backup_path = Path(replicator.backup_database())
+    assert backup_path.parent == (tmp_path / "backups").resolve()
+    assert backup_path.exists()
+
+    target_path = Path("~") / "replicas" / "copy.db"
+    replicated_file = Path(replicator.replicate_database(str(target_path)))
+    assert replicated_file == (tmp_path / "replicas" / "copy.db").resolve()
+    assert replicated_file.exists()
 
 
 def test_sqliteplus_raises_cipher_error_when_key_fails(monkeypatch, tmp_path):
