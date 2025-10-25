@@ -56,17 +56,27 @@ class AsyncDatabaseManager:
         else:
             self._reset_on_init = reset_on_init
 
-    async def get_connection(self, db_name):
+    def _normalize_db_name(self, raw_name: str) -> tuple[str, Path]:
+        sanitized = raw_name.strip()
+        if not sanitized:
+            raise ValueError("Nombre de base de datos inválido")
+
+        if any(token in sanitized for token in ("..", "/", "\\")):
+            raise ValueError("Nombre de base de datos inválido")
+
+        file_name = sanitized if sanitized.endswith(".db") else f"{sanitized}.db"
+        db_path = (self.base_dir / Path(file_name)).resolve()
+        if self.base_dir not in db_path.parents:
+            raise ValueError("Nombre de base de datos fuera del directorio permitido")
+
+        return db_path.stem, db_path
+
+    async def get_connection(self, db_name, *, _normalized: tuple[str, Path] | None = None):
         """
         Obtiene una conexión asíncrona a la base de datos especificada.
         Si la conexión no existe, la crea.
         """
-        if any(token in db_name for token in ("..", "/", "\\")):
-            raise ValueError("Nombre de base de datos inválido")
-
-        db_path = (self.base_dir / Path(f"{db_name}.db")).resolve()
-        if self.base_dir not in db_path.parents:
-            raise ValueError("Nombre de base de datos fuera del directorio permitido")
+        canonical_name, db_path = _normalized or self._normalize_db_name(db_name)
 
         current_loop = asyncio.get_running_loop()
 
@@ -77,23 +87,23 @@ class AsyncDatabaseManager:
         async with self._creation_lock:
             recreate_connection = False
 
-            if db_name in self.connections:
-                stored_loop = self._connection_loops.get(db_name)
+            if canonical_name in self.connections:
+                stored_loop = self._connection_loops.get(canonical_name)
                 if stored_loop is not current_loop:
-                    await self.connections[db_name].close()
+                    await self.connections[canonical_name].close()
                     recreate_connection = True
             else:
                 recreate_connection = True
 
             if recreate_connection:
-                if db_name not in _INITIALIZED_DATABASES:
+                if canonical_name not in _INITIALIZED_DATABASES:
                     if self._reset_on_init and db_path.exists():
                         try:
                             db_path.unlink()
                         except OSError as exc:
                             logger.warning(
                                 "No se pudo eliminar la base '%s' antes de reinicializarla: %s",
-                                db_name,
+                                canonical_name,
                                 exc,
                             )
                     wal_shm_paths = [Path(f"{db_path}{suffix}") for suffix in ("-wal", "-shm")]
@@ -106,10 +116,10 @@ class AsyncDatabaseManager:
                             logger.warning(
                                 "No se pudo eliminar el archivo auxiliar '%s' para la base '%s': %s",
                                 extra_path,
-                                db_name,
+                                canonical_name,
                                 exc,
                             )
-                _INITIALIZED_DATABASES.add(db_name)
+                _INITIALIZED_DATABASES.add(canonical_name)
                 encryption_key = os.getenv("SQLITE_DB_KEY", "").strip()
                 if not encryption_key:
                     if self.require_encryption:
@@ -129,7 +139,7 @@ class AsyncDatabaseManager:
                         except aiosqlite.OperationalError as exc:
                             logger.warning(
                                 "No se pudo aplicar PRAGMA key para la base '%s': %s. Se continuará sin cifrado.",
-                                db_name,
+                                canonical_name,
                                 exc,
                             )
                         except sqlite3.Error:
@@ -141,21 +151,23 @@ class AsyncDatabaseManager:
                     await connection.close()
                     raise
 
-                self.connections[db_name] = connection
-                self._connection_loops[db_name] = current_loop
-                self.locks[db_name] = asyncio.Lock()
+                self.connections[canonical_name] = connection
+                self._connection_loops[canonical_name] = current_loop
+                self.locks[canonical_name] = asyncio.Lock()
             else:
-                self.locks.setdefault(db_name, asyncio.Lock())
-                self._connection_loops.setdefault(db_name, current_loop)
+                self.locks.setdefault(canonical_name, asyncio.Lock())
+                self._connection_loops.setdefault(canonical_name, current_loop)
 
-        return self.connections[db_name]
+        return self.connections[canonical_name]
 
     async def execute_query(self, db_name, query, params=()):
         """
         Ejecuta una consulta de escritura en la base de datos especificada.
         """
-        conn = await self.get_connection(db_name)
-        lock = self.locks[db_name]
+        normalized = self._normalize_db_name(db_name)
+        conn = await self.get_connection(db_name, _normalized=normalized)
+        canonical_name, _ = normalized
+        lock = self.locks[canonical_name]
 
         async with lock:
             cursor = await conn.execute(query, params)
@@ -166,8 +178,10 @@ class AsyncDatabaseManager:
         """
         Ejecuta una consulta de lectura en la base de datos especificada.
         """
-        conn = await self.get_connection(db_name)
-        lock = self.locks[db_name]
+        normalized = self._normalize_db_name(db_name)
+        conn = await self.get_connection(db_name, _normalized=normalized)
+        canonical_name, _ = normalized
+        lock = self.locks[canonical_name]
 
         async with lock:
             cursor = await conn.execute(query, params)

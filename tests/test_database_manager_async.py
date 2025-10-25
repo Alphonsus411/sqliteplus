@@ -1,6 +1,7 @@
 import asyncio
 import os
 import unittest
+from pathlib import Path
 from unittest import mock
 
 from fastapi import HTTPException
@@ -43,6 +44,17 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(result, list)
         self.assertTrue(len(result) > 0)
         self.assertEqual(result[0][1], "Alice")
+
+    async def test_accepts_names_with_db_extension(self):
+        """Permite operar con nombres que ya incluyen la extensión .db."""
+        db_name_with_ext = "custom_async.db"
+        await self.manager.execute_query(
+            db_name_with_ext,
+            "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)",
+        )
+
+        db_path = (self.manager.base_dir / Path(db_name_with_ext)).resolve()
+        self.assertTrue(db_path.exists())
 
     async def test_concurrent_connection_creation(self):
         """Verifica que múltiples solicitudes concurrentes comparten la misma conexión."""
