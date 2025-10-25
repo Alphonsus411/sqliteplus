@@ -13,7 +13,7 @@ import jwt
 import bcrypt
 
 from sqliteplus.main import app
-from sqliteplus.auth.jwt import SECRET_KEY, ALGORITHM
+from sqliteplus.auth.jwt import ALGORITHM, get_secret_key
 from sqliteplus.auth.users import (
     get_user_service,
     reload_user_service,
@@ -44,7 +44,7 @@ async def test_jwt_token_failure():
 async def test_protected_endpoint_requires_subject_claim():
     token_without_sub = jwt.encode(
         {"exp": datetime.now(timezone.utc) + timedelta(minutes=5)},
-        SECRET_KEY,
+        get_secret_key(),
         algorithm=ALGORITHM,
     )
 
@@ -67,8 +67,13 @@ def test_jwt_requires_secret_key(monkeypatch):
     sys.modules.pop(module_name, None)
     monkeypatch.delenv("SECRET_KEY", raising=False)
 
+    module = importlib.import_module(module_name)
+
     with pytest.raises(RuntimeError):
-        importlib.import_module(module_name)
+        module.get_secret_key()
+
+    with pytest.raises(RuntimeError):
+        module.generate_jwt("usuario")
 
     sys.modules.pop(module_name, None)
 
@@ -76,7 +81,7 @@ def test_jwt_requires_secret_key(monkeypatch):
     monkeypatch.setenv("SECRET_KEY", restored_secret)
 
     module = importlib.import_module(module_name)
-    assert module.SECRET_KEY == restored_secret
+    assert module.get_secret_key() == restored_secret
 
 
 def _write_users_file(path, password: str, *, timestamp_offset: float = 0.0) -> None:
