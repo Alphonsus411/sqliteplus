@@ -1,109 +1,93 @@
 # API REST - SQLitePlus Enhanced
 
-La API proporciona endpoints para gestionar bases de datos SQLite de forma segura y asincrónica, protegidos con JWT.
+La API ofrece operaciones CRUD sobre múltiples bases SQLite protegidas por JWT.
 
-> 📍 Swagger disponible en: `http://localhost:8000/docs`
+> Swagger disponible en: `http://localhost:8000/docs`
 
 ---
 
-## 🔐 Autenticación
+## Autenticación
 
 ### `POST /token`
 
-Genera un token JWT válido por 1 hora.
+Genera un token JWT válido por una hora. Las credenciales se validan contra el archivo definido en
+`SQLITEPLUS_USERS_FILE`.
 
-#### Parámetros (form-data):
-- `username`: `admin`
-- `password`: `admin`
+- **Body (form-urlencoded)**
+  - `username`
+  - `password`
+- **Respuestas**
+  - `200 OK`: `{ "access_token": "<jwt>", "token_type": "bearer" }`
+  - `400 Bad Request`: credenciales incorrectas o formulario inválido.
+  - `500 Internal Server Error`: problemas al cargar el archivo de usuarios.
 
-#### Respuesta:
-```json
-{
-  "access_token": "<JWT>",
-  "token_type": "bearer"
-}
-````
+---
 
-## 🧱 Gestión de Tablas
+## Gestión de tablas
 
-```
-POST /databases/{db_name}/create_table
-```
+### `POST /databases/{db_name}/create_table`
 
-Crea una tabla en la base de datos indicada.
+Crea una tabla si no existe. Los nombres de columnas se validan mediante `CreateTableSchema` y se
+escapan con comillas dobles.
 
-Headers:
-- ````Authorization: Bearer <token>````
-
-Query:
-- ```table_name: Nombre de la tabla```
-
-# Body (JSON):
+- **Query**: `table_name`
+- **Body**:
 
 ```json
 {
   "columns": {
     "id": "INTEGER PRIMARY KEY",
-    "msg": "TEXT"
+    "msg": "TEXT",
+    "created_at": "TEXT"
   }
 }
-
 ```
 
-```
-DELETE /databases/{db_name}/drop_table
-```
-Elimina una tabla.
+- **Errores comunes**
+  - `400`: nombre de tabla inválido, columnas duplicadas o tipos vacíos.
+  - `404`: tabla no encontrada cuando SQLite informa `no such table`.
+  - `500`: error inesperado en la base.
 
-# Query:
+### `DELETE /databases/{db_name}/drop_table`
 
-- table_name: Nombre de la tabla a eliminar
+Elimina la tabla indicada. No falla si la tabla no existe.
 
-## 📝 CRUD sobre Datos
+---
 
-```POST /databases/{db_name}/insert```
+## Operaciones CRUD
 
-Inserta un registro en una tabla existente.
+### `POST /databases/{db_name}/insert`
 
-# Query:
-
-```table_name: nombre de la tabla```
-
-# Body (JSON):
+Inserta un registro en la tabla especificada.
 
 ```json
 {
-  "msg": "Texto de ejemplo"
+  "values": {
+    "msg": "Texto desde la API"
+  }
 }
 ```
 
-```GET /databases/{db_name}/fetch```
+- `409 Conflict`: violación de restricciones (`UNIQUE`, `NOT NULL`, etc.).
 
-Recupera todos los registros de la tabla indicada.
+### `GET /databases/{db_name}/fetch`
 
-# Query:
+Devuelve todas las filas de la tabla.
 
-```table_name: Nombre de la tabla a consultar```
-
-# Respuesta:
+Respuesta de ejemplo:
 
 ```json
 {
   "data": [
-    [1, "Texto de ejemplo"]
+    [1, "Texto desde la API", "2025-05-30T10:00:00"]
   ]
 }
 ```
 
-## 🛑 Requiere Token
+---
 
-Todos los endpoints excepto ```/token``` requieren un token JWT en el header:
+## Reglas generales
 
-```http
-Authorization: Bearer <token>
-```
-
-
-
-
-
+- Todos los endpoints (excepto `/token`) exigen `Authorization: Bearer <token>`.
+- Los nombres de base de datos se normalizan y deben terminar en `.db` o se añade el sufijo.
+- El gestor asincrónico fuerza `PRAGMA journal_mode=WAL` para mejorar la concurrencia.

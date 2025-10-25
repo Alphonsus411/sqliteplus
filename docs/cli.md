@@ -1,49 +1,45 @@
-## CLI - Interfaz de Línea de Comandos
+# CLI `sqliteplus`
 
-SQLitePlus Enhanced ofrece una CLI sencilla para ejecutar acciones rápidas sobre tu base de datos.
+El paquete instala el comando `sqliteplus` mediante `setuptools`. Todas las opciones aceptan la
+bandera global `--cipher-key` (o la variable `SQLITE_DB_KEY`).
 
----
-
-## 📦 Inicializar la base de datos
-
-```bash
-sqliteplus-enhanced init-db
-```
-Crea el archivo database.db y registra el log de inicialización.
-
-## 🛠 Ejecutar consulta de escritura
+## Inicializar la base
 
 ```bash
-sqliteplus-enhanced execute "INSERT INTO logs (msg) VALUES ('Mensaje desde CLI')"
+sqliteplus init-db
 ```
 
-Inserta directamente un registro o ejecuta cualquier consulta de escritura.
+Crea `databases/default.db` y registra el log de inicialización.
 
-## 🔎 Ejecutar consulta de lectura
+## Ejecutar consultas
 
-````bash
-sqliteplus-enhanced fetch "SELECT * FROM logs"
-````
+```bash
+sqliteplus execute "INSERT INTO logs (action) VALUES ('Mensaje desde CLI')"
+sqliteplus fetch "SELECT * FROM logs"
+```
 
-Devuelve y muestra el resultado de cualquier consulta SELECT.
+Los errores de SQLite se muestran como excepciones de Click amigables.
 
-## 🧾 Exportar tabla a CSV
+## Exportar a CSV
 
-````bash
-sqliteplus-enhanced export-csv logs salida.csv
-````
+```bash
+sqliteplus export-csv logs logs.csv
+```
 
-Guarda los datos de la tabla logs en un archivo CSV llamado salida.csv
+Genera un archivo CSV con encabezados. El nombre de la tabla se valida como identificador.
 
-## 💾 Crear copia de seguridad
+## Copia de seguridad
 
-````bash
-sqliteplus-enhanced backup
-````
-Genera una copia en la carpeta backups/ con fecha y hora.
+```bash
+sqliteplus backup
+```
 
-## ℹ️ Ayuda
+Crea una copia fechada en `backups/` y replica los archivos `-wal/-shm` cuando existen.
 
-````bash
-sqliteplus-enhanced --help
-````
+## Uso con SQLCipher
+
+```bash
+sqliteplus --cipher-key "$SQLITE_DB_KEY" backup
+```
+
+Si la clave es incorrecta o el intérprete no soporta SQLCipher se mostrará un error descriptivo.

@@ -7,6 +7,17 @@ y semántica de versiones [SemVer](https://semver.org/lang/es/).
 
 ---
 
+## [1.0.7] - 2025-06-01
+### Cambiado
+- Documentación reescrita para reflejar el uso de `SQLITEPLUS_USERS_FILE`, el gestor asincrónico y la CLI `sqliteplus`.
+- README actualizado con los nuevos flujos de instalación, configuración y pruebas.
+- Guías MkDocs sincronizadas con las capacidades actuales de la librería (API, CLI, replicación y casos avanzados).
+
+### Añadido
+- Detalles operativos sobre la recarga de usuarios, reinicio automático de bases de datos en pruebas y soporte SQLCipher opcional.
+
+---
+
 ## [1.0.4] - 2025-05-22
 ### Añadido
 - Refactorización completa en arquitectura modular (`core/`, `api/`, `auth/`, `utils/`)

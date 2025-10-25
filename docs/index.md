@@ -1,17 +1,13 @@
 # SQLitePlus Enhanced
 
-SQLitePlus Enhanced es una librería avanzada de gestión de bases de datos SQLite que incluye:
+SQLitePlus Enhanced es una librería de gestión de bases de datos SQLite diseñada para escenarios mixtos API/CLI.
 
-- 🔐 Autenticación JWT
-- 🔑 Cifrado con SQLCipher
-- ⚡ Caché con Redis
-- 🚀 API REST asíncrona con FastAPI
-- 🔧 CLI para operaciones locales
-- 📦 Compatible con PyPI
+## Qué ofrece
 
----
+- **Gestión asincrónica de múltiples bases** con reapertura segura por bucle de eventos.
+- **Autenticación JWT** basada en usuarios externos con contraseñas `bcrypt`.
+- **Soporte opcional de cifrado SQLCipher** tanto en la API como en las utilidades sincrónicas.
+- **Herramientas de replicación** para crear copias, exportar a CSV y propagar archivos WAL/SHM.
+- **CLI `sqliteplus`** para automatizar tareas administrativas sin levantar el servidor.
 
-Consulta el menú de la izquierda para acceder a todas las secciones de uso y configuración.
-
-
-
+Explora el menú lateral para conocer la instalación, configuración y los flujos recomendados.

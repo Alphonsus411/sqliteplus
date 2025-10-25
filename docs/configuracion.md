@@ -1,17 +1,35 @@
-# Configuración Avanzada
+# Configuración avanzada
 
-## Variables de entorno
+## Variables de entorno soportadas
 
-- `SECRET_KEY`: Clave JWT
-- `SQLITE_DB_KEY`: Clave de cifrado para SQLCipher
-- `REDIS_HOST`, `REDIS_PORT`: Datos de conexión a Redis
+| Variable | Descripción |
+| --- | --- |
+| `SECRET_KEY` | Clave obligatoria para firmar JWT. Se valida en tiempo de ejecución. |
+| `SQLITEPLUS_USERS_FILE` | Ruta (admite `~`) del archivo JSON con usuarios y hashes `bcrypt`. |
+| `SQLITE_DB_KEY` | Clave SQLCipher opcional. Si no existe, se omite el cifrado. |
+| `PYTEST_CURRENT_TEST` | Detectada automáticamente por pytest para reiniciar bases temporales. |
+| `HOME` | Utilizada al expandir rutas con `~` en `SQLITEPLUS_USERS_FILE`. |
 
-## Lifespan y cierre de conexiones
+## Directorios de trabajo
 
-FastAPI cierra automáticamente las conexiones al apagar el servidor gracias al manejador `lifespan`.
+- Las bases asincrónicas se almacenan en la carpeta `databases/` por defecto.
+- Las copias de seguridad generadas por la CLI residen en `backups/`.
+- `SQLiteReplication` copia los ficheros `-wal` y `-shm` asociados para mantener la integridad.
 
-## CLI y SQLCipher
+## Opciones de la CLI
 
-El comando `sqliteplus` detecta automáticamente la variable de entorno `SQLITE_DB_KEY`.
-También puedes especificar la clave manualmente con `--cipher-key` en cada subcomando,
-lo que resulta útil para scripts de respaldo o replicación programados.
+- `--cipher-key` / `SQLITE_DB_KEY`: permite usar SQLCipher en las operaciones sincrónicas.
+- Los subcomandos `export-csv` y `backup` aceptan rutas personalizadas conservando nombres seguros.
+
+## Autenticación externa
+
+El archivo apuntado por `SQLITEPLUS_USERS_FILE` debe tener la estructura:
+
+```json
+{
+  "admin": "$2b$12$..."
+}
+```
+
+Puedes generar nuevos hashes con el módulo `bcrypt` desde Python, tal como se muestra en la guía de
+uso básico.
