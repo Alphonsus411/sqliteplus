@@ -135,7 +135,8 @@ class SQLiteReplication:
 
     @staticmethod
     def _escape_identifier(identifier: str) -> str:
-        return f'"{identifier.replace("\"", "\"\"")}"'
+        escaped_identifier = identifier.replace('"', '""')
+        return f'"{escaped_identifier}"'
 
     @staticmethod
     def _copy_wal_and_shm(source_path: str, target_path: str):
