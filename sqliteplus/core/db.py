@@ -1,8 +1,11 @@
 import asyncio
+import atexit
 import logging
 import os
+import threading
 from pathlib import Path
 import sqlite3
+import weakref
 
 import aiosqlite
 
@@ -13,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 _INITIALIZED_DATABASES: set[str] = set()
+_LIVE_MANAGERS = weakref.WeakSet()
 
 
 class AsyncDatabaseManager:
@@ -55,6 +59,8 @@ class AsyncDatabaseManager:
             self._reset_on_init = bool(os.getenv("PYTEST_CURRENT_TEST"))
         else:
             self._reset_on_init = reset_on_init
+
+        self._register_instance()
 
     def _normalize_db_name(self, raw_name: str) -> tuple[str, Path]:
         sanitized = raw_name.strip()
@@ -198,7 +204,69 @@ class AsyncDatabaseManager:
         self.locks.clear()
         self._connection_loops.clear()
         self._creation_lock = None
-        self._creation_lock_loop = None
+
+    # -- Gestión de ciclo de vida -------------------------------------------------
+
+    _shutdown_hook_registered = False
+
+    def _register_instance(self) -> None:
+        _LIVE_MANAGERS.add(self)
+
+        if not AsyncDatabaseManager._shutdown_hook_registered:
+            atexit.register(self._cleanup_open_managers)
+            AsyncDatabaseManager._shutdown_hook_registered = True
+
+    @staticmethod
+    def _cleanup_open_managers() -> None:
+        managers = list(_LIVE_MANAGERS)
+        for manager in managers:
+            if not manager.connections:
+                continue
+            try:
+                loop = asyncio.new_event_loop()
+                try:
+                    loop.run_until_complete(manager.close_connections())
+                finally:
+                    loop.close()
+            except Exception:  # pragma: no cover - evita bloquear la salida
+                logger.exception("No se pudieron cerrar conexiones SQLite al finalizar las pruebas")
+
+    @staticmethod
+    def _close_in_thread(manager_ref: "weakref.ReferenceType[AsyncDatabaseManager]") -> None:
+        manager = manager_ref()
+        if manager is None:
+            return
+        try:
+            asyncio.run(manager.close_connections())
+        except Exception:
+            logger.exception("Fallo al liberar conexiones SQLite durante la recolección")
+
+    def __del__(self):  # pragma: no cover - se ejecuta durante la recolección
+        connections = getattr(self, "connections", None)
+        if connections is None or not connections:
+            return
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop and loop.is_running():
+            threading.Thread(
+                target=self._close_in_thread,
+                args=(weakref.ref(self),),
+                daemon=True,
+            ).start()
+            return
+
+        try:
+            new_loop = asyncio.new_event_loop()
+            try:
+                new_loop.run_until_complete(self.close_connections())
+            finally:
+                new_loop.close()
+        except Exception:
+            logger.exception("Fallo al liberar conexiones SQLite durante la recolección")
 
 db_manager = AsyncDatabaseManager(require_encryption=False)
 

@@ -52,8 +52,23 @@ def _load_system_bcrypt() -> ModuleType | None:
             continue
 
         module = importlib.util.module_from_spec(spec)
-        sys.modules.setdefault("bcrypt", module)
-        spec.loader.exec_module(module)
+        previous = sys.modules.get("bcrypt")
+        try:
+            spec.loader.exec_module(module)
+        except ModuleNotFoundError as exc:
+            # Algunos entornos CI instalan ``bcrypt`` sin el módulo binario
+            # ``_bcrypt``. En ese caso delegamos en la implementación de
+            # compatibilidad en lugar de propagar el error y bloquear las
+            # pruebas automatizadas.
+            missing_ext = getattr(exc, "name", "")
+            if missing_ext != "bcrypt._bcrypt":
+                raise
+            if previous is not None:
+                sys.modules["bcrypt"] = previous
+            else:
+                sys.modules.pop("bcrypt", None)
+            continue
+        sys.modules["bcrypt"] = module
         return module
 
     return None
