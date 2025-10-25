@@ -16,7 +16,9 @@ import csv
 import os
 import shutil
 import sqlite3
+from pathlib import Path
 
+from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
 from sqliteplus.utils.sqliteplus_sync import apply_cipher_key, SQLitePlusCipherError
 
 
@@ -25,12 +27,21 @@ class SQLiteReplication:
     Módulo para exportación y replicación de bases de datos SQLitePlus.
     """
 
-    def __init__(self, db_path=None, backup_dir="backups", cipher_key: str | None = None):
+    def __init__(
+        self,
+        db_path: str | os.PathLike[str] | None = None,
+        backup_dir="backups",
+        cipher_key: str | None = None,
+    ):
         if db_path is None:
-            from sqliteplus.utils.constants import DEFAULT_DB_PATH
-
-            db_path = DEFAULT_DB_PATH
-        self.db_path = db_path
+            resolved_path = resolve_default_db_path()
+        else:
+            raw_path = Path(db_path)
+            if raw_path == Path(DEFAULT_DB_PATH):
+                resolved_path = resolve_default_db_path(prefer_package=False)
+            else:
+                resolved_path = raw_path
+        self.db_path = str(resolved_path)
         self.backup_dir = backup_dir
         self.cipher_key = cipher_key if cipher_key is not None else os.getenv("SQLITE_DB_KEY")
         os.makedirs(self.backup_dir, exist_ok=True)

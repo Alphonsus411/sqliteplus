@@ -15,8 +15,9 @@ if __package__ in {None, ""}:
 import os
 import sqlite3
 import threading
+from pathlib import Path
 
-from sqliteplus.utils.constants import DEFAULT_DB_PATH
+from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
 
 
 class SQLitePlusQueryError(RuntimeError):
@@ -57,8 +58,17 @@ def apply_cipher_key(connection: sqlite3.Connection, cipher_key: str | None) -> 
 class SQLitePlus:
     """Manejador de SQLite con soporte para cifrado y concurrencia."""
 
-    def __init__(self, db_path: str = DEFAULT_DB_PATH, cipher_key: str | None = None):
-        self.db_path = os.path.abspath(db_path)
+    def __init__(
+        self,
+        db_path: str | os.PathLike[str] = DEFAULT_DB_PATH,
+        cipher_key: str | None = None,
+    ):
+        raw_path = Path(db_path)
+        if raw_path == Path(DEFAULT_DB_PATH):
+            resolved_db_path = resolve_default_db_path()
+        else:
+            resolved_db_path = raw_path
+        self.db_path = os.path.abspath(resolved_db_path)
         self.cipher_key = cipher_key if cipher_key is not None else os.getenv("SQLITE_DB_KEY")
         directory = os.path.dirname(self.db_path)
         if directory:
