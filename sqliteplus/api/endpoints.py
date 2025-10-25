@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 def _escape_identifier(identifier: str) -> str:
     """Escapa identificadores siguiendo las reglas de SQLite."""
 
-    return f'"{identifier.replace("\"", "\"\"")}"'
+    escaped_identifier = identifier.replace('"', '""')
+    return f'"{escaped_identifier}"'
 
 
 def _map_sql_error(exc: Exception, table_name: str) -> HTTPException:
