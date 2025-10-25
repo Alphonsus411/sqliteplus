@@ -11,8 +11,11 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     run_module("sqliteplus.cli", run_name="__main__")
     raise SystemExit()
 
+import csv
 import json
 import sqlite3
+from pathlib import Path
+from typing import Iterable
 
 import click
 from rich import box
@@ -29,6 +32,95 @@ from sqliteplus.utils.sqliteplus_sync import (
     SQLitePlusQueryError,
 )
 from sqliteplus.utils.replication_sync import SQLiteReplication
+
+
+def _launch_fletplus_viewer(columns: list[str] | None, rows: Iterable[Iterable[object]]) -> None:
+    """Abre un visor interactivo con FletPlus para mostrar los resultados."""
+
+    try:
+        import flet as ft
+        from fletplus.components.smart_table import SmartTable
+        from fletplus.styles.style import Style
+    except Exception as exc:  # pragma: no cover - dependencias externas
+        raise click.ClickException(
+            "No se pudo inicializar el visor interactivo basado en FletPlus. "
+            "Asegúrate de que las dependencias gráficas estén disponibles."
+        ) from exc
+
+    materialized_rows = [tuple(row) for row in rows]
+    normalized_columns = columns or [
+        f"columna {index + 1}" for index in range(len(materialized_rows[0]))
+    ] if materialized_rows else ["columna 1"]
+
+    data_rows = [
+        ft.DataRow(
+            cells=[
+                ft.DataCell(
+                    ft.Text(
+                        "NULL" if value is None else str(value),
+                        selectable=True,
+                    )
+                )
+                for value in record
+            ]
+        )
+        for record in materialized_rows
+    ]
+
+    page_size = 10 if len(data_rows) >= 10 else max(len(data_rows), 1)
+
+    def main(page: ft.Page) -> None:
+        page.title = "Resultados de SQLitePlus"
+        page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
+        page.theme_mode = ft.ThemeMode.DARK
+        page.padding = 20
+
+        table = SmartTable(
+            columns=normalized_columns,
+            rows=data_rows,
+            page_size=page_size,
+            style=Style(
+                bgcolor=ft.Colors.SURFACE_CONTAINER,
+                border_radius=16,
+                padding=20,
+                shadow=ft.BoxShadow(
+                    spread_radius=1,
+                    blur_radius=18,
+                    color=ft.Colors.with_opacity(0.2, ft.Colors.BLACK),
+                ),
+            ),
+        )
+
+        header = ft.Text(
+            "Resultados interactivos",
+            weight=ft.FontWeight.BOLD,
+            size=24,
+        )
+        description = ft.Text(
+            "Explora, ordena y navega por los datos devueltos por tu consulta.",
+            size=14,
+            opacity=0.7,
+        )
+
+        page.add(
+            ft.Column(
+                controls=[
+                    header,
+                    description,
+                    table.build(),
+                    ft.Text(
+                        f"{len(materialized_rows)} fila(s) disponibles",
+                        size=12,
+                        italic=True,
+                        opacity=0.6,
+                    ),
+                ],
+                expand=True,
+                spacing=20,
+            )
+        )
+
+    ft.app(target=main)
 
 
 console = Console()
@@ -117,9 +209,15 @@ def execute(ctx, query):
     show_default=True,
     help="Formato de salida accesible a tus necesidades.",
 )
+@click.option(
+    "--viewer/--no-viewer",
+    "show_viewer",
+    default=False,
+    help="Abre un visor interactivo con FletPlus para explorar el resultado.",
+)
 @click.argument("query", nargs=-1, required=True)
 @click.pass_context
-def fetch(ctx, limit, output, query):
+def fetch(ctx, limit, output, show_viewer, query):
     """Ejecuta una consulta SQL de lectura."""
     sql = " ".join(query)
     db = SQLitePlus(
@@ -199,6 +297,19 @@ def fetch(ctx, limit, output, query):
         footer_message += f" de un total de {total_rows}. Usa --limit para ajustar."
     console_obj.print(footer_message)
 
+    if show_viewer:
+        console_obj.print(
+            Panel.fit(
+                Text(
+                    "Abriendo visor interactivo FletPlus. Cierra la ventana para volver a la terminal.",
+                    style="bold cyan",
+                ),
+                border_style="cyan",
+                title="Modo interactivo",
+            )
+        )
+        _launch_fletplus_viewer(columns, displayed_rows)
+
 
 @click.command(help="Guarda una tabla como archivo CSV para compartirla fácilmente.")
 @click.argument("table_name")
@@ -230,6 +341,91 @@ def export_csv(ctx, table_name, output_file, db_path):
     ctx.obj["console"].print(
         Panel.fit(
             Text(f"Tabla {table_name} exportada a {output_file}", style="bold green"),
+            title="Exportación completada",
+            border_style="green",
+        )
+    )
+
+
+@click.command(
+    name="export-query",
+    help="Ejecuta una consulta de lectura y exporta el resultado a JSON o CSV.",
+)
+@click.option(
+    "--format",
+    "export_format",
+    type=click.Choice(["json", "csv"], case_sensitive=False),
+    default="json",
+    show_default=True,
+    help="Formato de exportación del resultado.",
+)
+@click.option(
+    "--limit",
+    type=click.IntRange(1),
+    default=None,
+    help="Limita el número de filas exportadas sin modificar la consulta.",
+)
+@click.option(
+    "--overwrite/--no-overwrite",
+    default=False,
+    help="Permite sobrescribir el archivo de salida si ya existe.",
+)
+@click.argument(
+    "output_file",
+    type=click.Path(dir_okay=False, writable=True, resolve_path=True, path_type=str),
+)
+@click.argument("query", nargs=-1, required=True)
+@click.pass_context
+def export_query(ctx, export_format, limit, overwrite, output_file, query):
+    """Exporta el resultado de una consulta SELECT a un archivo."""
+
+    sql = " ".join(query)
+    path = Path(output_file)
+    if path.exists() and not overwrite:
+        raise click.ClickException(
+            "El archivo de salida ya existe. Usa --overwrite para reemplazarlo."
+        )
+
+    db = SQLitePlus(
+        db_path=ctx.obj.get("db_path"),
+        cipher_key=ctx.obj.get("cipher_key"),
+    )
+
+    try:
+        columns, rows = db.fetch_query_with_columns(sql)
+    except (SQLitePlusCipherError, SQLitePlusQueryError) as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    if limit is not None:
+        rows = rows[:limit]
+
+    normalized_columns = columns or [
+        f"columna_{index + 1}" for index in range(len(rows[0]) if rows else 0)
+    ]
+
+    if export_format.lower() == "json":
+        if normalized_columns:
+            payload = [
+                {normalized_columns[idx]: row[idx] for idx in range(len(row))}
+                for row in rows
+            ]
+        else:
+            payload = [list(row) for row in rows]
+        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    else:
+        with path.open("w", encoding="utf-8", newline="") as file_handle:
+            writer = csv.writer(file_handle)
+            if normalized_columns:
+                writer.writerow(normalized_columns)
+            for row in rows:
+                writer.writerow(["" if value is None else value for value in row])
+
+    ctx.obj["console"].print(
+        Panel.fit(
+            Text(
+                f"Consulta exportada en formato {export_format.upper()} a {path}.",
+                style="bold green",
+            ),
             title="Exportación completada",
             border_style="green",
         )
@@ -745,6 +941,7 @@ cli.add_command(init_db)
 cli.add_command(execute)
 cli.add_command(fetch)
 cli.add_command(export_csv)
+cli.add_command(export_query)
 cli.add_command(backup)
 cli.add_command(list_tables)
 cli.add_command(describe_table)
