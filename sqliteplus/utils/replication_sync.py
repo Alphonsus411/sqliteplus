@@ -166,6 +166,17 @@ class SQLiteReplication:
 
 
 if __name__ == "__main__":
-    replicator = SQLiteReplication()
+    # Crear la base de datos por defecto si aún no existe antes de iniciar las
+    # tareas de replicación.  Cuando el script se ejecuta fuera del árbol del
+    # proyecto (por ejemplo, desde un directorio temporal) el archivo de base
+    # de datos aún no ha sido creado y las operaciones de copia fallan con un
+    # FileNotFoundError.  Inicializamos SQLitePlus para generar la estructura
+    # necesaria y así garantizar que los comandos posteriores funcionen.
+    from sqliteplus.utils.sqliteplus_sync import SQLitePlus
+
+    database = SQLitePlus()
+    database.log_action("Inicialización de replicación desde script")
+
+    replicator = SQLiteReplication(db_path=database.db_path)
     replicator.backup_database()
     replicator.export_to_csv("logs", "logs_export.csv")
