@@ -66,12 +66,14 @@ class SQLitePlus:
         db_path: str | os.PathLike[str] = DEFAULT_DB_PATH,
         cipher_key: str | None = None,
     ):
-        raw_path = Path(db_path)
+        raw_path = Path(db_path).expanduser()
         if raw_path == Path(DEFAULT_DB_PATH):
             resolved_db_path = resolve_default_db_path()
         else:
             resolved_db_path = raw_path
-        self.db_path = os.path.abspath(resolved_db_path)
+
+        normalized_path = Path(resolved_db_path).expanduser().resolve()
+        self.db_path = str(normalized_path)
         self.cipher_key = cipher_key if cipher_key is not None else os.getenv("SQLITE_DB_KEY")
         directory = os.path.dirname(self.db_path)
         if directory:

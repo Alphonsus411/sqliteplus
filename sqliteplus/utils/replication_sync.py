@@ -35,15 +35,19 @@ class SQLiteReplication:
         if db_path is None:
             resolved_path = resolve_default_db_path()
         else:
-            raw_path = Path(db_path)
+            raw_path = Path(db_path).expanduser()
             if raw_path == Path(DEFAULT_DB_PATH):
                 resolved_path = resolve_default_db_path(prefer_package=False)
             else:
                 resolved_path = raw_path
-        self.db_path = str(resolved_path)
-        self.backup_dir = backup_dir
+
+        normalized_db_path = Path(resolved_path).expanduser().resolve()
+        self.db_path = str(normalized_db_path)
+
+        backup_base = Path(backup_dir).expanduser().resolve()
+        self.backup_dir = backup_base
         self.cipher_key = cipher_key if cipher_key is not None else os.getenv("SQLITE_DB_KEY")
-        os.makedirs(self.backup_dir, exist_ok=True)
+        self.backup_dir.mkdir(parents=True, exist_ok=True)
 
     def export_to_csv(self, table_name: str, output_file: str):
         """
@@ -54,6 +58,8 @@ class SQLiteReplication:
 
         query = f"SELECT * FROM {self._escape_identifier(table_name)}"
 
+        output_path = Path(output_file).expanduser().resolve()
+
         try:
             with sqlite3.connect(self.db_path) as conn:
                 apply_cipher_key(conn, self.cipher_key)
@@ -62,12 +68,14 @@ class SQLiteReplication:
                 rows = cursor.fetchall()
                 column_names = [desc[0] for desc in cursor.description]
 
-            with open(output_file, "w", encoding="utf-8", newline="") as f:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+
+            with output_path.open("w", encoding="utf-8", newline="") as f:
                 writer = csv.writer(f)
                 writer.writerow(column_names)
                 writer.writerows(rows)
 
-            print(f"Datos exportados correctamente a {output_file}")
+            print(f"Datos exportados correctamente a {output_path}")
         except SQLitePlusCipherError as exc:
             raise RuntimeError(str(exc)) from exc
         except sqlite3.Error as e:
@@ -77,25 +85,23 @@ class SQLiteReplication:
         """
         Crea una copia de seguridad de la base de datos.
         """
-        backup_file = os.path.join(self.backup_dir, f"backup_{self._get_timestamp()}.db")
+        backup_file = self.backup_dir / f"backup_{self._get_timestamp()}.db"
         try:
             if not os.path.exists(self.db_path):
                 raise FileNotFoundError(
                     f"No se encontró la base de datos origen: {self.db_path}"
                 )
 
-            os.makedirs(os.path.dirname(backup_file), exist_ok=True)
-
             with sqlite3.connect(self.db_path) as source_conn:
                 apply_cipher_key(source_conn, self.cipher_key)
-                with sqlite3.connect(backup_file) as backup_conn:
+                with sqlite3.connect(str(backup_file)) as backup_conn:
                     apply_cipher_key(backup_conn, self.cipher_key)
                     source_conn.backup(backup_conn)
 
             self._copy_wal_and_shm(self.db_path, backup_file)
 
             print(f"Copia de seguridad creada en {backup_file}")
-            return backup_file
+            return str(backup_file)
         except SQLitePlusCipherError as exc:
             raise RuntimeError(str(exc)) from exc
         except Exception as e:
@@ -113,20 +119,21 @@ class SQLiteReplication:
                     f"No se encontró la base de datos origen: {self.db_path}"
                 )
 
-            target_dir = os.path.dirname(target_db_path)
+            target_path = Path(target_db_path).expanduser().resolve()
+            target_dir = target_path.parent
             if target_dir:
-                os.makedirs(target_dir, exist_ok=True)
+                target_dir.mkdir(parents=True, exist_ok=True)
 
             with sqlite3.connect(self.db_path) as source_conn:
                 apply_cipher_key(source_conn, self.cipher_key)
-                with sqlite3.connect(target_db_path) as target_conn:
+                with sqlite3.connect(str(target_path)) as target_conn:
                     apply_cipher_key(target_conn, self.cipher_key)
                     source_conn.backup(target_conn)
 
-            self._copy_wal_and_shm(self.db_path, target_db_path)
+            self._copy_wal_and_shm(self.db_path, target_path)
 
-            print(f"Base de datos replicada en {target_db_path}")
-            return target_db_path
+            print(f"Base de datos replicada en {target_path}")
+            return str(target_path)
         except SQLitePlusCipherError as exc:
             raise RuntimeError(str(exc)) from exc
         except Exception as e:
@@ -149,19 +156,26 @@ class SQLiteReplication:
         return f'"{escaped_identifier}"'
 
     @staticmethod
-    def _copy_wal_and_shm(source_path: str, target_path: str):
+    def _copy_wal_and_shm(
+        source_path: str | os.PathLike[str],
+        target_path: str | os.PathLike[str],
+    ) -> list[str]:
         """Replica los archivos WAL y SHM asociados cuando existen."""
-        base_source = source_path
-        base_target = target_path
-        copied_files = []
+
+        base_source = Path(source_path)
+        base_target = Path(target_path)
+        copied_files: list[str] = []
+
         for suffix in ("-wal", "-shm"):
-            src_file = f"{base_source}{suffix}"
-            if os.path.exists(src_file):
-                dest_file = f"{base_target}{suffix}"
-                if os.path.exists(dest_file):
-                    os.remove(dest_file)
+            src_file = base_source.with_name(base_source.name + suffix)
+            if src_file.exists():
+                dest_file = base_target.with_name(base_target.name + suffix)
+                if dest_file.exists():
+                    dest_file.unlink()
+                dest_file.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(src_file, dest_file)
-                copied_files.append(dest_file)
+                copied_files.append(str(dest_file))
+
         return copied_files
 
 
