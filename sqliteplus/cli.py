@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-import sqlite3
-import sys
-from pathlib import Path
+if __name__ == "__main__" and __package__ in {None, ""}:
+    from pathlib import Path
+    from runpy import run_module
+    import sys
 
-if __package__ in {None, ""}:
-    _current_file = Path(__file__).resolve()
-    for parent in _current_file.parents:
-        if parent.name == "sqliteplus":
-            project_root = parent.parent
-            if str(project_root) not in sys.path:
-                sys.path.insert(0, str(project_root))
-            break
+    package_root = Path(__file__).resolve().parent.parent
+    if str(package_root) not in sys.path:
+        sys.path.insert(0, str(package_root))
+    run_module("sqliteplus.cli", run_name="__main__")
+    raise SystemExit()
+
+import sqlite3
 
 import click
 
