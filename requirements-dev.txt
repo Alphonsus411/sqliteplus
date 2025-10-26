@@ -1,7 +1,5 @@
-fastapi
-uvicorn
+-r requirements.txt
 httpx
 pytest
 pytest-asyncio
-aiosqlite
-PyJWT
+ruff
