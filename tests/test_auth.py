@@ -18,6 +18,7 @@ from sqliteplus.auth.users import (
     get_user_service,
     reload_user_service,
     reset_user_service_cache,
+    UserSourceError,
 )
 
 
@@ -142,3 +143,22 @@ def test_reload_user_service_force_refresh(tmp_path, monkeypatch):
 
     reloaded_service = reload_user_service()
     assert reloaded_service.verify_credentials("admin", "changed-pass")
+
+
+def test_verify_credentials_reports_incompatible_hash(tmp_path, monkeypatch):
+    users_file = tmp_path / "users.json"
+    users_file.write_text(json.dumps({"admin": "legacy"}), encoding="utf-8")
+
+    monkeypatch.setenv("SQLITEPLUS_USERS_FILE", str(users_file))
+    reset_user_service_cache()
+    service = get_user_service()
+
+    def incompatible_checkpw(_password: bytes, _stored: bytes) -> bool:
+        raise ValueError("Hash incompatible: no fue generado con la implementación integrada")
+
+    monkeypatch.setattr("sqliteplus.auth.users.bcrypt.checkpw", incompatible_checkpw)
+
+    with pytest.raises(UserSourceError) as excinfo:
+        service.verify_credentials("admin", "any")
+
+    assert "bcrypt" in str(excinfo.value)

@@ -115,9 +115,12 @@ async def login(form_data: _LoginForm = Depends(_parse_login_form)):
     except UserSourceError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-    if user_service.verify_credentials(form_data.username, form_data.password):
-        token = generate_jwt(form_data.username)
-        return {"access_token": token, "token_type": "bearer"}
+    try:
+        if user_service.verify_credentials(form_data.username, form_data.password):
+            token = generate_jwt(form_data.username)
+            return {"access_token": token, "token_type": "bearer"}
+    except UserSourceError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     raise HTTPException(status_code=400, detail="Credenciales incorrectas")
 

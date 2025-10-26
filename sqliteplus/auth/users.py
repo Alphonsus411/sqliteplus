@@ -64,11 +64,20 @@ class UserCredentialsService:
         stored_hash = self.users.get(username)
         if not stored_hash:
             return False
+
         try:
             return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
-        except ValueError:
-            # bcrypt.checkpw lanza ValueError si el hash no es válido.
-            return False
+        except ValueError as exc:
+            # ``bcrypt`` eleva ``ValueError`` cuando el hash almacenado tiene un
+            # formato incompatible (por ejemplo, si fue generado con la versión
+            # nativa y actualmente sólo está disponible el *fallback* puro
+            # Python).  En lugar de tratarlo como credenciales inválidas,
+            # exponemos un error descriptivo para guiar al usuario.
+            raise UserSourceError(
+                "El hash de la contraseña almacenado no es compatible con la "
+                "implementación disponible de bcrypt. Instala la dependencia "
+                "'bcrypt' oficial para validar credenciales existentes."
+            ) from exc
 
 
 _cached_service: UserCredentialsService | None = None
