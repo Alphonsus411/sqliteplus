@@ -40,7 +40,19 @@ jobs:
       - name: Validar distribución
         run: twine check dist/*
 
+      - name: Subir artefactos de distribución
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.run_id }}
+          path: dist/*
+
+      - name: Informar ausencia de credenciales de PyPI
+        if: ${{ !secrets.PYPI_API_TOKEN }}
+        run: |
+          echo "El secreto PYPI_API_TOKEN no está configurado; se omite la publicación en PyPI." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Publicar en PyPI
+        if: ${{ secrets.PYPI_API_TOKEN }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__

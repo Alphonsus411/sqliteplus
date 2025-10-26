@@ -9,9 +9,10 @@ description = "SQLite mejorado con cifrado SQLCipher, caché en Redis y API REST
 authors = [
     { name = "Adolfo González Hernández", email = "adolfogonzal@gmail.com" }
 ]
-license = { text = "MIT" }
+license = "MIT"
 readme = "README.md"
 requires-python = ">=3.10"
+license-files = ["LICENSE.md"]
 dependencies = [
     "aiosqlite",
     "click",
@@ -32,7 +33,6 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Framework :: FastAPI",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Development Status :: 5 - Production/Stable"
 ]
