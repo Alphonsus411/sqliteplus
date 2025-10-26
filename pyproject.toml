@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sqliteplus-enhanced"
-version = "1.0.8"
+version = "1.0.9"
 description = "SQLite mejorado con cifrado SQLCipher, caché en Redis y API REST asincrónica con FastAPI"
 authors = [
     { name = "Adolfo González Hernández", email = "adolfogonzal@gmail.com" }
