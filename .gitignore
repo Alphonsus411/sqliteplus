@@ -1,5 +1,39 @@
-.venv
-dist
-site
-databases
-sqliteplus_enhanced.egg-info
+# --- Entornos virtuales ---
+.venv/
+venv/
+env/
+
+# --- Archivos y carpetas temporales ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.tmp
+
+# --- Distribución / empaquetado ---
+build/
+dist/
+*.egg-info/
+sqliteplus_enhanced.egg-info/
+
+# --- Archivos específicos del proyecto ---
+databases/
+site/
+
+# --- IDEs y editores ---
+.idea/
+.vscode/
+*.swp
+
+# --- Archivos de configuración locales ---
+*.env
+.env.*
+.DS_Store
+Thumbs.db
+
+# --- Otros ---
+coverage/
+htmlcov/
+.mypy_cache/
+.pytest_cache/
