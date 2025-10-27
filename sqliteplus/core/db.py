@@ -196,14 +196,21 @@ class AsyncDatabaseManager:
 
     async def close_connections(self):
         """
-        Cierra todas las conexiones abiertas de forma asíncrona.
+        Cierra todas las conexiones abiertas de forma asíncrona y limpia el registro
+        de bases inicializadas, de modo que en la siguiente apertura se puedan
+        reinicializar si ``reset_on_init`` está activo.
         """
-        for db_name, conn in self.connections.items():
-            await conn.close()
+        closed_names = list(self.connections.keys())
+        for db_name in closed_names:
+            await self.connections[db_name].close()
+
         self.connections.clear()
         self.locks.clear()
         self._connection_loops.clear()
         self._creation_lock = None
+
+        for name in closed_names:
+            _INITIALIZED_DATABASES.discard(name)
 
     # -- Gestión de ciclo de vida -------------------------------------------------
 
