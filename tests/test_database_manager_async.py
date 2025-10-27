@@ -100,9 +100,39 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
         await self.manager.close_connections()
 
         # Reabrir con la misma clave debe funcionar.
-        self.manager = AsyncDatabaseManager()
+        self.manager = AsyncDatabaseManager(reset_on_init=False)
         result = await self.manager.fetch_query(db_name, "SELECT COUNT(*) FROM secure")
         self.assertEqual(result[0][0], 1)
+
+    async def test_close_connections_resets_initialized_registry(self):
+        """Tras cerrar conexiones se debe limpiar el registro de bases inicializadas."""
+
+        manager = AsyncDatabaseManager()
+        db_name = "test_db_async_reset_registry"
+        await manager.execute_query(
+            db_name,
+            "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)",
+        )
+        await manager.execute_query(
+            db_name,
+            "INSERT INTO logs (action) VALUES (?)",
+            ("persistente",),
+        )
+        await manager.close_connections()
+
+        new_manager = AsyncDatabaseManager()
+        try:
+            connection = await new_manager.get_connection(db_name)
+            cursor = await connection.execute(
+                "SELECT name FROM sqlite_master WHERE name = 'logs'"
+            )
+            rows = await cursor.fetchall()
+            self.assertFalse(
+                rows,
+                "La tabla 'logs' debería eliminarse cuando se reinicia la base tras cerrar conexiones",
+            )
+        finally:
+            await new_manager.close_connections()
 
 
 class TestAsyncDatabaseManagerLoopReuse(unittest.TestCase):
