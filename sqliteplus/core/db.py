@@ -49,6 +49,7 @@ class AsyncDatabaseManager:
         self.connections = {}  # Diccionario de conexiones a bases de datos
         self.locks = {}  # Diccionario de bloqueos asíncronos
         self._connection_loops = {}  # Bucle de evento asociado a cada conexión
+        self._initialized_keys: dict[str, str] = {}  # Mapea nombres canónicos a rutas absolutas
         self._creation_lock = None  # Candado para inicialización perezosa de conexiones
         self._creation_lock_loop = None  # Bucle asociado al candado de creación
         if require_encryption is None:
@@ -101,8 +102,10 @@ class AsyncDatabaseManager:
             else:
                 recreate_connection = True
 
+            absolute_key = str(db_path)
+
             if recreate_connection:
-                if canonical_name not in _INITIALIZED_DATABASES:
+                if absolute_key not in _INITIALIZED_DATABASES:
                     if self._reset_on_init and db_path.exists():
                         try:
                             db_path.unlink()
@@ -125,7 +128,7 @@ class AsyncDatabaseManager:
                                 canonical_name,
                                 exc,
                             )
-                _INITIALIZED_DATABASES.add(canonical_name)
+                _INITIALIZED_DATABASES.add(absolute_key)
                 encryption_key = os.getenv("SQLITE_DB_KEY", "").strip()
                 if not encryption_key:
                     if self.require_encryption:
@@ -160,9 +163,11 @@ class AsyncDatabaseManager:
                 self.connections[canonical_name] = connection
                 self._connection_loops[canonical_name] = current_loop
                 self.locks[canonical_name] = asyncio.Lock()
+                self._initialized_keys[canonical_name] = absolute_key
             else:
                 self.locks.setdefault(canonical_name, asyncio.Lock())
                 self._connection_loops.setdefault(canonical_name, current_loop)
+                self._initialized_keys.setdefault(canonical_name, absolute_key)
 
         return self.connections[canonical_name]
 
@@ -210,7 +215,11 @@ class AsyncDatabaseManager:
         self._creation_lock = None
 
         for name in closed_names:
-            _INITIALIZED_DATABASES.discard(name)
+            absolute_key = self._initialized_keys.pop(name, None)
+            if absolute_key is not None:
+                _INITIALIZED_DATABASES.discard(absolute_key)
+
+        self._initialized_keys.clear()
 
     # -- Gestión de ciclo de vida -------------------------------------------------
 
