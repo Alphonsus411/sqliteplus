@@ -18,12 +18,20 @@ dependencies = [
     "click",
     "fastapi",
     "uvicorn",
-    "redis",
     "bcrypt",
     "PyJWT",
     "python-multipart",
     "rich",
     "fletplus"
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Framework :: FastAPI",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable"
 ]
 
 [project.optional-dependencies]
@@ -33,13 +41,9 @@ dev = [
     "pytest-asyncio",
     "ruff"
 ]
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Framework :: FastAPI",
-    "Operating System :: OS Independent",
-    "Development Status :: 5 - Production/Stable"
+
+redis = [
+    "redis"
 ]
 
 [project.scripts]
