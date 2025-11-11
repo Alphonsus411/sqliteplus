@@ -1,6 +1,7 @@
 import asyncio
 import os
 import unittest
+import tempfile
 from pathlib import Path
 from unittest import mock
 
@@ -133,6 +134,59 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
             )
         finally:
             await new_manager.close_connections()
+
+    async def test_reset_on_init_isolated_by_base_dir(self):
+        """Cada gestor elimina su propia base aunque compartan nombre canónico."""
+
+        db_name = "shared_name"
+
+        with tempfile.TemporaryDirectory() as dir_one, tempfile.TemporaryDirectory() as dir_two:
+            base_one = Path(dir_one)
+            base_two = Path(dir_two)
+            db_one = base_one / f"{db_name}.db"
+            db_two = base_two / f"{db_name}.db"
+
+            marker_one = b"primera"
+            marker_two = b"segunda"
+            db_one.write_bytes(marker_one)
+            db_two.write_bytes(marker_two)
+
+            manager_one = AsyncDatabaseManager(base_dir=base_one, reset_on_init=True)
+            manager_two = AsyncDatabaseManager(base_dir=base_two, reset_on_init=True)
+
+            try:
+                await manager_one.execute_query(
+                    db_name,
+                    "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)",
+                )
+
+                header_one = db_one.read_bytes()[:15]
+                self.assertTrue(
+                    header_one.startswith(b"SQLite format 3"),
+                    "La base del primer gestor debería haberse reinicializado.",
+                )
+
+                self.assertEqual(
+                    db_two.read_bytes(),
+                    marker_two,
+                    "La base del segundo gestor no debe modificarse todavía.",
+                )
+
+                await manager_one.close_connections()
+
+                await manager_two.execute_query(
+                    db_name,
+                    "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)",
+                )
+
+                header_two = db_two.read_bytes()[:15]
+                self.assertTrue(
+                    header_two.startswith(b"SQLite format 3"),
+                    "La base del segundo gestor debería haberse reinicializado al abrirse.",
+                )
+            finally:
+                await manager_one.close_connections()
+                await manager_two.close_connections()
 
 
 class TestAsyncDatabaseManagerLoopReuse(unittest.TestCase):
