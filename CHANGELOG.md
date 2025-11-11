@@ -37,7 +37,7 @@ y semántica de versiones [SemVer](https://semver.org/lang/es/).
 - API REST documentada con Swagger (FastAPI)
 - Gestor asíncrono `AsyncDatabaseManager` con `aiosqlite`
 - Autenticación JWT con `PyJWT`
-- SQLCipher y Redis integrados en modo síncrono
+- SQLCipher integrado en modo síncrono (la integración con Redis se pospuso y no forma parte de la versión actual)
 - Tests de integración con `pytest-asyncio` y `httpx`
 - Soporte para múltiples bases de datos en paralelo
 - Exportación CSV y backups automáticos

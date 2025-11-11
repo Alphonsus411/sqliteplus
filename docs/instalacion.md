@@ -4,7 +4,7 @@
 
 - Python 3.10 o superior.
 - SQLite con modo WAL habilitado (viene activado por defecto en SQLite moderno).
-- Opcional: Redis si deseas experimentar con la capa de caché incluida en `sqliteplus.utils`.
+- Opcional: Redis (planificado en versiones futuras; actualmente no se distribuye una capa de caché integrada).
 
 ## Desde el repositorio
 
