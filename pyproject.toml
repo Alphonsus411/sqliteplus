@@ -22,11 +22,16 @@ dependencies = [
     "bcrypt",
     "PyJWT",
     "python-multipart",
-    "httpx",
     "rich",
-    "fletplus",
+    "fletplus"
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx",
     "pytest",
-    "setuptools"
+    "pytest-asyncio",
+    "ruff"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",

@@ -15,6 +15,7 @@ y semántica de versiones [SemVer](https://semver.org/lang/es/).
 
 ### Cambiado
 - El comando `fetch` ahora muestra los resultados en tablas con formato y reporta el número de filas devueltas.
+- Las dependencias de pruebas y herramientas se agruparon en el extra opcional `dev` del `pyproject.toml`.
 
 ---
 
