@@ -21,7 +21,13 @@
 pip install sqliteplus-enhanced
 ```
 
-¿Vas a colaborar con el código? Instálala en modo editable:
+¿Vas a colaborar con el código? Instálala en modo editable y añade las dependencias de desarrollo:
+
+```bash
+pip install -e .[dev]
+```
+
+Si solo quieres experimentar con la librería dentro del repositorio puedes mantener la instalación mínima:
 
 ```bash
 pip install -e .

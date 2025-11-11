@@ -11,6 +11,12 @@
 ```bash
 python -m venv .venv
 source .venv/bin/activate
+pip install -e .
+```
+
+Si vas a ejecutar las pruebas, el lint o contribuir con cambios instala también las dependencias opcionales:
+
+```bash
 pip install -e .[dev]
 ```
 
