@@ -143,17 +143,19 @@ class AsyncDatabaseManager:
                 connection = await aiosqlite.connect(str(db_path))
                 try:
                     if encryption_key:
+                        escaped_key = encryption_key.replace("'", "''")
                         try:
-                            await connection.execute("PRAGMA key = ?", (encryption_key,))
-                        except aiosqlite.OperationalError as exc:
-                            logger.warning(
-                                "No se pudo aplicar PRAGMA key para la base '%s': %s. Se continuará sin cifrado.",
+                            await connection.execute(f"PRAGMA key = '{escaped_key}';")
+                        except (aiosqlite.OperationalError, sqlite3.DatabaseError) as exc:
+                            logger.error(
+                                "Error al aplicar PRAGMA key para la base '%s': %s.",
                                 canonical_name,
                                 exc,
                             )
-                        except sqlite3.Error:
-                            await connection.close()
-                            raise
+                            raise HTTPException(
+                                status_code=503,
+                                detail="Base de datos no disponible: fallo al aplicar la clave de cifrado",
+                            ) from exc
                     await connection.execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
                     await connection.commit()
                 except Exception:
