@@ -5,6 +5,8 @@ import tempfile
 from pathlib import Path
 from unittest import mock
 
+import aiosqlite
+
 from fastapi import HTTPException
 
 from sqliteplus.core.db import AsyncDatabaseManager
@@ -88,6 +90,54 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(exc_info.exception.status_code, 503)
         self.assertIn("clave de cifrado", exc_info.exception.detail)
+
+    async def test_applies_encryption_key_literal_and_raises_on_failure(self):
+        """Simula `aiosqlite` para validar el PRAGMA key y su manejo de errores."""
+
+        await self.manager.close_connections()
+
+        commands: list[str] = []
+
+        async def fake_execute(sql, *_):
+            commands.append(sql)
+            return mock.AsyncMock()
+
+        fake_connection = mock.AsyncMock()
+        fake_connection.execute.side_effect = fake_execute
+        fake_connection.commit = mock.AsyncMock()
+        fake_connection.close = mock.AsyncMock()
+
+        async def failing_execute(sql, *_):
+            if sql.startswith("PRAGMA key"):
+                raise aiosqlite.OperationalError("cipher failure")
+            return mock.AsyncMock()
+
+        with mock.patch("sqliteplus.core.db.aiosqlite.connect", new=mock.AsyncMock(return_value=fake_connection)):
+            with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": "clave'con"}, clear=False):
+                manager = AsyncDatabaseManager()
+                await manager.get_connection("mocked_db")
+
+        key_commands = [cmd for cmd in commands if cmd.startswith("PRAGMA key")]
+        self.assertEqual(len(key_commands), 1)
+        self.assertIn("'clave''con'", key_commands[0])
+        self.assertFalse(fake_connection.close.await_args_list)
+
+        await manager.close_connections()
+
+        failing_connection = mock.AsyncMock()
+        failing_connection.execute.side_effect = failing_execute
+        failing_connection.commit = mock.AsyncMock()
+        failing_connection.close = mock.AsyncMock()
+
+        with mock.patch("sqliteplus.core.db.aiosqlite.connect", new=mock.AsyncMock(return_value=failing_connection)):
+            with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": "clave"}, clear=False):
+                manager = AsyncDatabaseManager()
+                with self.assertRaises(HTTPException) as exc_info:
+                    await manager.get_connection("failing_db")
+
+        self.assertEqual(exc_info.exception.status_code, 503)
+        failing_connection.close.assert_awaited_once()
+        self.assertNotIn("failing_db", manager.connections)
 
     async def test_encrypted_database_reopens_with_valid_key(self):
         """Confirma que con clave válida se puede operar sobre la base cifrada."""
