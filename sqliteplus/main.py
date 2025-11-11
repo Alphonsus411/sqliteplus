@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="SQLitePlus Enhanced",
-    description="API modular con JWT, SQLCipher, Redis y FastAPI.",
+    description="API modular con JWT, SQLCipher y FastAPI.",
     version="1.0.0",
     lifespan=lifespan
 )
