@@ -53,7 +53,7 @@ class AsyncDatabaseManager:
         self._creation_lock = None  # Candado para inicialización perezosa de conexiones
         self._creation_lock_loop = None  # Bucle asociado al candado de creación
         if require_encryption is None:
-            self.require_encryption = bool(os.getenv("SQLITE_DB_KEY", "").strip())
+            self.require_encryption = os.getenv("SQLITE_DB_KEY") is not None
         else:
             self.require_encryption = require_encryption
         if reset_on_init is None:
@@ -129,8 +129,8 @@ class AsyncDatabaseManager:
                                 exc,
                             )
                 _INITIALIZED_DATABASES.add(absolute_key)
-                encryption_key = os.getenv("SQLITE_DB_KEY", "").strip()
-                if not encryption_key:
+                encryption_key = os.getenv("SQLITE_DB_KEY")
+                if encryption_key is None:
                     if self.require_encryption:
                         logger.error(
                             "No se encontró la clave de cifrado requerida en la variable de entorno 'SQLITE_DB_KEY'."
