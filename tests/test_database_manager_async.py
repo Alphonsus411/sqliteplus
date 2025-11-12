@@ -172,8 +172,10 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
                 await manager_blank.get_connection("mocked_db_blank")
 
         key_commands_blank = [cmd for cmd in commands_blank if cmd.startswith("PRAGMA key")]
-        self.assertEqual(len(key_commands_blank), 1)
-        self.assertEqual(key_commands_blank[0], "PRAGMA key = '';")
+        self.assertFalse(
+            key_commands_blank,
+            "No se debe ejecutar PRAGMA key cuando la clave opcional queda vacía tras normalizarla.",
+        )
         self.assertFalse(connection_blank.close.await_args_list)
 
         await manager_blank.close_connections()
