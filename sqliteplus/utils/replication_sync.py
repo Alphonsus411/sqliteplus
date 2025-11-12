@@ -56,6 +56,11 @@ class SQLiteReplication:
         if not self._is_valid_table_name(table_name):
             raise ValueError(f"Nombre de tabla inválido: {table_name}")
 
+        if not Path(self.db_path).exists():
+            raise FileNotFoundError(
+                f"No se encontró la base de datos origen: {self.db_path}"
+            )
+
         query = f"SELECT * FROM {self._escape_identifier(table_name)}"
 
         output_path = Path(output_file).expanduser().resolve()
@@ -78,6 +83,8 @@ class SQLiteReplication:
             print(f"Datos exportados correctamente a {output_path}")
         except SQLitePlusCipherError as exc:
             raise RuntimeError(str(exc)) from exc
+        except FileNotFoundError:
+            raise
         except sqlite3.Error as e:
             raise sqlite3.Error(f"Error al exportar datos: {e}") from e
 
