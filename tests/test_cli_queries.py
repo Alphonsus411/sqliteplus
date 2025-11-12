@@ -1,6 +1,6 @@
 from click.testing import CliRunner
 
-from sqliteplus.cli import cli
+from sqliteplus.cli import _format_numeric, cli
 
 
 def test_execute_command_reports_sql_error():
@@ -46,3 +46,10 @@ def test_cli_passes_cipher_key_to_execute(monkeypatch):
 
     assert result.exit_code == 0, result.output
     assert captured["cipher_keys"] == ["clave-test"]
+
+
+def test_format_numeric_uses_single_decimal_separator():
+    formatted = _format_numeric(1234.56)
+
+    assert formatted == "1\u202f234.56"
+    assert formatted.count(".") == 1

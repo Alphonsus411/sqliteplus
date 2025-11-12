@@ -13,6 +13,7 @@ if __name__ == "__main__" and __package__ in {None, ""}:
 
 import csv
 import json
+import math
 import sqlite3
 import webbrowser
 from decimal import Decimal
@@ -286,8 +287,24 @@ def _coerce_numeric(value: object) -> float | None:
 def _format_numeric(value: float) -> str:
     """Devuelve una cadena amigable para mostrar métricas numéricas."""
 
-    formatted = f"{value:,.4f}" if abs(value) < 1000 else f"{value:,.2f}"
-    return formatted.replace(",", ".")
+    if not math.isfinite(value):
+        return str(value)
+
+    precision = 4 if abs(value) < 1000 else 2
+    decimal_separator = "."
+    thousands_separator = "\u202f"
+
+    formatted = format(value, f".{precision}f")
+
+    sign = ""
+    if formatted.startswith("-"):
+        sign = "-"
+        formatted = formatted[1:]
+
+    integer_part, _, fractional_part = formatted.partition(".")
+    grouped_integer = "{:,}".format(int(integer_part or "0")).replace(",", thousands_separator)
+
+    return f"{sign}{grouped_integer}{decimal_separator}{fractional_part}"
 
 
 console = Console()
