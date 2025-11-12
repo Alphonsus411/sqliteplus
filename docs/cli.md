@@ -73,6 +73,27 @@ sqliteplus export-csv logs logs.csv
 
 Genera un CSV con encabezados listo para compartir. Si necesitas otra base diferente a la global, añade `--db-path /ruta/a/otra.db`.
 
+## Exportar resultados de una consulta
+
+```bash
+sqliteplus export-query --format json resultados.json "SELECT * FROM logs ORDER BY created_at DESC"
+```
+
+Permite ejecutar una consulta `SELECT` y guardar el resultado en un archivo JSON o CSV sin pasar por la API. Es útil para compartir subconjuntos filtrados o preparar datos para otras herramientas sin modificar la base.
+
+- `--format` controla el formato de salida (`json` por defecto o `csv`).
+- `--limit` restringe el número de filas exportadas sin alterar la consulta original.
+- `--overwrite` habilita la sobrescritura del archivo de destino cuando ya existe.
+
+Si optas por CSV, los encabezados se generan a partir de los nombres de las columnas devueltas por la consulta.
+
+```bash
+sqliteplus export-query --format csv --limit 100 --overwrite resumen.csv \
+  "SELECT level, COUNT(*) AS eventos FROM logs GROUP BY level ORDER BY level"
+```
+
+Cuando la consulta no devuelve nombres de columna (por ejemplo, al usar expresiones), la CLI crea encabezados genéricos para mantener una estructura coherente en el archivo final.
+
 ## Crear copias de seguridad
 
 ```bash
