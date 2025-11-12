@@ -92,6 +92,21 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(exc_info.exception.status_code, 503)
         self.assertIn("clave de cifrado", exc_info.exception.detail)
 
+    async def test_blank_encryption_key_is_rejected_when_required(self):
+        """Impide inicializar la base cuando la clave requerida es vacía o sólo espacios."""
+
+        await self.manager.close_connections()
+
+        for blank_value in ("", "   "):
+            with self.subTest(blank_value=repr(blank_value)):
+                with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": blank_value}, clear=False):
+                    manager = AsyncDatabaseManager()
+                    with self.assertRaises(HTTPException) as exc_info:
+                        await manager.get_connection("db_blank_key")
+
+                    self.assertEqual(exc_info.exception.status_code, 503)
+                    await manager.close_connections()
+
     async def test_applies_encryption_key_literal_and_raises_on_failure(self):
         """Simula `aiosqlite` para validar el PRAGMA key y su manejo de errores."""
 
