@@ -2,9 +2,17 @@ import pytest
 from pathlib import Path
 from urllib.parse import quote
 from httpx import AsyncClient, ASGITransport
+from sqliteplus import __version__
 from sqliteplus.main import app
 
 DB_NAME = "test_db_api"
+
+
+def test_app_version_matches_package_version():
+    """La versión de la app debe coincidir con la versión del paquete."""
+
+    assert app.version == __version__
+
 
 async def _get_auth_headers(client: AsyncClient) -> dict:
     """Obtiene encabezados de autenticación JWT para las peticiones."""
