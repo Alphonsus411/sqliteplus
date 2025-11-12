@@ -89,7 +89,7 @@ Una vez en marcha tendrás disponible la documentación interactiva en:
 pytest -v
 ```
 
-La capa de base de datos detecta automáticamente las ejecuciones de pytest y utiliza archivos temporales para que cada prueba sea independiente.
+Cuando detecta pytest, `AsyncDatabaseManager` borra y recrea las bases ubicadas en `databases/` antes de abrirlas en lugar de moverlas a carpetas temporales. Así se evita que queden datos residuales entre ejecuciones y los archivos se limpian desde `_reset_on_init`, que se activa automáticamente durante las pruebas; puedes revisar la [reinicialización automática en pruebas](./docs/uso_avanzado.md#reinicialización-automática-en-pruebas) o el código correspondiente en [`sqliteplus/core/db.py`](./sqliteplus/core/db.py).
 
 ---
 
