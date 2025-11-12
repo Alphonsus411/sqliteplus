@@ -16,3 +16,4 @@ nav:
   - CLI: cli.md
   - Configuración Avanzada: configuracion.md
   - Casos de Uso Avanzado: uso_avanzado.md
+  - Historial de cambios: changelog.md

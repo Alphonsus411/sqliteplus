@@ -4,7 +4,7 @@
 
 - Python 3.10 o superior.
 - SQLite con modo WAL habilitado (viene activado por defecto en SQLite moderno).
-- Opcional: Redis (la integración de caché está en desarrollo; consulta el [CHANGELOG](../CHANGELOG.md) para conocer el estado actual del extra `redis`).
+- Opcional: Redis (la integración de caché está en desarrollo; consulta el [CHANGELOG](changelog.md) para conocer el estado actual del extra `redis`).
 
 ## Desde el repositorio
 
@@ -20,7 +20,7 @@ Si vas a ejecutar las pruebas, el lint o contribuir con cambios instala también
 pip install -e .[dev]
 ```
 
-> **Nota:** La integración con Redis aún no está disponible en la aplicación. El extra `redis` únicamente instala las dependencias preliminares y puede cambiar en futuras versiones. Revisa el [CHANGELOG](../CHANGELOG.md) para seguir el progreso.
+> **Nota:** La integración con Redis aún no está disponible en la aplicación. El extra `redis` únicamente instala las dependencias preliminares y puede cambiar en futuras versiones. Revisa el [CHANGELOG](changelog.md) para seguir el progreso.
 
 Si aun así deseas preparar el entorno con las dependencias de Redis instala el extra:
 
@@ -34,7 +34,7 @@ pip install -e .[redis]
 pip install sqliteplus-enhanced
 ```
 
-> **Nota:** La integración con Redis está pendiente; instalar `sqliteplus-enhanced[redis]` solo añade las dependencias necesarias para futuras versiones. Consulta el [CHANGELOG](../CHANGELOG.md) para conocer el estado actualizado.
+> **Nota:** La integración con Redis está pendiente; instalar `sqliteplus-enhanced[redis]` solo añade las dependencias necesarias para futuras versiones. Consulta el [CHANGELOG](changelog.md) para conocer el estado actualizado.
 
 Para incluir estas dependencias opcionales de Redis usa:
 
