@@ -15,6 +15,7 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     run_module("sqliteplus.main", run_name="__main__")
     raise SystemExit()
 
+from sqliteplus import __version__
 from sqliteplus.api.endpoints import router
 from sqliteplus.core.db import db_manager
 
@@ -28,7 +29,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="SQLitePlus Enhanced",
     description="API modular con JWT, SQLCipher y FastAPI.",
-    version="1.0.0",
+    version=__version__,
     lifespan=lifespan
 )
 
