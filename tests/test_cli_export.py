@@ -183,3 +183,19 @@ def test_export_uses_cipher_key(tmp_path, monkeypatch):
 
     assert output.exists()
     assert calls == [key]
+
+
+def test_export_csv_missing_source_db(tmp_path):
+    missing_db = tmp_path / "inexistente.db"
+    output_path = tmp_path / "out.csv"
+
+    replicator = SQLiteReplication(
+        db_path=str(missing_db), backup_dir=str(tmp_path / "backups")
+    )
+
+    with pytest.raises(FileNotFoundError) as excinfo:
+        replicator.export_to_csv("valid_table", str(output_path))
+
+    assert "No se encontró la base de datos origen" in str(excinfo.value)
+    assert not missing_db.exists()
+    assert not output_path.exists()
