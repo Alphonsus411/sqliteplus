@@ -129,20 +129,23 @@ class AsyncDatabaseManager:
                                 exc,
                             )
                 _INITIALIZED_DATABASES.add(absolute_key)
-                encryption_key = os.getenv("SQLITE_DB_KEY")
-                if encryption_key is None:
-                    if self.require_encryption:
-                        logger.error(
-                            "No se encontró la clave de cifrado requerida en la variable de entorno 'SQLITE_DB_KEY'."
-                        )
-                        raise HTTPException(
-                            status_code=503,
-                            detail="Base de datos no disponible: falta la clave de cifrado requerida",
-                        )
+                raw_encryption_key = os.getenv("SQLITE_DB_KEY")
+                encryption_key = None
+                if raw_encryption_key is not None:
+                    encryption_key = raw_encryption_key.strip()
+
+                if self.require_encryption and (encryption_key is None or encryption_key == ""):
+                    logger.error(
+                        "Clave de cifrado ausente o vacía en la variable de entorno 'SQLITE_DB_KEY'"
+                    )
+                    raise HTTPException(
+                        status_code=503,
+                        detail="Base de datos no disponible: falta la clave de cifrado requerida",
+                    )
 
                 connection = await aiosqlite.connect(str(db_path))
                 try:
-                    if encryption_key:
+                    if encryption_key is not None:
                         escaped_key = encryption_key.replace("'", "''")
                         try:
                             await connection.execute(f"PRAGMA key = '{escaped_key}';")
