@@ -147,10 +147,36 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
 
         key_commands_spaces = [cmd for cmd in commands_with_spaces if cmd.startswith("PRAGMA key")]
         self.assertEqual(len(key_commands_spaces), 1)
-        self.assertEqual(key_commands_spaces[0], "PRAGMA key = '  clave con espacios  ';")
+        self.assertEqual(key_commands_spaces[0], "PRAGMA key = 'clave con espacios';")
         self.assertFalse(connection_with_spaces.close.await_args_list)
 
         await manager_spaces.close_connections()
+
+        commands_blank: list[str] = []
+
+        async def fake_execute_blank(sql, *_):
+            commands_blank.append(sql)
+            return mock.AsyncMock()
+
+        connection_blank = mock.AsyncMock()
+        connection_blank.execute.side_effect = fake_execute_blank
+        connection_blank.commit = mock.AsyncMock()
+        connection_blank.close = mock.AsyncMock()
+
+        with mock.patch(
+            "sqliteplus.core.db.aiosqlite.connect",
+            new=mock.AsyncMock(return_value=connection_blank),
+        ):
+            with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": "    "}, clear=False):
+                manager_blank = AsyncDatabaseManager(require_encryption=False)
+                await manager_blank.get_connection("mocked_db_blank")
+
+        key_commands_blank = [cmd for cmd in commands_blank if cmd.startswith("PRAGMA key")]
+        self.assertEqual(len(key_commands_blank), 1)
+        self.assertEqual(key_commands_blank[0], "PRAGMA key = '';")
+        self.assertFalse(connection_blank.close.await_args_list)
+
+        await manager_blank.close_connections()
 
         failing_connection = mock.AsyncMock()
         failing_connection.execute.side_effect = failing_execute
@@ -198,7 +224,6 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
             ("persistente",),
         )
         await manager.close_connections()
-
         new_manager = AsyncDatabaseManager()
         try:
             connection = await new_manager.get_connection(db_name)
@@ -212,6 +237,18 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
             )
         finally:
             await new_manager.close_connections()
+
+    async def test_blank_encryption_key_raises_when_required(self):
+        """Una clave vacía debe rechazarse si el cifrado es obligatorio."""
+
+        await self.manager.close_connections()
+
+        with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": "   "}, clear=False):
+            manager = AsyncDatabaseManager(require_encryption=True)
+            with self.assertRaises(HTTPException) as exc_info:
+                await manager.get_connection("db_blank_required")
+
+        self.assertEqual(exc_info.exception.status_code, 503)
 
     async def test_reset_on_init_isolated_by_base_dir(self):
         """Cada gestor elimina su propia base aunque compartan nombre canónico."""
