@@ -84,7 +84,8 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
     async def test_missing_encryption_key_raises_http_exception(self):
         """Verifica que sin clave se devuelve un error controlado."""
         await self.manager.close_connections()
-        with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": ""}, clear=False):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("SQLITE_DB_KEY", None)
             with self.assertRaises(HTTPException) as exc_info:
                 await self.manager.get_connection("test_db_async_missing_key")
 
@@ -123,6 +124,33 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(fake_connection.close.await_args_list)
 
         await manager.close_connections()
+
+        commands_with_spaces: list[str] = []
+
+        async def fake_execute_spaces(sql, *_):
+            commands_with_spaces.append(sql)
+            return mock.AsyncMock()
+
+        connection_with_spaces = mock.AsyncMock()
+        connection_with_spaces.execute.side_effect = fake_execute_spaces
+        connection_with_spaces.commit = mock.AsyncMock()
+        connection_with_spaces.close = mock.AsyncMock()
+
+        with mock.patch(
+            "sqliteplus.core.db.aiosqlite.connect",
+            new=mock.AsyncMock(return_value=connection_with_spaces),
+        ):
+            key_with_spaces = "  clave con espacios  "
+            with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": key_with_spaces}, clear=False):
+                manager_spaces = AsyncDatabaseManager()
+                await manager_spaces.get_connection("mocked_db_spaces")
+
+        key_commands_spaces = [cmd for cmd in commands_with_spaces if cmd.startswith("PRAGMA key")]
+        self.assertEqual(len(key_commands_spaces), 1)
+        self.assertEqual(key_commands_spaces[0], "PRAGMA key = '  clave con espacios  ';")
+        self.assertFalse(connection_with_spaces.close.await_args_list)
+
+        await manager_spaces.close_connections()
 
         failing_connection = mock.AsyncMock()
         failing_connection.execute.side_effect = failing_execute
