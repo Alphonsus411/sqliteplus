@@ -132,9 +132,19 @@ class AsyncDatabaseManager:
                 raw_encryption_key = os.getenv("SQLITE_DB_KEY")
                 encryption_key = None
                 if raw_encryption_key is not None:
-                    encryption_key = raw_encryption_key.strip()
+                    stripped_key = raw_encryption_key.strip()
+                    if stripped_key:
+                        encryption_key = stripped_key
+                    elif self.require_encryption:
+                        logger.error(
+                            "Clave de cifrado ausente o vacía en la variable de entorno 'SQLITE_DB_KEY'"
+                        )
+                        raise HTTPException(
+                            status_code=503,
+                            detail="Base de datos no disponible: falta la clave de cifrado requerida",
+                        )
 
-                if self.require_encryption and (encryption_key is None or encryption_key == ""):
+                if self.require_encryption and encryption_key is None:
                     logger.error(
                         "Clave de cifrado ausente o vacía en la variable de entorno 'SQLITE_DB_KEY'"
                     )
