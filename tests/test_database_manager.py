@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -47,6 +48,25 @@ class TestDatabaseManager(unittest.TestCase):
 
         db_path = (self.manager.base_dir / Path(db_name_with_ext)).resolve()
         self.assertTrue(db_path.exists())
+
+    def test_reuses_existing_uppercase_extension(self):
+        """Usa el archivo existente con extensión .DB sin duplicarla."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_dir = Path(tmpdir)
+            original_path = temp_dir / "MAYUS.DB"
+            original_path.touch()
+
+            manager = DatabaseManager(base_dir=temp_dir)
+            try:
+                manager.execute_query(
+                    "MAYUS.DB",
+                    "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)",
+                )
+            finally:
+                manager.close_connections()
+
+            self.assertTrue(original_path.exists())
+            self.assertFalse((temp_dir / "MAYUS.DB.db").exists())
 
     @classmethod
     def tearDownClass(cls):

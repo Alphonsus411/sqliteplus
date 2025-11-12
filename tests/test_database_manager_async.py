@@ -59,6 +59,25 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
         db_path = (self.manager.base_dir / Path(db_name_with_ext)).resolve()
         self.assertTrue(db_path.exists())
 
+    async def test_reuses_existing_uppercase_extension(self):
+        """Usa la base existente con extensión .DB sin crear un duplicado."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_dir = Path(tmpdir)
+            original_path = temp_dir / "MAYUS.DB"
+            original_path.touch()
+
+            manager = AsyncDatabaseManager(base_dir=temp_dir, require_encryption=False)
+            try:
+                await manager.execute_query(
+                    "MAYUS.DB",
+                    "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)",
+                )
+            finally:
+                await manager.close_connections()
+
+            self.assertTrue(original_path.exists())
+            self.assertFalse((temp_dir / "MAYUS.DB.db").exists())
+
     async def test_concurrent_connection_creation(self):
         """Verifica que múltiples solicitudes concurrentes comparten la misma conexión."""
         manager = AsyncDatabaseManager()

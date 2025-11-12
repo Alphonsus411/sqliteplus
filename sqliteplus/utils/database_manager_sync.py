@@ -25,7 +25,7 @@ class DatabaseManager:
         if any(token in sanitized for token in ("..", "/", "\\")):
             raise ValueError("Nombre de base de datos inválido")
 
-        file_name = sanitized if sanitized.endswith(".db") else f"{sanitized}.db"
+        file_name = sanitized if sanitized.lower().endswith(".db") else f"{sanitized}.db"
         db_path = (self.base_dir / Path(file_name)).resolve()
         if self.base_dir not in db_path.parents:
             raise ValueError("Nombre de base de datos fuera del directorio permitido")
