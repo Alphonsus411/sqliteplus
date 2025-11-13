@@ -85,7 +85,10 @@ Una vez en marcha tendrás disponible la documentación interactiva en:
 
 ## 🧪 Ejecutar las pruebas
 
+Instala primero las dependencias de desarrollo para disponer de todas las herramientas usadas en la suite:
+
 ```bash
+pip install -e .[dev]
 pytest -v
 ```
 

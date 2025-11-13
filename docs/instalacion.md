@@ -14,10 +14,11 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-Si vas a ejecutar las pruebas, el lint o contribuir con cambios instala también las dependencias opcionales:
+Si vas a ejecutar las pruebas, el lint o contribuir con cambios instala también las dependencias opcionales y, a continuación, ejecuta la suite con Pytest:
 
 ```bash
 pip install -e .[dev]
+pytest -v
 ```
 
 > **Nota:** La integración con Redis aún no está disponible en la aplicación. El extra `redis` únicamente instala las dependencias preliminares y puede cambiar en futuras versiones. Revisa el [CHANGELOG](changelog.md) para seguir el progreso.
