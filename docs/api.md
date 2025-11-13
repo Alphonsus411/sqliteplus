@@ -30,7 +30,7 @@ Genera un token JWT válido por una hora. Las credenciales se validan contra el 
 Crea una tabla si no existe. Los nombres de columnas se validan mediante `CreateTableSchema` y se
 escapan con comillas dobles.
 
-- **Query**: `table_name`
+- **Query**: `table_name` (puede incluir espacios o guiones; la API lo escapará automáticamente)
 - **Body**:
 
 ```json

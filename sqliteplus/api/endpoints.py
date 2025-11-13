@@ -20,7 +20,11 @@ from sqlite3 import OperationalError
 from fastapi import APIRouter, HTTPException, Depends, Request
 
 from sqliteplus.core.db import db_manager
-from sqliteplus.core.schemas import CreateTableSchema, InsertDataSchema
+from sqliteplus.core.schemas import (
+    CreateTableSchema,
+    InsertDataSchema,
+    is_valid_sqlite_identifier,
+)
 from sqliteplus.auth.jwt import generate_jwt, verify_jwt
 from sqliteplus.auth.users import get_user_service, UserSourceError
 
@@ -127,7 +131,7 @@ async def login(form_data: _LoginForm = Depends(_parse_login_form)):
 
 @router.post("/databases/{db_name:path}/create_table", tags=["Gestión de Base de Datos"], summary="Crear una tabla", description="Crea una tabla en la base de datos especificada.")
 async def create_table(db_name: str, table_name: str, schema: CreateTableSchema, user: str = Depends(verify_jwt)):
-    if not table_name.isidentifier():
+    if not is_valid_sqlite_identifier(table_name):
         raise HTTPException(status_code=400, detail="Nombre de tabla inválido")
 
     try:
@@ -150,7 +154,7 @@ async def create_table(db_name: str, table_name: str, schema: CreateTableSchema,
 
 @router.post("/databases/{db_name:path}/insert", tags=["Operaciones CRUD"], summary="Insertar datos", description="Inserta un registro en una tabla.")
 async def insert_data(db_name: str, table_name: str, schema: InsertDataSchema, user: str = Depends(verify_jwt)):
-    if not table_name.isidentifier():
+    if not is_valid_sqlite_identifier(table_name):
         raise HTTPException(status_code=400, detail="Nombre de tabla inválido")
 
     payload_values = schema.values
@@ -183,10 +187,10 @@ async def insert_data(db_name: str, table_name: str, schema: InsertDataSchema, u
 
 @router.get("/databases/{db_name:path}/fetch", tags=["Operaciones CRUD"], summary="Consultar datos", description="Recupera todos los registros de una tabla.")
 async def fetch_data(db_name: str, table_name: str, user: str = Depends(verify_jwt)):
-    if not table_name.isidentifier():
+    if not is_valid_sqlite_identifier(table_name):
         raise HTTPException(status_code=400, detail="Nombre de tabla inválido")
 
-    query = f'SELECT * FROM "{table_name}"'
+    query = f"SELECT * FROM {_escape_identifier(table_name)}"
     try:
         data = await db_manager.fetch_query(db_name, query)
     except ValueError as exc:
@@ -199,10 +203,10 @@ async def fetch_data(db_name: str, table_name: str, user: str = Depends(verify_j
 
 @router.delete("/databases/{db_name:path}/drop_table", tags=["Gestión de Base de Datos"], summary="Eliminar tabla", description="Elimina una tabla de la base de datos.")
 async def drop_table(db_name: str, table_name: str, user: str = Depends(verify_jwt)):
-    if not table_name.isidentifier():
+    if not is_valid_sqlite_identifier(table_name):
         raise HTTPException(status_code=400, detail="Nombre de tabla inválido")
 
-    query = f'DROP TABLE IF EXISTS "{table_name}"'
+    query = f"DROP TABLE IF EXISTS {_escape_identifier(table_name)}"
     try:
         await db_manager.execute_query(db_name, query)
     except ValueError as exc:

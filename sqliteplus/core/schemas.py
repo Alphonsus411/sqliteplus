@@ -4,6 +4,18 @@ from typing import Any, ClassVar, Dict
 from pydantic import BaseModel, field_validator, model_validator
 
 
+SQLITE_IDENTIFIER_PATTERN = re.compile(r'^(?!\s)(?!.*\s$)[^"\x00-\x1F]+$')
+
+
+def is_valid_sqlite_identifier(identifier: str) -> bool:
+    """Valida si una cadena puede utilizarse como identificador en SQLite."""
+
+    if not isinstance(identifier, str):
+        return False
+
+    return bool(SQLITE_IDENTIFIER_PATTERN.match(identifier))
+
+
 class CreateTableSchema(BaseModel):
     """Esquema recibido al crear una tabla.
 
@@ -23,7 +35,7 @@ class CreateTableSchema(BaseModel):
 
     columns: Dict[str, str]
 
-    _column_name_pattern: ClassVar[re.Pattern[str]] = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+    _column_name_pattern: ClassVar[re.Pattern[str]] = SQLITE_IDENTIFIER_PATTERN
     _allowed_base_types: ClassVar[set[str]] = {"INTEGER", "TEXT", "REAL", "BLOB", "NUMERIC"}
     _default_expr_numeric_pattern: ClassVar[re.Pattern[str]] = re.compile(
         r"^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$"
@@ -57,7 +69,11 @@ class CreateTableSchema(BaseModel):
 
         sanitized_columns: Dict[str, str] = {}
         for raw_name, raw_type in self.columns.items():
-            if not self._column_name_pattern.match(raw_name):
+            normalized_name = raw_name.strip()
+            if not normalized_name:
+                raise ValueError("Los nombres de columna no pueden estar vacíos")
+
+            if not self._column_name_pattern.match(normalized_name):
                 raise ValueError(f"Nombre de columna inválido: {raw_name}")
 
             normalized_original = " ".join(raw_type.strip().split())
@@ -175,7 +191,7 @@ class CreateTableSchema(BaseModel):
                     )
                 normalized_parts.append(f"DEFAULT {default_expr}")
 
-            sanitized_columns[raw_name] = " ".join(normalized_parts)
+            sanitized_columns[normalized_name] = " ".join(normalized_parts)
 
         return sanitized_columns
 
@@ -237,6 +253,9 @@ class InsertDataSchema(BaseModel):
             normalized_column = column.strip()
             if not normalized_column:
                 raise ValueError("Los nombres de columna no pueden estar vacíos")
+
+            if not is_valid_sqlite_identifier(normalized_column):
+                raise ValueError(f"Nombre de columna inválido: {column}")
 
             sanitized_values[normalized_column] = value
 
