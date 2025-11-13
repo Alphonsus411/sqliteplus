@@ -5,7 +5,7 @@
 ## ✨ Qué incluye
 
 - 🔄 Manejo seguro de varias bases SQLite desde tareas asíncronas.
-- 🔐 Inicio de sesión mediante JSON Web Tokens con contraseñas protegidas con `bcrypt`.
+- 🔐 Inicio de sesión mediante JSON Web Tokens con contraseñas hasheadas con `bcrypt`.
 - 🔑 Compatibilidad opcional con SQLCipher tanto en la API como en la consola.
 - 💾 Utilidades sencillas para exportar tablas a CSV y crear copias de seguridad automáticas.
 - 🧰 Comando `sqliteplus` con subcomandos claros para tareas diarias.
@@ -42,7 +42,7 @@ Guarda tus claves como variables de entorno para evitar dejarlas en el código.
 | Variable | Obligatoria | Para qué sirve |
 | --- | --- | --- |
 | `SECRET_KEY` | ✅ | Firmar los tokens JWT de la API. |
-| `SQLITEPLUS_USERS_FILE` | ✅ | Ubicación del JSON con usuarios y contraseñas encriptadas con `bcrypt`. |
+| `SQLITEPLUS_USERS_FILE` | ✅ | Ubicación del JSON con usuarios y contraseñas hasheadas con `bcrypt`. |
 | `SQLITE_DB_KEY` | Opcional | Clave SQLCipher para abrir bases cifradas desde la API o la CLI. |
 
 Ejemplo rápido para generar valores seguros:
