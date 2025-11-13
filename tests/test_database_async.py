@@ -2,6 +2,10 @@ import pytest
 
 DB_NAME = "test_db_api"
 TABLE_NAME = "logs"
+SPECIAL_TABLE_NAMES = [
+    "logs-con-guion",
+    "logs con espacios",
+]
 
 @pytest.mark.asyncio
 async def test_create_table(client, auth_headers):
@@ -59,3 +63,31 @@ async def test_drop_table(client, auth_headers):
     )
     assert res.status_code == 200
     assert f"'{TABLE_NAME}'" in res.json().get("message", "")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("special_table", SPECIAL_TABLE_NAMES)
+async def test_fetch_and_drop_special_table_names(client, auth_headers, special_table):
+    res_create = await client.post(
+        f"/databases/{DB_NAME}/create_table",
+        params={"table_name": special_table},
+        json={"columns": {"id": "INTEGER PRIMARY KEY", "msg": "TEXT"}},
+        headers=auth_headers,
+    )
+    assert res_create.status_code == 200
+
+    res_fetch = await client.get(
+        f"/databases/{DB_NAME}/fetch",
+        params={"table_name": special_table},
+        headers=auth_headers,
+    )
+    assert res_fetch.status_code == 200
+    assert isinstance(res_fetch.json().get("data", []), list)
+
+    res_drop = await client.delete(
+        f"/databases/{DB_NAME}/drop_table",
+        params={"table_name": special_table},
+        headers=auth_headers,
+    )
+    assert res_drop.status_code == 200
+    assert f"'{special_table}'" in res_drop.json().get("message", "")
