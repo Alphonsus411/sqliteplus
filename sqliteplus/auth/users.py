@@ -38,18 +38,17 @@ class UserCredentialsService:
     def from_env(cls) -> "UserCredentialsService":
         """Crea el servicio leyendo la ruta configurada en ``SQLITEPLUS_USERS_FILE``."""
 
-        users_file = os.getenv("SQLITEPLUS_USERS_FILE")
-        if not users_file:
-            raise UserSourceError("La variable de entorno 'SQLITEPLUS_USERS_FILE' no está definida")
-
-        path = Path(users_file).expanduser()
-        if not path.exists():
-            raise UserSourceError(f"El archivo de usuarios '{users_file}' no existe")
-
-        path = path.resolve()
+        path = _resolve_users_file_path()
 
         try:
-            data = json.loads(path.read_text(encoding="utf-8"))
+            raw_content = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise UserSourceError(
+                f"No se pudo leer el archivo de usuarios '{path}': {exc}"
+            ) from exc
+
+        try:
+            data = json.loads(raw_content)
         except json.JSONDecodeError as exc:
             raise UserSourceError("El archivo de usuarios contiene JSON inválido") from exc
 
@@ -84,6 +83,30 @@ _cached_service: UserCredentialsService | None = None
 _cached_source_signature: Tuple[str, int, int] | None = None
 
 
+def _resolve_users_file_path() -> Path:
+    users_file = os.getenv("SQLITEPLUS_USERS_FILE")
+    if not users_file:
+        raise UserSourceError("La variable de entorno 'SQLITEPLUS_USERS_FILE' no está definida")
+
+    path = Path(users_file).expanduser()
+    if not path.exists():
+        raise UserSourceError(f"El archivo de usuarios '{users_file}' no existe")
+
+    try:
+        path = path.resolve()
+    except OSError as exc:
+        raise UserSourceError(
+            f"No se puede resolver la ruta del archivo de usuarios '{users_file}': {exc}"
+        ) from exc
+
+    if not path.is_file():
+        raise UserSourceError(
+            f"El archivo de usuarios '{path}' debe ser un archivo regular"
+        )
+
+    return path
+
+
 def _read_source_signature(path: Path) -> Tuple[str, int, int]:
     """Obtiene una firma basada en metadatos del archivo para detectar cambios.
 
@@ -104,15 +127,7 @@ def get_user_service() -> UserCredentialsService:
 
     global _cached_service, _cached_source_signature
 
-    users_file = os.getenv("SQLITEPLUS_USERS_FILE")
-    if not users_file:
-        raise UserSourceError("La variable de entorno 'SQLITEPLUS_USERS_FILE' no está definida")
-
-    path = Path(users_file).expanduser()
-    if not path.exists():
-        raise UserSourceError(f"El archivo de usuarios '{users_file}' no existe")
-
-    path = path.resolve()
+    path = _resolve_users_file_path()
 
     source_signature = _read_source_signature(path)
 
@@ -130,13 +145,7 @@ def reload_user_service() -> UserCredentialsService:
     global _cached_service, _cached_source_signature
 
     service = UserCredentialsService.from_env()
-    users_file = os.getenv("SQLITEPLUS_USERS_FILE")
-    if not users_file:
-        raise UserSourceError("La variable de entorno 'SQLITEPLUS_USERS_FILE' no está definida")
-
-    path = Path(users_file).expanduser()
-    if path.exists():
-        path = path.resolve()
+    path = _resolve_users_file_path()
 
     _cached_service = service
     _cached_source_signature = _read_source_signature(path)

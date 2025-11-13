@@ -42,6 +42,23 @@ async def test_jwt_token_failure():
 
 
 @pytest.mark.asyncio
+async def test_jwt_token_reports_invalid_users_file_when_directory(tmp_path, monkeypatch):
+    users_directory = tmp_path / "users"
+    users_directory.mkdir()
+
+    monkeypatch.setenv("SQLITEPLUS_USERS_FILE", str(users_directory))
+    reset_user_service_cache()
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        res = await ac.post("/token", data={"username": "admin", "password": "admin"})
+
+    assert res.status_code == 500
+    expected_message = f"El archivo de usuarios '{users_directory.resolve()}' debe ser un archivo regular"
+    assert res.json()["detail"] == expected_message
+
+
+@pytest.mark.asyncio
 async def test_protected_endpoint_requires_subject_claim():
     token_without_sub = jwt.encode(
         {"exp": datetime.now(timezone.utc) + timedelta(minutes=5)},
