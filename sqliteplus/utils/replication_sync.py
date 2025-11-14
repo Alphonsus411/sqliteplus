@@ -17,6 +17,7 @@ import shutil
 import sqlite3
 from pathlib import Path
 
+from sqliteplus.core.schemas import is_valid_sqlite_identifier
 from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
 from sqliteplus.utils.sqliteplus_sync import apply_cipher_key, SQLitePlusCipherError
 
@@ -155,11 +156,16 @@ class SQLiteReplication:
 
     @staticmethod
     def _is_valid_table_name(table_name: str) -> bool:
-        return bool(table_name) and table_name.isidentifier()
+        if not isinstance(table_name, str):
+            return False
+
+        sanitized = table_name.strip()
+        return bool(sanitized) and is_valid_sqlite_identifier(sanitized)
 
     @staticmethod
     def _escape_identifier(identifier: str) -> str:
-        escaped_identifier = identifier.replace('"', '""')
+        sanitized = identifier.strip()
+        escaped_identifier = sanitized.replace('"', '""')
         return f'"{escaped_identifier}"'
 
     @staticmethod

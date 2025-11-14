@@ -139,4 +139,37 @@ def test_describe_table_uses_safe_pragma(tmp_path, monkeypatch):
     ]
 
     with pytest.raises(ValueError):
-        db.describe_table("tabla con espacios")
+        db.describe_table("")
+
+
+def test_describe_table_accepts_whitespace_and_dash_names(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    db = SQLitePlus(db_path="meta.db")
+    db.execute_query(
+        'CREATE TABLE "logs con espacios" ('
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT"
+        ")"
+    )
+    db.execute_query(
+        'CREATE TABLE "logs-con-guion" ('
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT"
+        ")"
+    )
+    db.execute_query(
+        'INSERT INTO "logs con espacios" (mensaje) VALUES (?)',
+        ("evento",),
+    )
+
+    info_spaces = db.describe_table("logs con espacios")
+    assert info_spaces["row_count"] == 1
+    assert [column["name"] for column in info_spaces["columns"]] == [
+        "id",
+        "mensaje",
+    ]
+
+    info_dash = db.describe_table("logs-con-guion")
+    assert info_dash["row_count"] == 0
+    assert [column["name"] for column in info_dash["columns"]] == [
+        "id",
+        "mensaje",
+    ]

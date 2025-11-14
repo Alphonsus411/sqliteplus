@@ -71,7 +71,7 @@ Abre un panel enriquecido que aprovecha la nueva actualización de FletPlus. Pue
 sqliteplus export-csv logs logs.csv
 ```
 
-Genera un CSV con encabezados listo para compartir. Si necesitas otra base diferente a la global, añade `--db-path /ruta/a/otra.db`.
+Genera un CSV con encabezados listo para compartir. Puedes utilizar nombres de tabla con espacios o guiones (`"logs con espacios"`, `"logs-con-guion"`), la herramienta se encarga de escaparlos sin perder seguridad. Si necesitas otra base diferente a la global, añade `--db-path /ruta/a/otra.db`.
 
 ## Exportar resultados de una consulta
 

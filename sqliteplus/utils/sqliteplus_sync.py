@@ -12,12 +12,12 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     raise SystemExit()
 
 import os
-import re
 import sqlite3
 import threading
 from datetime import datetime
 from pathlib import Path
 
+from sqliteplus.core.schemas import is_valid_sqlite_identifier
 from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
 
 
@@ -58,8 +58,6 @@ def apply_cipher_key(connection: sqlite3.Connection, cipher_key: str | None) -> 
 
 class SQLitePlus:
     """Manejador de SQLite con soporte para cifrado y concurrencia."""
-
-    _identifier_pattern = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
     def __init__(
         self,
@@ -192,8 +190,14 @@ class SQLitePlus:
         if not sanitized:
             raise ValueError("El nombre de la tabla no puede estar vacío.")
 
-        if not cls._identifier_pattern.match(sanitized):
-            raise ValueError(f"Nombre de tabla inválido: {table_name}")
+        if not is_valid_sqlite_identifier(sanitized):
+            raise ValueError(
+                (
+                    f"Nombre de tabla inválido: '{table_name}'."
+                    " Evita comillas dobles, caracteres de control y"
+                    " espacios al inicio o al final."
+                )
+            )
 
         return sanitized.replace('"', '""')
 

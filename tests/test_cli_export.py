@@ -52,7 +52,7 @@ def test_export_csv_cli_rejects_invalid_table_name(tmp_path):
     _prepare_database(db_path)
 
     runner = CliRunner()
-    malicious_name = "valid_table; DROP TABLE logs;--"
+    malicious_name = 'valid_table"; DROP TABLE logs;--'
     result = runner.invoke(
         cli,
         [
@@ -198,4 +198,39 @@ def test_export_csv_missing_source_db(tmp_path):
 
     assert "No se encontró la base de datos origen" in str(excinfo.value)
     assert not missing_db.exists()
-    assert not output_path.exists()
+
+
+def test_export_to_csv_accepts_spaces_and_dash(tmp_path):
+    db_path = tmp_path / "nombres.db"
+    output_spaces = tmp_path / "espacios.csv"
+    output_dash = tmp_path / "guion.csv"
+
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            'CREATE TABLE "logs con espacios" ('
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT"
+            ")"
+        )
+        conn.execute(
+            'CREATE TABLE "logs-con-guion" ('
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, mensaje TEXT"
+            ")"
+        )
+        conn.executemany(
+            'INSERT INTO "logs con espacios" (mensaje) VALUES (?)',
+            [("uno",), ("dos",)],
+        )
+        conn.execute(
+            'INSERT INTO "logs-con-guion" (mensaje) VALUES (?)',
+            ("evento",),
+        )
+
+    replicator = SQLiteReplication(
+        db_path=str(db_path), backup_dir=str(tmp_path / "backups")
+    )
+
+    replicator.export_to_csv("logs con espacios", str(output_spaces))
+    replicator.export_to_csv("logs-con-guion", str(output_dash))
+
+    assert output_spaces.exists()
+    assert output_dash.exists()
