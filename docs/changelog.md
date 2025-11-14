@@ -3,9 +3,12 @@
 Esta página resume los principales hitos publicados en el proyecto. Para revisar el detalle completo consulta el [CHANGELOG en GitHub](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/CHANGELOG.md).
 
 ## Unreleased
-- CLI enriquecida con comandos para inspeccionar la base (`list-tables`, `describe-table`, `db-info`).
-- Salidas con formato usando Rich y soporte equivalente en los métodos síncronos.
-- Ajustes en `fetch` y reorganización de dependencias opcionales en `pyproject.toml`.
+- _Sin entradas por ahora._
+
+## 1.0.9 · 2025-11-14
+- CLI renovada con comandos de inspección (`list-tables`, `describe-table`, `db-info`) y paneles FletPlus para explorar la base.
+- Tablas y paneles enriquecidos con Rich, junto a métodos síncronos que replican las operaciones de la CLI y mejoran la salida de `fetch`.
+- Validaciones adicionales en nombres y rutas de bases/usuarios, reorganización de extras (`dev`, `redis`) y parches de seguridad en dependencias críticas.
 
 ## 1.0.7 · 2025-06-01
 - Documentación general actualizada para reflejar la configuración mediante `SQLITEPLUS_USERS_FILE` y los nuevos flujos de trabajo.

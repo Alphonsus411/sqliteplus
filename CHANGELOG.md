@@ -9,13 +9,30 @@ y semántica de versiones [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 ### Añadido
+- _Sin entradas todavía._
+
+### Cambiado
+- _Sin entradas todavía._
+
+### Corregido
+- _Sin entradas todavía._
+
+---
+
+## [1.0.9] - 2025-11-14
+### Añadido
 - Comandos `list-tables`, `describe-table` y `db-info` para inspeccionar la base desde la CLI.
-- Salida enriquecida con Rich (tablas, paneles y colores) para mejorar la accesibilidad.
-- Métodos sincronizados para listar, describir y obtener estadísticas de la base de datos.
+- Paneles de exploración en FletPlus y salidas enriquecidas con Rich (tablas, paneles y colores) para mejorar la accesibilidad.
+- Métodos sincronizados para listar, describir y obtener estadísticas de la base de datos desde la CLI y el SDK.
 
 ### Cambiado
 - El comando `fetch` ahora muestra los resultados en tablas con formato y reporta el número de filas devueltas.
-- Las dependencias de pruebas y herramientas se agruparon en el extra opcional `dev` del `pyproject.toml`.
+- Las dependencias de pruebas y herramientas se agruparon en el extra opcional `dev` del `pyproject.toml`, dejando `redis` como instalación opcional.
+- Actualización de dependencias críticas (`Starlette`, `python-multipart`) para aplicar parches de seguridad.
+
+### Corregido
+- Validaciones adicionales para nombres y rutas de tablas en operaciones de exportación y descripción.
+- Manejo más robusto de rutas de archivos de usuarios y bases de datos antes de ejecutar comandos de la CLI.
 
 ---
 
