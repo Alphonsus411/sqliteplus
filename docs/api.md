@@ -45,7 +45,6 @@ escapan con comillas dobles.
 
 - **Errores comunes**
   - `400`: nombre de tabla inválido, columnas duplicadas o tipos vacíos.
-  - `404`: tabla no encontrada cuando SQLite informa `no such table`.
   - `500`: error inesperado en la base.
 
 ### `DELETE /databases/{db_name}/drop_table`
@@ -73,6 +72,8 @@ Inserta un registro en la tabla especificada.
 ### `GET /databases/{db_name}/fetch`
 
 Devuelve todas las filas de la tabla.
+
+> Nota: Los códigos `404` solo aparecen en operaciones de lectura o borrado cuando la tabla indicada no existe.
 
 Respuesta de ejemplo:
 
