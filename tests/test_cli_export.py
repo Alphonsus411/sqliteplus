@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from pathlib import Path
 
@@ -44,6 +45,45 @@ def test_export_csv_cli_success(tmp_path):
     assert content[0] == "id,name"
     assert content[1].endswith(",Alice")
     assert content[2].endswith(",Bob")
+
+
+@pytest.mark.parametrize("export_format", ["json", "csv"])
+def test_export_query_creates_missing_directories(tmp_path, export_format):
+    db_path = tmp_path / "test.db"
+    _prepare_database(db_path)
+
+    output_path = tmp_path / "exports" / (
+        "resultado.json" if export_format == "json" else "resultado.csv"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "--db-path",
+            str(db_path),
+            "export-query",
+            "--format",
+            export_format,
+            str(output_path),
+            "SELECT",
+            "*",
+            "FROM",
+            "valid_table",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert output_path.exists()
+
+    if export_format == "json":
+        data = json.loads(output_path.read_text(encoding="utf-8"))
+        assert [record["name"] for record in data] == ["Alice", "Bob"]
+    else:
+        content = output_path.read_text(encoding="utf-8").splitlines()
+        assert content[0] == "id,name"
+        assert content[1].endswith(",Alice")
+        assert content[2].endswith(",Bob")
 
 
 def test_export_csv_cli_rejects_invalid_table_name(tmp_path):

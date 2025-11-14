@@ -678,6 +678,8 @@ def export_query(ctx, export_format, limit, overwrite, output_file, query):
             "El archivo de salida ya existe. Usa --overwrite para reemplazarlo."
         )
 
+    path.parent.mkdir(parents=True, exist_ok=True)
+
     db = SQLitePlus(
         db_path=ctx.obj.get("db_path"),
         cipher_key=ctx.obj.get("cipher_key"),
