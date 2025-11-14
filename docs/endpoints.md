@@ -13,7 +13,7 @@ Resumen rápido de los recursos disponibles. Todos requieren `Authorization: Bea
 
 ## Operaciones CRUD
 
-- `POST /databases/{db_name}/insert` – inserta filas usando placeholders `?` para evitar SQL injection.
-- `GET /databases/{db_name}/fetch` – devuelve todas las filas de la tabla.
+- `POST /databases/{db_name}/insert` – inserta filas usando placeholders `?` y requiere `table_name` como query.
+- `GET /databases/{db_name}/fetch` – devuelve todas las filas de la tabla indicado en `table_name`.
 
 Consulta `docs/api.md` para conocer los cuerpos de petición y respuestas detalladas.
