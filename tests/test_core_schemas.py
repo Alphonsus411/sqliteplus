@@ -15,3 +15,12 @@ def test_normalized_columns_rejects_invalid_autoincrement():
     schema = CreateTableSchema(columns={"code": "text autoincrement"})
     with pytest.raises(ValueError):
         schema.normalized_columns()
+
+
+def test_normalized_columns_rejects_duplicate_normalized_names():
+    schema = CreateTableSchema(columns={"Name": "text", " name ": "text"})
+
+    with pytest.raises(ValueError) as excinfo:
+        schema.normalized_columns()
+
+    assert "duplicado" in str(excinfo.value).lower()

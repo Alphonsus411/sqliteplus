@@ -33,6 +33,13 @@ Genera un token JWT válido por una hora. Las credenciales se validan contra el 
 Crea una tabla si no existe. Los nombres de columnas se validan mediante `CreateTableSchema` y se
 escapan con comillas dobles.
 
+**Normalización y validaciones de nombres**
+
+- Se eliminan espacios iniciales/finales de cada nombre antes de validar el patrón de SQLite.
+- La comparación para detectar duplicados se hace con `casefold()`, por lo que `"Nombre"` y
+  `" nombre "` se consideran el mismo identificador.
+- Si después de normalizar hay nombres repetidos, la API responde con `400 Bad Request`.
+
 - **Query**: `table_name` (puede incluir espacios o guiones; la API lo escapará automáticamente)
 - **Body**:
 

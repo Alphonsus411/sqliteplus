@@ -71,6 +71,7 @@ class CreateTableSchema(BaseModel):
             raise ValueError("Se requiere al menos una columna para crear la tabla")
 
         sanitized_columns: Dict[str, str] = {}
+        seen_names: set[str] = set()
         for raw_name, raw_type in self.columns.items():
             normalized_name = raw_name.strip()
             if not normalized_name:
@@ -78,6 +79,13 @@ class CreateTableSchema(BaseModel):
 
             if not self._column_name_pattern.match(normalized_name):
                 raise ValueError(f"Nombre de columna inválido: {raw_name}")
+
+            normalized_key = normalized_name.casefold()
+            if normalized_key in seen_names:
+                raise ValueError(
+                    f"Nombre de columna duplicado tras normalización: {normalized_name}"
+                )
+            seen_names.add(normalized_key)
 
             normalized_original = " ".join(raw_type.strip().split())
             if not normalized_original:
