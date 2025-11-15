@@ -24,8 +24,10 @@ pip install sqliteplus-enhanced
 ¿Vas a colaborar con el código? Instálala en modo editable y añade las dependencias de desarrollo:
 
 ```bash
-pip install -e .[dev]
+pip install -e '.[dev]'
 ```
+
+> **Nota:** Las comillas simples evitan que shells como `zsh` intenten expandir los corchetes, lo que podría provocar errores al instalar los extras.
 
 Si solo quieres experimentar con la librería dentro del repositorio puedes mantener la instalación mínima:
 
@@ -88,7 +90,7 @@ Una vez en marcha tendrás disponible la documentación interactiva en:
 Instala primero las dependencias de desarrollo para disponer de todas las herramientas usadas en la suite:
 
 ```bash
-pip install -e .[dev]
+pip install -e '.[dev]'
 pytest -v
 ```
 
