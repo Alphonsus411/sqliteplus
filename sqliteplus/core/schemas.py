@@ -46,6 +46,9 @@ class CreateTableSchema(BaseModel):
         "CURRENT_TIMESTAMP",
         "CURRENT_DATE",
         "CURRENT_TIME",
+        "DATE",
+        "TIME",
+        "DATETIME",
     }
     _default_expr_disallowed_tokens: ClassVar[tuple[str, ...]] = (";", "--", "/*", "*/")
     _default_expr_disallowed_keywords: ClassVar[tuple[str, ...]] = (
@@ -197,7 +200,7 @@ class CreateTableSchema(BaseModel):
 
     @classmethod
     def _is_safe_default_expr(cls, expr: str) -> bool:
-        sanitized = expr.strip()
+        sanitized = cls._strip_enclosing_parentheses(expr.strip())
         upper = f" {sanitized.upper()} "
 
         for token in cls._default_expr_disallowed_tokens:
@@ -217,12 +220,63 @@ class CreateTableSchema(BaseModel):
         if cls._default_expr_string_pattern.match(sanitized):
             return True
 
-        function_match = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*)(?:\s*\(\s*\))?", sanitized)
-        if function_match:
-            if function_match.group(1).upper() in cls._default_expr_allowed_functions:
+        function_call = cls._parse_function_call(sanitized)
+        if function_call:
+            func_name, _ = function_call
+            if func_name.upper() in cls._default_expr_allowed_functions:
                 return True
 
         return False
+
+    @staticmethod
+    def _has_balanced_parentheses(expr: str) -> bool:
+        depth = 0
+        for char in expr:
+            if char == "(":
+                depth += 1
+            elif char == ")":
+                depth -= 1
+                if depth < 0:
+                    return False
+        return depth == 0
+
+    @classmethod
+    def _strip_enclosing_parentheses(cls, expr: str) -> str:
+        sanitized = expr
+        while (
+            sanitized.startswith("(")
+            and sanitized.endswith(")")
+            and cls._has_balanced_parentheses(sanitized)
+        ):
+            inner = sanitized[1:-1].strip()
+            if not inner:
+                break
+            sanitized = inner
+        return sanitized
+
+    @staticmethod
+    def _parse_function_call(expr: str) -> tuple[str, str] | None:
+        match = re.match(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", expr)
+        if not match:
+            return None
+
+        func_name = match.group(1)
+        idx = match.end() - 1  # position of the opening parenthesis
+        depth = 0
+        for pos in range(idx, len(expr)):
+            char = expr[pos]
+            if char == "(":
+                depth += 1
+            elif char == ")":
+                depth -= 1
+                if depth == 0:
+                    if pos != len(expr) - 1:
+                        return None
+                    args = expr[idx + 1 : pos].strip()
+                    return func_name, args
+                if depth < 0:
+                    return None
+        return None
 
 
 class InsertDataSchema(BaseModel):

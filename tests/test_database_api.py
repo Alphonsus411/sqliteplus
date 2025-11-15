@@ -134,6 +134,39 @@ async def test_create_table_with_default_injection_returns_bad_request():
 
 
 @pytest.mark.asyncio
+async def test_create_table_with_safe_parenthesized_default():
+    """Las expresiones DEFAULT seguras entre paréntesis deben aceptarse."""
+    transport = ASGITransport(app=app)
+    table_name = "logs_defaults"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        body = {
+            "columns": {
+                "id": "INTEGER PRIMARY KEY",
+                "created_at": "TEXT DEFAULT (CURRENT_TIMESTAMP)",
+                "created_local": "TEXT DEFAULT datetime('now')",
+            }
+        }
+
+        res_create = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json=body,
+            headers=headers,
+        )
+
+        assert res_create.status_code == 200, res_create.text
+
+        res_drop = await ac.delete(
+            f"/databases/{DB_NAME}/drop_table?table_name={table_name}",
+            headers=headers,
+        )
+
+        assert res_drop.status_code == 200
+
+
+@pytest.mark.asyncio
 async def test_create_table_with_multiple_primary_keys_returns_bad_request():
     """La API debe rechazar tablas con más de una columna PRIMARY KEY."""
     transport = ASGITransport(app=app)
