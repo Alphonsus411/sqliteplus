@@ -6,6 +6,7 @@ from sqliteplus import __version__
 from sqliteplus.main import app
 
 DB_NAME = "test_db_api"
+TOKEN_PATH = app.url_path_for("login")
 
 
 def test_app_version_matches_package_version():
@@ -16,7 +17,7 @@ def test_app_version_matches_package_version():
 
 async def _get_auth_headers(client: AsyncClient) -> dict:
     """Obtiene encabezados de autenticación JWT para las peticiones."""
-    res_token = await client.post("/token", data={"username": "admin", "password": "admin"})
+    res_token = await client.post(TOKEN_PATH, data={"username": "admin", "password": "admin"})
     assert res_token.status_code == 200
     token = res_token.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}

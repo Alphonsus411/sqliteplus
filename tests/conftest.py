@@ -21,6 +21,7 @@ from sqliteplus.auth.users import reset_user_service_cache
 
 DB_NAME = "test_db_api"
 TABLE_NAME = "logs"
+TOKEN_PATH = app.url_path_for("login")
 
 
 def _prepare_users_file() -> Path:
@@ -53,7 +54,7 @@ async def client():
 
 @pytest_asyncio.fixture(scope="function")
 async def auth_headers(client):
-    res = await client.post("/token", data={"username": "admin", "password": "admin"})
+    res = await client.post(TOKEN_PATH, data={"username": "admin", "password": "admin"})
     assert res.status_code == 200
     token = res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}

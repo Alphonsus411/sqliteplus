@@ -28,10 +28,14 @@ uvicorn sqliteplus.main:app --reload
 ## 3. Obtén un token JWT
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/token" \
+BASE_URL=${BASE_URL:-http://127.0.0.1:8000}
+curl -X POST "${BASE_URL%/}/token" \
      -H "Content-Type: application/x-www-form-urlencoded" \
      -d "username=admin&password=admin"
 ```
+
+> Si sirves la aplicación detrás de un `root_path` (por ejemplo `/api/sqlite`), define `BASE_URL` con
+> dicho prefijo para que las rutas se resuelvan correctamente.
 
 La respuesta incluye `access_token` y `token_type`.
 
