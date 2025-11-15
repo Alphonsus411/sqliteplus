@@ -17,7 +17,7 @@ pip install -e .
 Si vas a ejecutar las pruebas, el lint o contribuir con cambios instala también las dependencias opcionales y, a continuación, ejecuta la suite con Pytest:
 
 ```bash
-pip install -e .[dev]
+pip install -e '.[dev]'
 pytest -v
 ```
 
@@ -26,7 +26,7 @@ pytest -v
 Si aun así deseas preparar el entorno con las dependencias de Redis instala el extra:
 
 ```bash
-pip install -e .[redis]
+pip install -e '.[redis]'
 ```
 
 ## Desde PyPI
@@ -40,7 +40,9 @@ pip install sqliteplus-enhanced
 Para incluir estas dependencias opcionales de Redis usa:
 
 ```bash
-pip install sqliteplus-enhanced[redis]
+pip install 'sqliteplus-enhanced[redis]'
 ```
+
+> **Consejo:** Las comillas simples evitan que shells como `zsh` intenten expandir los corchetes, lo que podría generar errores al instalar los extras.
 
 La distribución incluye el comando `sqliteplus` y el paquete `sqliteplus.main` listo para ejecutarse con Uvicorn.
