@@ -162,11 +162,17 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
             key_with_spaces = "  clave con espacios  "
             with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": key_with_spaces}, clear=False):
                 manager_spaces = AsyncDatabaseManager()
-                await manager_spaces.get_connection("mocked_db_spaces")
+                try:
+                    await manager_spaces.get_connection("mocked_db_spaces")
+                except HTTPException as exc:
+                    self.fail(f"No debería lanzarse HTTPException con clave válida: {exc}")
 
         key_commands_spaces = [cmd for cmd in commands_with_spaces if cmd.startswith("PRAGMA key")]
         self.assertEqual(len(key_commands_spaces), 1)
-        self.assertEqual(key_commands_spaces[0], "PRAGMA key = 'clave con espacios';")
+        self.assertEqual(
+            key_commands_spaces[0],
+            "PRAGMA key = '  clave con espacios  ';",
+        )
         self.assertFalse(connection_with_spaces.close.await_args_list)
 
         await manager_spaces.close_connections()
@@ -192,7 +198,7 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
 
         key_commands_blank = [cmd for cmd in commands_blank if cmd.startswith("PRAGMA key")]
         self.assertEqual(len(key_commands_blank), 1)
-        self.assertEqual(key_commands_blank[0], "PRAGMA key = '';")
+        self.assertEqual(key_commands_blank[0], "PRAGMA key = '    ';")
         self.assertFalse(connection_blank.close.await_args_list)
 
         await manager_blank.close_connections()

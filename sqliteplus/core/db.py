@@ -130,11 +130,13 @@ class AsyncDatabaseManager:
                             )
                 _INITIALIZED_DATABASES.add(absolute_key)
                 raw_encryption_key = os.getenv("SQLITE_DB_KEY")
-                encryption_key = None
+                stripped_encryption_key = None
                 if raw_encryption_key is not None:
-                    encryption_key = raw_encryption_key.strip()
+                    stripped_encryption_key = raw_encryption_key.strip()
 
-                if self.require_encryption and (encryption_key is None or encryption_key == ""):
+                if self.require_encryption and (
+                    stripped_encryption_key is None or stripped_encryption_key == ""
+                ):
                     logger.error(
                         "Clave de cifrado ausente o vacía en la variable de entorno 'SQLITE_DB_KEY'"
                     )
@@ -145,8 +147,8 @@ class AsyncDatabaseManager:
 
                 connection = await aiosqlite.connect(str(db_path))
                 try:
-                    if encryption_key is not None:
-                        escaped_key = encryption_key.replace("'", "''")
+                    if raw_encryption_key is not None:
+                        escaped_key = raw_encryption_key.replace("'", "''")
                         try:
                             await connection.execute(f"PRAGMA key = '{escaped_key}';")
                         except (aiosqlite.OperationalError, sqlite3.DatabaseError) as exc:
