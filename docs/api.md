@@ -59,12 +59,17 @@ Elimina la tabla indicada. No falla si la tabla no existe.
 
 Inserta un registro en la tabla especificada.
 
-```json
-{
-  "values": {
-    "msg": "Texto desde la API"
-  }
-}
+- **Query**: `table_name` (obligatorio)
+
+```bash
+curl -X POST "http://127.0.0.1:8000/databases/demo/insert?table_name=logs" \
+     -H "Authorization: Bearer <TOKEN>" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "values": {
+             "msg": "Texto desde la API"
+           }
+         }'
 ```
 
 - `409 Conflict`: violación de restricciones (`UNIQUE`, `NOT NULL`, etc.).
@@ -72,6 +77,13 @@ Inserta un registro en la tabla especificada.
 ### `GET /databases/{db_name}/fetch`
 
 Devuelve todas las filas de la tabla.
+
+- **Query**: `table_name` (obligatorio)
+
+```bash
+curl -X GET "http://127.0.0.1:8000/databases/demo/fetch?table_name=logs" \
+     -H "Authorization: Bearer <TOKEN>"
+```
 
 > Nota: Los códigos `404` solo aparecen en operaciones de lectura o borrado cuando la tabla indicada no existe.
 
