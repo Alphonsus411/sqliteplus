@@ -60,9 +60,12 @@ Elimina la tabla indicada. No falla si la tabla no existe.
 
 ### `POST /databases/{db_name}/insert`
 
-Inserta un registro en la tabla especificada.
+Inserta un registro en la tabla especificada. El payload puede llegar ya normalizado bajo la
+clave `values` o como un objeto plano (por compatibilidad con clientes sencillos); en este último
+caso, la API lo reestructura internamente a `{"values": { ... }}` antes de procesarlo.
 
 - **Query**: `table_name` (obligatorio)
+- **Body (JSON)**: `{ "values": { "columna": "valor", ... } }` o `{ "columna": "valor", ... }`
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/databases/demo/insert?table_name=logs" \
@@ -73,6 +76,13 @@ curl -X POST "http://127.0.0.1:8000/databases/demo/insert?table_name=logs" \
              "msg": "Texto desde la API"
            }
          }'
+```
+
+```bash
+curl -X POST "http://127.0.0.1:8000/databases/demo/insert?table_name=logs" \
+     -H "Authorization: Bearer <TOKEN>" \
+     -H "Content-Type: application/json" \
+     -d '{"msg": "Texto"}'
 ```
 
 - `409 Conflict`: violación de restricciones (`UNIQUE`, `NOT NULL`, etc.).
