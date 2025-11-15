@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 # Configuración de seguridad
 _SECRET_KEY_ENV: Final[str] = "SECRET_KEY"
 ALGORITHM = "HS256"
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def _get_secret_key() -> str:

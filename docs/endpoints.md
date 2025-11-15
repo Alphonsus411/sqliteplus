@@ -1,10 +1,12 @@
 # Endpoints REST
 
-Resumen rápido de los recursos disponibles. Todos requieren `Authorization: Bearer <token>` salvo `/token`.
+Resumen rápido de los recursos disponibles. Todos requieren `Authorization: Bearer <token>` salvo la
+ruta de autenticación `token` (que se publicará respetando el `root_path`).
 
 ## Autenticación
 
-- `POST /token` – genera un JWT firmado con `SECRET_KEY`. Usa el fichero `SQLITEPLUS_USERS_FILE`.
+- `POST /token` – genera un JWT firmado con `SECRET_KEY`. Usa el fichero `SQLITEPLUS_USERS_FILE` y se
+  mostrará como `<prefijo>/token` cuando la app se monte bajo un prefijo.
 
 ## Gestión de bases y tablas
 

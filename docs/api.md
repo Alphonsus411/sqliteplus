@@ -13,6 +13,9 @@ La API ofrece operaciones CRUD sobre múltiples bases SQLite protegidas por JWT.
 Genera un token JWT válido por una hora. Las credenciales se validan contra el archivo definido en
 `SQLITEPLUS_USERS_FILE`.
 
+> Nota: la ruta se anuncia de forma relativa en el esquema OpenAPI, por lo que en despliegues con
+> `root_path` o montajes aparecerá como `<prefijo>/token`.
+
 - **Body (form-urlencoded)**
   - `username`
   - `password`
@@ -101,6 +104,6 @@ Respuesta de ejemplo:
 
 ## Reglas generales
 
-- Todos los endpoints (excepto `/token`) exigen `Authorization: Bearer <token>`.
+- Todos los endpoints (excepto `token`) exigen `Authorization: Bearer <token>`.
 - Los nombres de base de datos se normalizan y deben terminar en `.db` o se añade el sufijo.
 - El gestor asincrónico fuerza `PRAGMA journal_mode=WAL` para mejorar la concurrencia.

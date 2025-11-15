@@ -21,12 +21,14 @@ from sqliteplus.auth.users import (
     UserSourceError,
 )
 
+TOKEN_PATH = app.url_path_for("login")
+
 
 @pytest.mark.asyncio
 async def test_jwt_token_success():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        res = await ac.post("/token", data={"username": "admin", "password": "admin"})
+        res = await ac.post(TOKEN_PATH, data={"username": "admin", "password": "admin"})
         assert res.status_code == 200
         data = res.json()
         assert "access_token" in data
@@ -36,7 +38,7 @@ async def test_jwt_token_success():
 async def test_jwt_token_failure():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        res = await ac.post("/token", data={"username": "invalid", "password": "wrong"})
+        res = await ac.post(TOKEN_PATH, data={"username": "invalid", "password": "wrong"})
         assert res.status_code == 400
         assert res.json()["detail"] == "Credenciales incorrectas"
 
@@ -51,7 +53,7 @@ async def test_jwt_token_reports_invalid_users_file_when_directory(tmp_path, mon
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        res = await ac.post("/token", data={"username": "admin", "password": "admin"})
+        res = await ac.post(TOKEN_PATH, data={"username": "admin", "password": "admin"})
 
     assert res.status_code == 500
     expected_message = f"El archivo de usuarios '{users_directory.resolve()}' debe ser un archivo regular"
