@@ -44,6 +44,21 @@ async def test_jwt_token_failure():
 
 
 @pytest.mark.asyncio
+async def test_jwt_token_reports_missing_secret_key(monkeypatch):
+    monkeypatch.delenv("SECRET_KEY", raising=False)
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        res = await ac.post(TOKEN_PATH, data={"username": "admin", "password": "admin"})
+
+    assert res.status_code == 500
+    assert (
+        res.json()["detail"]
+        == "SECRET_KEY debe definirse en el entorno antes de iniciar la aplicación"
+    )
+
+
+@pytest.mark.asyncio
 async def test_jwt_token_reports_invalid_users_file_when_directory(tmp_path, monkeypatch):
     users_directory = tmp_path / "users"
     users_directory.mkdir()
