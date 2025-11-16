@@ -97,7 +97,8 @@ curl -X POST "http://127.0.0.1:8000/databases/demo/insert?table_name=logs" \
 
 ### `GET /databases/{db_name}/fetch`
 
-Devuelve todas las filas de la tabla.
+Devuelve todas las filas de la tabla e incluye el nombre de cada columna en la
+respuesta para facilitar el consumo desde clientes genéricos.
 
 - **Query**: `table_name` (obligatorio)
 
@@ -112,11 +113,15 @@ Respuesta de ejemplo:
 
 ```json
 {
-  "data": [
-    [1, "Texto desde la API", "2025-05-30T10:00:00"]
+  "columns": ["id", "msg", "created_at", "payload"],
+  "rows": [
+    [1, "Texto desde la API", "2025-05-30T10:00:00", "base64:AQID"]
   ]
 }
 ```
+
+- Los valores binarios se devuelven como cadenas con prefijo `base64:`.
+- Los objetos `date`, `time` o `datetime` se serializan en formato ISO 8601.
 
 ---
 

@@ -214,10 +214,9 @@ class AsyncDatabaseManager:
             await conn.commit()
             return cursor.lastrowid
 
-    async def fetch_query(self, db_name, query, params=()):
-        """
-        Ejecuta una consulta de lectura en la base de datos especificada.
-        """
+    async def fetch_query_with_columns(self, db_name, query, params=()):
+        """Ejecuta una consulta de lectura y retorna también los nombres de columna."""
+
         normalized = self._normalize_db_name(db_name)
         conn = await self.get_connection(db_name, _normalized=normalized)
         canonical_name, _ = normalized
@@ -225,8 +224,17 @@ class AsyncDatabaseManager:
 
         async with lock:
             cursor = await conn.execute(query, params)
-            result = await cursor.fetchall()
-            return result
+            rows = await cursor.fetchall()
+            column_names = [column[0] for column in cursor.description or []]
+            return column_names, rows
+
+    async def fetch_query(self, db_name, query, params=()):
+        """
+        Ejecuta una consulta de lectura en la base de datos especificada.
+        """
+
+        _, rows = await self.fetch_query_with_columns(db_name, query, params)
+        return rows
 
     async def close_connections(self):
         """

@@ -11,7 +11,6 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     run_module("sqliteplus.cli", run_name="__main__")
     raise SystemExit()
 
-import base64
 import csv
 import json
 import math
@@ -26,6 +25,7 @@ from typing import Iterable
 import click
 
 from sqliteplus.utils.rich_compat import Console, Panel, Syntax, Table, Text, box
+from sqliteplus.utils.json_serialization import normalize_json_value as _normalize_json_value
 
 from sqliteplus.utils.constants import DEFAULT_DB_PATH
 from sqliteplus.utils.sqliteplus_sync import (
@@ -34,31 +34,6 @@ from sqliteplus.utils.sqliteplus_sync import (
     SQLitePlusQueryError,
 )
 from sqliteplus.utils.replication_sync import SQLiteReplication
-
-
-def _normalize_json_value(value: object) -> object:
-    """Convierte valores complejos en representaciones serializables en JSON."""
-
-    if isinstance(value, memoryview):
-        value = value.tobytes()
-
-    if isinstance(value, (bytes, bytearray)):
-        return "base64:" + base64.b64encode(value).decode("ascii")
-
-    if isinstance(value, Decimal):
-        try:
-            float_value = float(value)
-        except (ValueError, OverflowError):
-            return str(value)
-        else:
-            if math.isfinite(float_value):
-                return float_value
-            return str(value)
-
-    if isinstance(value, (datetime, date, time)):
-        return value.isoformat()
-
-    return value
 
 
 def _launch_fletplus_viewer(

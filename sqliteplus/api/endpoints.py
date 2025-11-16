@@ -13,6 +13,7 @@ if __name__ == "__main__" and __package__ in {None, ""}:
 
 import logging
 from dataclasses import dataclass
+from typing import Sequence
 from urllib.parse import parse_qs
 
 import aiosqlite
@@ -27,6 +28,7 @@ from sqliteplus.core.schemas import (
 )
 from sqliteplus.auth.jwt import generate_jwt, verify_jwt
 from sqliteplus.auth.users import get_user_service, UserSourceError
+from sqliteplus.utils.json_serialization import normalize_json_value
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -37,6 +39,26 @@ def _escape_identifier(identifier: str) -> str:
 
     escaped_identifier = identifier.replace('"', '""')
     return f'"{escaped_identifier}"'
+
+
+def _normalize_rows_response(
+    column_names: Sequence[str] | None,
+    rows: Sequence[Sequence[object]],
+) -> dict[str, list]:
+    """Convierte filas crudas en datos listos para serializar en JSON."""
+
+    normalized_rows = [
+        [normalize_json_value(value) for value in row]
+        for row in rows
+    ]
+
+    normalized_columns = list(column_names or [])
+    if not normalized_columns and normalized_rows:
+        normalized_columns = [
+            f"columna {index + 1}" for index in range(len(normalized_rows[0]))
+        ]
+
+    return {"columns": normalized_columns, "rows": normalized_rows}
 
 
 def _map_sql_error(exc: Exception, table_name: str) -> HTTPException:
@@ -195,13 +217,13 @@ async def fetch_data(db_name: str, table_name: str, user: str = Depends(verify_j
 
     query = f"SELECT * FROM {_escape_identifier(table_name)}"
     try:
-        data = await db_manager.fetch_query(db_name, query)
+        column_names, rows = await db_manager.fetch_query_with_columns(db_name, query)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except (OperationalError, aiosqlite.OperationalError) as exc:
         raise _map_sql_error(exc, table_name) from exc
-        
-    return {"data": data}
+
+    return _normalize_rows_response(column_names, rows)
 
 
 @router.delete("/databases/{db_name:path}/drop_table", tags=["Gestión de Base de Datos"], summary="Eliminar tabla", description="Elimina una tabla de la base de datos.")

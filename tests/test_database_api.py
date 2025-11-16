@@ -1,8 +1,13 @@
-import pytest
+import base64
+import sqlite3
 from pathlib import Path
 from urllib.parse import quote
+
+import pytest
 from httpx import AsyncClient, ASGITransport
+
 from sqliteplus import __version__
+from sqliteplus.core.db import db_manager
 from sqliteplus.main import app
 
 DB_NAME = "test_db_api"
@@ -69,17 +74,80 @@ async def test_create_table_and_insert_data():
         # Mostramos el contenido real si falla
         print("Contenido recibido:", response_json)
 
-        data = response_json.get("data", [])
-        assert isinstance(data, list), "La respuesta no contiene una lista válida en 'data'"
+        columns = response_json.get("columns", [])
+        rows = response_json.get("rows", [])
+        assert isinstance(columns, list)
+        assert isinstance(rows, list)
+        assert "msg" in columns and "level" in columns
+        msg_index = columns.index("msg")
+        level_index = columns.index("level")
         assert any(
-            len(row) >= 3 and row[1] == "Hola desde el test" and row[2] == "INFO"
-            for row in data
+            row[msg_index] == "Hola desde el test" and row[level_index] == "INFO"
+            for row in rows
         ), "El mensaje no fue encontrado en los registros"
 
         # 5. Eliminar la tabla tras el test
         res_drop = await ac.delete(
             f"/databases/{DB_NAME}/drop_table?table_name=logs",
             headers=headers
+        )
+        assert res_drop.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_fetch_serializes_blobs_and_exposes_columns():
+    transport = ASGITransport(app=app)
+    table_name = "binary_logs"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        create_body = {
+            "columns": {
+                "id": "INTEGER PRIMARY KEY",
+                "payload": "BLOB",
+                "created_at": "TEXT",
+            }
+        }
+
+        res_create = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json=create_body,
+            headers=headers,
+        )
+        assert res_create.status_code == 200
+
+        binary_payload = b"\x00\x01payload binario"
+        await db_manager.execute_query(
+            DB_NAME,
+            f'INSERT INTO "{table_name}" (payload, created_at) VALUES (?, ?)',
+            (sqlite3.Binary(binary_payload), "2024-01-02T03:04:05"),
+        )
+
+        res_fetch = await ac.get(
+            f"/databases/{DB_NAME}/fetch?table_name={table_name}",
+            headers=headers,
+        )
+        assert res_fetch.status_code == 200
+
+        payload = res_fetch.json()
+        columns = payload["columns"]
+        rows = payload["rows"]
+        assert columns == ["id", "payload", "created_at"]
+        assert len(rows) == 1
+        row = rows[0]
+
+        blob_value = row[columns.index("payload")]
+        assert blob_value.startswith("base64:")
+        decoded = base64.b64decode(blob_value.split(":", 1)[1])
+        assert decoded == binary_payload
+
+        timestamp_value = row[columns.index("created_at")]
+        assert timestamp_value == "2024-01-02T03:04:05"
+
+        res_drop = await ac.delete(
+            f"/databases/{DB_NAME}/drop_table?table_name={table_name}",
+            headers=headers,
         )
         assert res_drop.status_code == 200
 
@@ -262,13 +330,18 @@ async def test_insert_data_with_varied_columns():
             headers=headers,
         )
         assert res_fetch.status_code == 200
-        data = res_fetch.json().get("data", [])
+        payload = res_fetch.json()
+        columns = payload.get("columns", [])
+        rows = payload.get("rows", [])
+        assert len(rows) == 3
+        msg_index = columns.index("msg")
+        level_index = columns.index("level")
+        metadata_index = columns.index("metadata")
 
-        assert len(data) == 3
-        assert data[0][1] == "Primer registro"
-        assert data[1][1] == "Segundo registro" and data[1][2] == "WARN"
-        assert data[2][1] == "Tercer registro" and data[2][2] == "DEBUG"
-        assert data[2][3] == '{"trace_id": 123}'
+        assert rows[0][msg_index] == "Primer registro"
+        assert rows[1][msg_index] == "Segundo registro" and rows[1][level_index] == "WARN"
+        assert rows[2][msg_index] == "Tercer registro" and rows[2][level_index] == "DEBUG"
+        assert rows[2][metadata_index] == '{"trace_id": 123}'
 
         res_drop = await ac.delete(
             f"/databases/{DB_NAME}/drop_table?table_name={table_name}",
