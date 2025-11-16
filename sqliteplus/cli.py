@@ -11,11 +11,13 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     run_module("sqliteplus.cli", run_name="__main__")
     raise SystemExit()
 
+import base64
 import csv
 import json
 import math
 import sqlite3
 import webbrowser
+from datetime import date, datetime, time
 from decimal import Decimal
 from numbers import Number
 from pathlib import Path
@@ -32,6 +34,31 @@ from sqliteplus.utils.sqliteplus_sync import (
     SQLitePlusQueryError,
 )
 from sqliteplus.utils.replication_sync import SQLiteReplication
+
+
+def _normalize_json_value(value: object) -> object:
+    """Convierte valores complejos en representaciones serializables en JSON."""
+
+    if isinstance(value, memoryview):
+        value = value.tobytes()
+
+    if isinstance(value, (bytes, bytearray)):
+        return "base64:" + base64.b64encode(value).decode("ascii")
+
+    if isinstance(value, Decimal):
+        try:
+            float_value = float(value)
+        except (ValueError, OverflowError):
+            return str(value)
+        else:
+            if math.isfinite(float_value):
+                return float_value
+            return str(value)
+
+    if isinstance(value, (datetime, date, time)):
+        return value.isoformat()
+
+    return value
 
 
 def _launch_fletplus_viewer(
@@ -701,13 +728,18 @@ def export_query(ctx, export_format, limit, overwrite, output_file, query):
     ]
 
     if export_format.lower() == "json":
+        json_ready_rows = [
+            tuple(_normalize_json_value(value) for value in row)
+            for row in rows
+        ]
+
         if normalized_columns:
             payload = [
                 {normalized_columns[idx]: row[idx] for idx in range(len(row))}
-                for row in rows
+                for row in json_ready_rows
             ]
         else:
-            payload = [list(row) for row in rows]
+            payload = [list(row) for row in json_ready_rows]
         path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     else:
         with path.open("w", encoding="utf-8", newline="") as file_handle:
