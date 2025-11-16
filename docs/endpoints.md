@@ -15,7 +15,7 @@ ruta de autenticación `token` (que se publicará respetando el `root_path`).
 
 ## Operaciones CRUD
 
-- `POST /databases/{db_name}/insert` – inserta filas usando placeholders `?` y requiere `table_name` como query.
-- `GET /databases/{db_name}/fetch` – devuelve todas las filas de la tabla indicado en `table_name`.
+- `POST /databases/{db_name}/insert` – inserta filas usando placeholders `?`, requiere `table_name` como query y responde con `404` si la tabla no existe.
+- `GET /databases/{db_name}/fetch` – devuelve todas las filas de la tabla indicado en `table_name`; responde con `404` si la tabla no existe.
 
 Consulta `docs/api.md` para conocer los cuerpos de petición y respuestas detalladas.
