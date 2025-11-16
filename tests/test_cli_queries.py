@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from click.testing import CliRunner
 
 from sqliteplus.cli import _format_numeric, cli
@@ -53,3 +55,31 @@ def test_format_numeric_uses_single_decimal_separator():
 
     assert formatted == "1\u202f234.56"
     assert formatted.count(".") == 1
+
+
+def test_fetch_json_normalizes_special_types(monkeypatch):
+    runner = CliRunner()
+    recorded_queries = []
+
+    class DummySQLitePlus:
+        def __init__(self, db_path=None, cipher_key=None):
+            pass
+
+        def fetch_query_with_columns(self, query):
+            recorded_queries.append(query)
+            return (
+                ["created_at", "payload"],
+                [(datetime(2024, 1, 2, 3, 4, 5), b"\x01\x02\x03")],
+            )
+
+    monkeypatch.setattr("sqliteplus.cli.SQLitePlus", DummySQLitePlus)
+
+    result = runner.invoke(
+        cli,
+        ["fetch", "--output", "json", "SELECT", "*", "FROM", "demo"],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "2024-01-02T03:04:05" in result.output
+    assert "base64:AQID" in result.output
+    assert recorded_queries == ["SELECT * FROM demo"]
