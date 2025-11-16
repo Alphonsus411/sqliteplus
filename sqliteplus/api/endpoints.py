@@ -12,13 +12,12 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     raise SystemExit()
 
 import logging
-from dataclasses import dataclass
 from typing import Sequence
-from urllib.parse import parse_qs
 
 import aiosqlite
 from sqlite3 import OperationalError
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 
 from sqliteplus.core.db import db_manager
 from sqliteplus.core.schemas import (
@@ -118,34 +117,8 @@ def _map_sql_error(exc: Exception, table_name: str) -> HTTPException:
         detail="Error interno al ejecutar la operación en la base de datos",
     )
 
-@dataclass
-class _LoginForm:
-    username: str
-    password: str
-
-
-async def _parse_login_form(request: Request) -> _LoginForm:
-    body = await request.body()
-    if not body:
-        raise HTTPException(status_code=400, detail="Credenciales faltantes")
-
-    try:
-        decoded = body.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise HTTPException(status_code=400, detail="Formulario inválido") from exc
-
-    form_values = parse_qs(decoded, keep_blank_values=True)
-    username = form_values.get("username", [""])[0]
-    password = form_values.get("password", [""])[0]
-
-    if not username or not password:
-        raise HTTPException(status_code=400, detail="Usuario o contraseña ausentes")
-
-    return _LoginForm(username=username, password=password)
-
-
 @router.post("/token", tags=["Autenticación"], summary="Obtener un token de autenticación", description="Genera un token JWT válido por 1 hora.")
-async def login(form_data: _LoginForm = Depends(_parse_login_form)):
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     try:
         user_service = get_user_service()
     except UserSourceError as exc:
