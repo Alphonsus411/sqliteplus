@@ -1,5 +1,9 @@
+import builtins
+import importlib
+import sys
 from datetime import datetime
 
+import click
 from click.testing import CliRunner
 
 from sqliteplus.cli import _format_numeric, cli
@@ -83,3 +87,69 @@ def test_fetch_json_normalizes_special_types(monkeypatch):
     assert "2024-01-02T03:04:05" in result.output
     assert "base64:AQID" in result.output
     assert recorded_queries == ["SELECT * FROM demo"]
+
+
+def test_cli_commands_work_without_rich(monkeypatch):
+    import sqliteplus.cli as cli_module
+    import sqliteplus.utils.rich_compat as rich_compat_module
+
+    removed_modules = {
+        name: module for name, module in list(sys.modules.items()) if name.startswith("rich")
+    }
+    for name in removed_modules:
+        sys.modules.pop(name, None)
+
+    original_import = builtins.__import__
+
+    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name.startswith("rich"):
+            raise ModuleNotFoundError(name)
+        return original_import(name, globals, locals, fromlist, level)
+
+    builtins.__import__ = fake_import
+
+    try:
+        reloaded_compat = importlib.reload(rich_compat_module)
+        reloaded_cli = importlib.reload(cli_module)
+
+        assert reloaded_compat.HAVE_RICH is False
+
+        class DummySQLitePlus:
+            def __init__(self, db_path=None, cipher_key=None):
+                self.db_path = db_path
+                self.cipher_key = cipher_key
+
+            def list_tables(self, include_views=False, include_row_counts=True):
+                return [
+                    {"name": "demo", "type": "table", "row_count": 2},
+                    {"name": "vista", "type": "view", "row_count": None},
+                ]
+
+            def get_database_statistics(self):
+                return {
+                    "path": self.db_path or "demo.db",
+                    "size_in_bytes": 4096,
+                    "last_modified": datetime(2024, 1, 1, 12, 0, 0),
+                    "table_count": 2,
+                    "view_count": 1,
+                    "total_rows": 2,
+                }
+
+        monkeypatch.setattr(reloaded_cli, "SQLitePlus", DummySQLitePlus)
+
+        ctx_tables = click.Context(
+            reloaded_cli.list_tables,
+            obj={"db_path": "demo.db", "cipher_key": None, "console": reloaded_cli.Console()},
+        )
+        reloaded_cli.list_tables.callback(ctx_tables, False, False, "system", 12)
+
+        ctx_info = click.Context(
+            reloaded_cli.database_info,
+            obj={"db_path": "demo.db", "cipher_key": None, "console": reloaded_cli.Console()},
+        )
+        reloaded_cli.database_info.callback(ctx_info)
+    finally:
+        builtins.__import__ = original_import
+        sys.modules.update(removed_modules)
+        importlib.reload(rich_compat_module)
+        importlib.reload(cli_module)

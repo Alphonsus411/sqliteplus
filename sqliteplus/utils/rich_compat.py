@@ -9,7 +9,6 @@ usuario final en entornos mínimos (por ejemplo en la imagen de CI).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from types import SimpleNamespace
 from typing import Sequence
 
 try:  # pragma: no cover - se ejecuta en entornos con Rich instalado
@@ -26,7 +25,36 @@ except ModuleNotFoundError:  # pragma: no cover - utilizado en los tests
 
     HAVE_RICH = False
 
-    box = SimpleNamespace(MINIMAL_DOUBLE_HEAD=None)
+    class _BoxSentinel:
+        """Objeto ligero usado para representar un estilo de borde inexistente."""
+
+        def __init__(self, name: str):
+            self.name = name
+
+        def __repr__(self) -> str:  # pragma: no cover - salida auxiliar
+            return f"<box {self.name}>"
+
+
+    class _FallbackBox:
+        """Tabla de estilos compatibles con la CLI cuando Rich no está disponible."""
+
+        _KNOWN_NAMES = (
+            "MINIMAL_DOUBLE_HEAD",
+            "SQUARE",
+            "MINIMAL",
+            "SIMPLE_HEAVY",
+        )
+
+        def __init__(self) -> None:
+            for name in self._KNOWN_NAMES:
+                setattr(self, name, _BoxSentinel(name))
+
+        def __getattr__(self, name: str) -> _BoxSentinel:
+            sentinel = _BoxSentinel(name)
+            setattr(self, name, sentinel)
+            return sentinel
+
+    box = _FallbackBox()
 
     class Text(str):
         """Representación de texto simple ignorando estilos."""
