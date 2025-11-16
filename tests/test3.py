@@ -29,6 +29,12 @@ else:
 import jwt
 
 
+class JWTGenerationError(RuntimeError):
+    """Error específico para fallos al generar un token JWT."""
+
+    pass
+
+
 REQUIRED_ENV_VARS = {
     "SECRET_KEY": "Clave utilizada para firmar los JWT.",
     "SQLITE_DB_KEY": "Clave de cifrado para SQLCipher.",
@@ -82,20 +88,30 @@ def verify_password(password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(password.encode(), hashed_password.encode())
 
 def generate_jwt(user_id: int, role: str) -> str:
-    """
-    Genera un token JWT válido.
-    """
+    """Genera un token JWT válido o lanza un error descriptivo si falla."""
+
+    payload = {
+        "sub": user_id,
+        "role": role,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2),
+    }
+
     try:
-        payload = {
-            "sub": user_id,
-            "role": role,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
-        }
         secret_key = get_secret_key()
-        return jwt.encode(payload, secret_key, algorithm="HS256")
-    except Exception as e:
-        print(f"Error generando JWT: {e}")
-        return None
+    except EnvironmentError as exc:
+        raise JWTGenerationError(
+            "No se puede generar un JWT porque falta la variable SECRET_KEY."
+        ) from exc
+
+    try:
+        token = jwt.encode(payload, secret_key, algorithm="HS256")
+    except jwt.PyJWTError as exc:
+        raise JWTGenerationError("PyJWT no pudo firmar el token JWT solicitado.") from exc
+
+    if isinstance(token, bytes):
+        token = token.decode("utf-8")
+
+    return token
 
 def decode_jwt(token: str):
     """

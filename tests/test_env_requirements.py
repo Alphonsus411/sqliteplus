@@ -1,13 +1,31 @@
 """Pruebas para validar que tests/test3.py exige claves seguras del entorno."""
 
+import importlib.util
 import os
 import sqlite3
 import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 
 SCRIPT_PATH = Path(__file__).with_name("test3.py")
+
+
+def _load_security_module():
+    """Carga una instancia fresca de test3.py para evitar estados compartidos."""
+
+    module_name = "security_script_under_test"
+    if module_name in sys.modules:
+        del sys.modules[module_name]
+
+    spec = importlib.util.spec_from_file_location(module_name, SCRIPT_PATH)
+    module = importlib.util.module_from_spec(spec)
+    assert spec and spec.loader  # pragma: no cover - protección adicional.
+    spec.loader.exec_module(module)  # type: ignore[union-attr]
+    sys.modules[module_name] = module
+    return module
 
 
 def test_security_script_fails_without_secret_key():
@@ -111,3 +129,30 @@ def connect(_path):
             assert cursor.fetchone() is None
         finally:
             connection.close()
+
+
+def test_generate_jwt_returns_token_with_valid_environment(monkeypatch):
+    """generate_jwt debe devolver un token decodificable cuando hay claves válidas."""
+
+    monkeypatch.setenv("SECRET_KEY", "clave_jwt_segura")
+    monkeypatch.setenv("SQLITE_DB_KEY", "clave_sqlcipher_segura")
+    module = _load_security_module()
+
+    token = module.generate_jwt(user_id=42, role="admin")
+
+    assert isinstance(token, str)
+    decoded = module.decode_jwt(token)
+    assert decoded["sub"] == 42
+    assert decoded["role"] == "admin"
+
+
+def test_generate_jwt_raises_error_without_secret_key(monkeypatch):
+    """Si falta SECRET_KEY, debe propagarse la excepción específica de generación de JWT."""
+
+    monkeypatch.delenv("SECRET_KEY", raising=False)
+    module = _load_security_module()
+
+    with pytest.raises(module.JWTGenerationError) as exc_info:
+        module.generate_jwt(user_id=1, role="viewer")
+
+    assert "SECRET_KEY" in str(exc_info.value)
