@@ -282,10 +282,15 @@ class SQLitePlus:
 
         tables = self.list_tables(include_views=include_views, include_row_counts=True)
         db_file = Path(self.db_path)
-        size_in_bytes = db_file.stat().st_size if db_file.exists() else 0
+        try:
+            stat_result = db_file.stat()
+        except FileNotFoundError:
+            stat_result = None
+
+        size_in_bytes = stat_result.st_size if stat_result else 0
         last_modified = (
-            datetime.fromtimestamp(db_file.stat().st_mtime)
-            if db_file.exists()
+            datetime.fromtimestamp(stat_result.st_mtime)
+            if stat_result
             else None
         )
 

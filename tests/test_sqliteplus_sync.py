@@ -173,3 +173,24 @@ def test_describe_table_accepts_whitespace_and_dash_names(tmp_path, monkeypatch)
         "id",
         "mensaje",
     ]
+
+
+def test_get_database_statistics_handles_deleted_file(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    db = SQLitePlus(db_path="stats.db")
+    db.log_action("seed")
+
+    db_file = Path(db.db_path)
+    original_stat = sqliteplus_sync.Path.stat
+
+    def fake_stat(self):
+        if Path(self) == db_file:
+            raise FileNotFoundError
+        return original_stat(self)
+
+    monkeypatch.setattr(sqliteplus_sync.Path, "stat", fake_stat)
+
+    stats = db.get_database_statistics()
+
+    assert stats["size_in_bytes"] == 0
+    assert stats["last_modified"] is None
