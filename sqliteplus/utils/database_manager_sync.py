@@ -1,8 +1,21 @@
 from __future__ import annotations
 
+import logging
 import sqlite3
 import threading
 from pathlib import Path
+
+
+logger = logging.getLogger(__name__)
+
+
+class DatabaseQueryError(Exception):
+    """Excepción personalizada para errores en consultas SQL."""
+
+    def __init__(self, query: str, original_error: Exception):
+        self.query = query
+        self.original_error = original_error
+        super().__init__(f"Error al ejecutar la consulta '{query}': {original_error}")
 
 
 class DatabaseManager:
@@ -61,9 +74,9 @@ class DatabaseManager:
                 cursor.execute(query, params)
                 conn.commit()
                 return cursor.lastrowid
-            except sqlite3.Error as e:
-                print(f"Error en la consulta: {e}")
-                return None
+            except sqlite3.Error as exc:
+                logger.error("Error en consulta de escritura", exc_info=exc)
+                raise DatabaseQueryError(query, exc) from exc
 
     def fetch_query(self, db_name, query, params=()):
         """
@@ -79,9 +92,9 @@ class DatabaseManager:
             try:
                 cursor.execute(query, params)
                 return cursor.fetchall()
-            except sqlite3.Error as e:
-                print(f"Error en la consulta: {e}")
-                return None
+            except sqlite3.Error as exc:
+                logger.error("Error en consulta de lectura", exc_info=exc)
+                raise DatabaseQueryError(query, exc) from exc
 
     def close_connections(self):
         """
@@ -97,4 +110,4 @@ if __name__ == "__main__":
     manager = DatabaseManager()
     manager.execute_query("test_db", "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)")
     manager.execute_query("test_db", "INSERT INTO logs (action) VALUES (?)", ("Test de SQLitePlus",))
-    print(manager.fetch_query("test_db", "SELECT * FROM logs"))
+    manager.fetch_query("test_db", "SELECT * FROM logs")
