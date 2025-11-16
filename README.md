@@ -46,6 +46,7 @@ Guarda tus claves como variables de entorno para evitar dejarlas en el código.
 | `SECRET_KEY` | ✅ | Firmar los tokens JWT de la API. |
 | `SQLITEPLUS_USERS_FILE` | ✅ | Ubicación del JSON con usuarios y contraseñas hasheadas con `bcrypt`. |
 | `SQLITE_DB_KEY` | Opcional | Clave SQLCipher para abrir bases cifradas desde la API o la CLI. |
+| `SQLITEPLUS_FORCE_RESET` | Opcional | Valores como `1`, `true` o `on` fuerzan el borrado del archivo SQLite antes de recrear la conexión. |
 
 Ejemplo rápido para generar valores seguros:
 
@@ -94,7 +95,7 @@ pip install -e '.[dev]'
 pytest -v
 ```
 
-Cuando detecta pytest, `AsyncDatabaseManager` borra y recrea las bases ubicadas en `databases/` antes de abrirlas en lugar de moverlas a carpetas temporales. Así se evita que queden datos residuales entre ejecuciones y los archivos se limpian desde `_reset_on_init`, que se activa automáticamente durante las pruebas; puedes revisar la [reinicialización automática en pruebas](./docs/uso_avanzado.md#reinicialización-automática-en-pruebas) o el código correspondiente en [`sqliteplus/core/db.py`](./sqliteplus/core/db.py).
+Cuando detecta pytest, `AsyncDatabaseManager` borra y recrea las bases ubicadas en `databases/` antes de abrirlas en lugar de moverlas a carpetas temporales. La detección es **perezosa**: en cada `get_connection()` vuelve a comprobar `PYTEST_CURRENT_TEST` y la nueva variable `SQLITEPLUS_FORCE_RESET`, por lo que puedes pedir un reinicio incluso si el gestor global ya se creó (por ejemplo, desde la app FastAPI). Revisa la [reinicialización automática en pruebas](./docs/uso_avanzado.md#reinicialización-automática-en-pruebas) o el código correspondiente en [`sqliteplus/core/db.py`](./sqliteplus/core/db.py).
 
 ---
 

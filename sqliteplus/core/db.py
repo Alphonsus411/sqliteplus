@@ -19,6 +19,15 @@ _INITIALIZED_DATABASES: set[str] = set()
 _LIVE_MANAGERS = weakref.WeakSet()
 
 
+def _is_truthy(value: str | None) -> bool:
+    if value is None:
+        return False
+    normalized = value.strip().lower()
+    if not normalized:
+        return False
+    return normalized not in {"0", "false", "no", "off"}
+
+
 class AsyncDatabaseManager:
     """
     Gestor de bases de datos SQLite asíncrono con `aiosqlite`.
@@ -33,9 +42,11 @@ class AsyncDatabaseManager:
         conexiones. Si es ``None`` se detecta automáticamente.
     reset_on_init:
         Cuando es ``True`` se elimina la base de datos existente antes de
-        inicializarla de nuevo. Por defecto se activa sólo durante la ejecución
-        de las pruebas (detectado a través de ``PYTEST_CURRENT_TEST``) para evitar
-        que queden datos residuales entre ejecuciones repetidas.
+        inicializarla de nuevo. Además del valor pasado explícitamente, el
+        gestor vuelve a comprobar en cada creación de conexión las variables
+        ``PYTEST_CURRENT_TEST`` y ``SQLITEPLUS_FORCE_RESET`` para decidir si debe
+        borrar el archivo, evitando residuos incluso si el gestor global ya está
+        instanciado.
     """
 
     def __init__(
@@ -56,12 +67,20 @@ class AsyncDatabaseManager:
             self.require_encryption = os.getenv("SQLITE_DB_KEY") is not None
         else:
             self.require_encryption = require_encryption
+        self._auto_reset_detection = reset_on_init is None
         if reset_on_init is None:
             self._reset_on_init = bool(os.getenv("PYTEST_CURRENT_TEST"))
         else:
             self._reset_on_init = reset_on_init
 
         self._register_instance()
+
+    def _should_reset_database(self) -> bool:
+        if self._reset_on_init:
+            return True
+        if self._auto_reset_detection and os.getenv("PYTEST_CURRENT_TEST"):
+            return True
+        return _is_truthy(os.getenv("SQLITEPLUS_FORCE_RESET"))
 
     def _normalize_db_name(self, raw_name: str) -> tuple[str, Path]:
         sanitized = raw_name.strip()
@@ -105,8 +124,11 @@ class AsyncDatabaseManager:
             absolute_key = str(db_path)
 
             if recreate_connection:
+                should_reset = self._should_reset_database()
+                if should_reset:
+                    _INITIALIZED_DATABASES.discard(absolute_key)
                 if absolute_key not in _INITIALIZED_DATABASES:
-                    if self._reset_on_init and db_path.exists():
+                    if should_reset and db_path.exists():
                         try:
                             db_path.unlink()
                         except OSError as exc:
