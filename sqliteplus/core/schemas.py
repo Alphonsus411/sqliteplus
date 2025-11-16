@@ -5,12 +5,16 @@ from pydantic import BaseModel, field_validator, model_validator
 
 
 SQLITE_IDENTIFIER_PATTERN = re.compile(r'^(?!\s)(?!.*\s$)[^"\x00-\x1F]+$')
+SQLITE_IDENTIFIER_DISALLOWED_TOKENS: tuple[str, ...] = (";", "--", "/*", "*/")
 
 
 def is_valid_sqlite_identifier(identifier: str) -> bool:
     """Valida si una cadena puede utilizarse como identificador en SQLite."""
 
     if not isinstance(identifier, str):
+        return False
+
+    if any(token in identifier for token in SQLITE_IDENTIFIER_DISALLOWED_TOKENS):
         return False
 
     return bool(SQLITE_IDENTIFIER_PATTERN.match(identifier))
@@ -78,6 +82,9 @@ class CreateTableSchema(BaseModel):
                 raise ValueError("Los nombres de columna no pueden estar vacíos")
 
             if not self._column_name_pattern.match(normalized_name):
+                raise ValueError(f"Nombre de columna inválido: {raw_name}")
+
+            if any(token in normalized_name for token in SQLITE_IDENTIFIER_DISALLOWED_TOKENS):
                 raise ValueError(f"Nombre de columna inválido: {raw_name}")
 
             normalized_key = normalized_name.casefold()

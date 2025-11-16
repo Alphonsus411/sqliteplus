@@ -45,7 +45,12 @@ def _normalize_rows_response(
     column_names: Sequence[str] | None,
     rows: Sequence[Sequence[object]],
 ) -> dict[str, list]:
-    """Convierte filas crudas en datos listos para serializar en JSON."""
+    """Convierte filas crudas en datos listos para serializar en JSON.
+
+    A partir de esta versión la clave ``data`` actúa como alias de ``rows``
+    para mantener compatibilidad con clientes anteriores que consumían dicho
+    nombre.
+    """
 
     normalized_rows = [
         [normalize_json_value(value) for value in row]
@@ -58,7 +63,12 @@ def _normalize_rows_response(
             f"columna {index + 1}" for index in range(len(normalized_rows[0]))
         ]
 
-    return {"columns": normalized_columns, "rows": normalized_rows}
+    normalized_response = {
+        "columns": normalized_columns,
+        "rows": normalized_rows,
+    }
+    normalized_response["data"] = normalized_rows
+    return normalized_response
 
 
 def _map_sql_error(exc: Exception, table_name: str) -> HTTPException:

@@ -34,7 +34,10 @@ async def test_full_data_flow(client, auth_headers):
         headers=auth_headers
     )
     assert res_fetch.status_code == 200
-    data = res_fetch.json().get("data", [])
+    payload = res_fetch.json()
+    assert "rows" in payload and "data" in payload
+    assert payload["rows"] == payload["data"]
+    data = payload["data"]
     for expected_text, _ in payloads:
         assert any(expected_text in str(row) for row in data)
 
@@ -99,7 +102,9 @@ async def test_create_table_rejects_malicious_column_type(client, auth_headers):
             headers=auth_headers,
         )
         assert res_fetch.status_code == 200
-        data = res_fetch.json().get("data", [])
+        payload = res_fetch.json()
+        assert payload["rows"] == payload["data"]
+        data = payload["data"]
         assert any("registro seguro" in str(row) for row in data)
     finally:
         for table in (safe_table, malicious_table):
@@ -151,7 +156,9 @@ async def test_create_table_rejects_malicious_column_name(client, auth_headers):
             headers=auth_headers,
         )
         assert res_fetch.status_code == 200
-        data = res_fetch.json().get("data", [])
+        payload = res_fetch.json()
+        assert payload["rows"] == payload["data"]
+        data = payload["data"]
         assert any("registro seguro" in str(row) for row in data)
     finally:
         for table in (safe_table, malicious_table):
@@ -192,7 +199,9 @@ async def test_create_table_accepts_multiple_constraints(client, auth_headers):
             headers=auth_headers,
         )
         assert res_fetch.status_code == 200
-        assert isinstance(res_fetch.json().get("data", []), list)
+        payload = res_fetch.json()
+        assert payload["rows"] == payload["data"]
+        assert isinstance(payload["data"], list)
     finally:
         await client.delete(
             f"/databases/{db_name}/drop_table?table_name={table}",

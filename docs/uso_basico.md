@@ -64,4 +64,6 @@ curl -X GET "http://127.0.0.1:8000/databases/demo/fetch?table_name=logs" \
      -H "Authorization: Bearer <TOKEN>"
 ```
 
-Recibirás todas las filas de la tabla en formato JSON.
+Recibirás todas las filas de la tabla en formato JSON. El listado aparece bajo
+las claves `rows` y `data` (esta última es un alias para compatibilidad con
+clientes antiguos).

@@ -49,7 +49,10 @@ async def test_insert_and_fetch_data(client, auth_headers):
         headers=auth_headers
     )
     assert res_fetch.status_code == 200
-    data = res_fetch.json().get("data", [])
+    payload = res_fetch.json()
+    assert "rows" in payload and "data" in payload
+    assert payload["rows"] == payload["data"]
+    data = payload["data"]
     assert isinstance(data, list)
     for expected_text, _ in payloads:
         assert any(expected_text in str(row) for row in data)
@@ -82,7 +85,9 @@ async def test_fetch_and_drop_special_table_names(client, auth_headers, special_
         headers=auth_headers,
     )
     assert res_fetch.status_code == 200
-    assert isinstance(res_fetch.json().get("data", []), list)
+    payload = res_fetch.json()
+    assert payload["rows"] == payload["data"]
+    assert isinstance(payload["data"], list)
 
     res_drop = await client.delete(
         f"/databases/{DB_NAME}/drop_table",
