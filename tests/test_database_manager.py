@@ -1,8 +1,10 @@
+import io
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
-from sqliteplus.utils.database_manager_sync import DatabaseManager
+from sqliteplus.utils.database_manager_sync import DatabaseManager, DatabaseQueryError
 
 
 class TestDatabaseManager(unittest.TestCase):
@@ -67,6 +69,17 @@ class TestDatabaseManager(unittest.TestCase):
 
             self.assertTrue(original_path.exists())
             self.assertFalse((temp_dir / "MAYUS.DB.db").exists())
+
+    def test_invalid_query_raises_and_no_stdout_noise(self):
+        """Las consultas inválidas deben lanzar excepción sin escribir en stdout."""
+        capture = io.StringIO()
+        invalid_query = "INSRT INTO logs (action) VALUES (?)"
+
+        with redirect_stdout(capture):
+            with self.assertRaises(DatabaseQueryError):
+                self.manager.execute_query(self.db_name, invalid_query, ("Test",))
+
+        self.assertEqual(capture.getvalue(), "")
 
     @classmethod
     def tearDownClass(cls):
