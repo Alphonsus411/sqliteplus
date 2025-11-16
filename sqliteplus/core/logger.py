@@ -1,6 +1,11 @@
-import aiosqlite
 import asyncio
+import logging
 from pathlib import Path
+
+import aiosqlite
+
+
+logger = logging.getLogger(__name__)
 
 class AsyncSQLitePlus:
     """
@@ -36,9 +41,9 @@ class AsyncSQLitePlus:
                     cursor = await conn.execute(query, params)
                     await conn.commit()
                     return cursor.lastrowid
-                except aiosqlite.Error as e:
-                    print(f"Error en la consulta: {e}")
-                    return None
+                except aiosqlite.Error:
+                    logger.exception("Error ejecutando consulta: %s", query)
+                    raise
 
     async def fetch_query(self, query, params=()):
         async with self.lock:
@@ -46,9 +51,9 @@ class AsyncSQLitePlus:
                 try:
                     cursor = await conn.execute(query, params)
                     return await cursor.fetchall()
-                except aiosqlite.Error as e:
-                    print(f"Error en la consulta: {e}")
-                    return None
+                except aiosqlite.Error:
+                    logger.exception("Error obteniendo resultados para consulta: %s", query)
+                    raise
 
     async def log_action(self, action):
         await self.initialize()
