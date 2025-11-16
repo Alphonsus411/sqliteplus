@@ -73,6 +73,8 @@ sqliteplus export-csv logs logs.csv
 
 Genera un CSV con encabezados listo para compartir. Puedes utilizar nombres de tabla con espacios o guiones (`"logs con espacios"`, `"logs-con-guion"`), la herramienta se encarga de escaparlos sin perder seguridad. Si necesitas otra base diferente a la global, añade `--db-path /ruta/a/otra.db`.
 
+> Nota: la utilidad `SQLiteReplication.export_to_csv` únicamente devuelve la ruta final; la CLI se encarga de mostrarla en un panel Rich para evitar mensajes duplicados cuando reutilices la función desde tus propios scripts.
+
 ## Exportar resultados de una consulta
 
 ```bash
@@ -101,6 +103,8 @@ sqliteplus backup
 ```
 
 Obtendrás un respaldo fechado en la carpeta `backups/`. El comando indica el archivo final. También puedes pasar `--db-path` para copiar una base concreta.
+
+De forma análoga, `SQLiteReplication.backup_database` retorna la ubicación creada sin imprimir mensajes directos, lo que garantiza que toda la salida visible provenga de la CLI y puedas reutilizar la función en otros contextos.
 
 ## Trabajar con SQLCipher
 

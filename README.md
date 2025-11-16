@@ -117,6 +117,8 @@ Comandos disponibles:
 - `sqliteplus export-csv <tabla> <archivo.csv>` guarda la tabla en un CSV con encabezados.
 - `sqliteplus backup` genera un respaldo fechado en la carpeta `backups/`. Puedes especificar otra ruta con `--db-path`.
 
+Los subcomandos `export-csv` y `backup` muestran los resultados de forma visual con Rich, mientras que las utilidades internas solo devuelven la ruta generada. Así puedes reutilizar la API desde scripts externos sin producir mensajes duplicados: toda la salida visible procede de la CLI.
+
 Gracias a la integración con [Rich](https://rich.readthedocs.io/en/stable/) todos los mensajes de la CLI se muestran con colores, paneles y tablas que facilitan su lectura y accesibilidad.
 
 Ejemplo combinando opciones:
