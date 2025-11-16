@@ -194,6 +194,26 @@ async def test_create_table_with_multiple_primary_keys_returns_bad_request():
 
 
 @pytest.mark.asyncio
+async def test_create_table_with_duplicate_normalized_columns_returns_bad_request():
+    """Dos nombres que se normalizan al mismo identificador deben rechazarse."""
+    transport = ASGITransport(app=app)
+    table_name = "duplicated_normalized"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        res_create = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json={"columns": {"Name": "TEXT", " name ": "TEXT"}},
+            headers=headers,
+        )
+
+        assert res_create.status_code == 400
+        detail = res_create.json()["detail"].lower()
+        assert "duplicado" in detail
+
+
+@pytest.mark.asyncio
 async def test_insert_data_with_varied_columns():
     transport = ASGITransport(app=app)
     table_name = "logs_varied"
