@@ -31,7 +31,10 @@ async def test_insert_and_fetch_data(client, auth_headers):
         headers=auth_headers
     )
     assert res_fetch.status_code == 200
-    data = res_fetch.json().get("data", [])
+    payload = res_fetch.json()
+    assert "rows" in payload and "data" in payload
+    assert payload["rows"] == payload["data"]
+    data = payload["data"]
     assert any("Hola desde test async" in str(row) for row in data)
 
 
