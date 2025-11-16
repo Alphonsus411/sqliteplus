@@ -622,7 +622,7 @@ def export_csv(ctx, table_name, output_file, db_path):
         cipher_key=ctx.obj.get("cipher_key"),
     )
     try:
-        replicator.export_to_csv(table_name, output_file)
+        export_path = replicator.export_to_csv(table_name, output_file)
     except ValueError as exc:
         raise click.BadParameter(str(exc), param_hint="table_name") from exc
     except sqlite3.Error as exc:
@@ -632,7 +632,10 @@ def export_csv(ctx, table_name, output_file, db_path):
 
     ctx.obj["console"].print(
         Panel.fit(
-            Text(f"Tabla {table_name} exportada a {output_file}", style="bold green"),
+            Text(
+                f"Tabla {table_name} exportada a {export_path}",
+                style="bold green",
+            ),
             title="Exportación completada",
             border_style="green",
         )
@@ -749,7 +752,10 @@ def backup(ctx, db_path):
 
     ctx.obj["console"].print(
         Panel.fit(
-            Text(f"Copia de seguridad creada en {backup_path}.", style="bold green"),
+            Text(
+                f"Respaldo disponible en {backup_path}.",
+                style="bold green",
+            ),
             title="Respaldo generado",
             border_style="green",
         )

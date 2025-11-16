@@ -41,6 +41,8 @@ def test_export_csv_cli_success(tmp_path):
     )
 
     assert result.exit_code == 0, result.output
+    assert "Datos exportados correctamente" not in result.output
+    assert f"Tabla valid_table exportada a {output_path}" in result.output
     content = output_path.read_text(encoding="utf-8").splitlines()
     assert content[0] == "id,name"
     assert content[1].endswith(",Alice")
@@ -121,6 +123,8 @@ def test_backup_cli_creates_backup_file():
         result = runner.invoke(cli, ["backup"])
 
         assert result.exit_code == 0, result.output
+        assert "Copia de seguridad creada en" not in result.output
+        assert "Respaldo disponible en" in result.output
         backups_dir = Path("backups")
         backups = sorted(backups_dir.glob("backup_*.db"))
         assert backups, "No se creó ningún archivo de respaldo"
@@ -134,7 +138,7 @@ def test_backup_cli_reports_missing_source_file():
 
         assert result.exit_code != 0
         assert "Error al realizar la copia de seguridad" in result.output
-        assert "Copia de seguridad creada correctamente." not in result.output
+        assert "Respaldo disponible en" not in result.output
         backups_dir = Path("backups")
         assert not list(backups_dir.glob("backup_*.db"))
 

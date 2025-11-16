@@ -12,6 +12,7 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     raise SystemExit()
 
 import csv
+import logging
 import os
 import shutil
 import sqlite3
@@ -20,6 +21,9 @@ from pathlib import Path
 from sqliteplus.core.schemas import is_valid_sqlite_identifier
 from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
 from sqliteplus.utils.sqliteplus_sync import apply_cipher_key, SQLitePlusCipherError
+
+
+logger = logging.getLogger(__name__)
 
 
 class SQLiteReplication:
@@ -81,7 +85,8 @@ class SQLiteReplication:
                 writer.writerow(column_names)
                 writer.writerows(rows)
 
-            print(f"Datos exportados correctamente a {output_path}")
+            logger.info("Datos exportados correctamente a %s", output_path)
+            return str(output_path)
         except SQLitePlusCipherError as exc:
             raise RuntimeError(str(exc)) from exc
         except FileNotFoundError:
@@ -108,7 +113,7 @@ class SQLiteReplication:
 
             self._copy_wal_and_shm(self.db_path, backup_file)
 
-            print(f"Copia de seguridad creada en {backup_file}")
+            logger.info("Copia de seguridad creada en %s", backup_file)
             return str(backup_file)
         except SQLitePlusCipherError as exc:
             raise RuntimeError(str(exc)) from exc
@@ -140,7 +145,7 @@ class SQLiteReplication:
 
             self._copy_wal_and_shm(self.db_path, target_path)
 
-            print(f"Base de datos replicada en {target_path}")
+            logger.info("Base de datos replicada en %s", target_path)
             return str(target_path)
         except SQLitePlusCipherError as exc:
             raise RuntimeError(str(exc)) from exc
