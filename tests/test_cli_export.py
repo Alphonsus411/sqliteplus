@@ -1,3 +1,4 @@
+import base64
 import json
 import sqlite3
 from pathlib import Path
@@ -86,6 +87,41 @@ def test_export_query_creates_missing_directories(tmp_path, export_format):
         assert content[0] == "id,name"
         assert content[1].endswith(",Alice")
         assert content[2].endswith(",Bob")
+
+
+def test_export_query_json_normalizes_blob_values(tmp_path):
+    db_path = tmp_path / "test.db"
+    _prepare_database(db_path)
+
+    blob_value = b"\x00\xff\x10binario"
+    with sqlite3.connect(db_path) as conn:
+        conn.execute("CREATE TABLE binarios (payload BLOB)")
+        conn.execute("INSERT INTO binarios (payload) VALUES (?)", (sqlite3.Binary(blob_value),))
+
+    output_path = tmp_path / "blob.json"
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "--db-path",
+            str(db_path),
+            "export-query",
+            "--format",
+            "json",
+            str(output_path),
+            "SELECT",
+            "payload",
+            "FROM",
+            "binarios",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    data = json.loads(output_path.read_text(encoding="utf-8"))
+    encoded_payload = data[0]["payload"]
+    assert encoded_payload.startswith("base64:")
+    decoded = base64.b64decode(encoded_payload.split(":", 1)[1])
+    assert decoded == blob_value
 
 
 def test_export_csv_cli_rejects_invalid_table_name(tmp_path):

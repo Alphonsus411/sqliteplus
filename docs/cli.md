@@ -87,6 +87,8 @@ Permite ejecutar una consulta `SELECT` y guardar el resultado en un archivo JSON
 - `--limit` restringe el número de filas exportadas sin alterar la consulta original.
 - `--overwrite` habilita la sobrescritura del archivo de destino cuando ya existe.
 
+Cuando eliges `--format json`, los valores especiales se transforman automáticamente para garantizar que el archivo pueda serializarse sin errores: los BLOBs y `memoryview` se codifican en Base64 con el prefijo `base64:`, los `Decimal` se convierten a números de punto flotante (o cadenas si exceden el rango) y las fechas/horas se expresan en ISO 8601.
+
 Si optas por CSV, los encabezados se generan a partir de los nombres de las columnas devueltas por la consulta.
 
 ```bash
