@@ -94,6 +94,43 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
 
         await manager.close_connections()
 
+    async def test_lazy_env_reset_removes_existing_database(self):
+        """Forzar `PYTEST_CURRENT_TEST` tras la inicialización debe limpiar la base."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_dir = Path(tmpdir)
+            with mock.patch.dict(os.environ, {}, clear=False):
+                os.environ.pop("PYTEST_CURRENT_TEST", None)
+                manager = AsyncDatabaseManager(
+                    base_dir=base_dir,
+                    require_encryption=False,
+                )
+
+            db_name = "lazy_reset_async"
+            conn = await manager.get_connection(db_name)
+            await conn.close()
+            manager.connections.pop(db_name, None)
+            manager._connection_loops.pop(db_name, None)
+            manager.locks.pop(db_name, None)
+
+            db_path = (base_dir / f"{db_name}.db").resolve()
+            db_path.write_text("contenido_residual", encoding="utf-8")
+
+            original_bytes = db_path.read_bytes()
+            self.assertEqual(original_bytes, b"contenido_residual")
+
+            with mock.patch.dict(os.environ, {"PYTEST_CURRENT_TEST": "lazy"}, clear=False):
+                new_conn = await manager.get_connection(db_name)
+
+            await new_conn.close()
+            manager.connections.pop(db_name, None)
+
+            with db_path.open("rb") as handler:
+                header = handler.read(6)
+
+            self.assertEqual(header, b"SQLite")
+
+            await manager.close_connections()
+
     async def asyncTearDown(self):
         """ Limpieza después de cada prueba """
         await self.manager.close_connections()
