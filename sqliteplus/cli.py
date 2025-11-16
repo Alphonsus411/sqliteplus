@@ -37,7 +37,7 @@ from sqliteplus.utils.sqliteplus_sync import (
 from sqliteplus.utils.replication_sync import SQLiteReplication
 
 
-_VISUAL_EXTRA_INSTALL_COMMAND = "pip install sqliteplus-enhanced[visual]"
+_VISUAL_EXTRA_INSTALL_COMMAND = 'pip install "sqliteplus-enhanced[visual]"'
 _VISUAL_EXTRA_MESSAGE = (
     "La funcionalidad visual requiere instalar el extra opcional 'visual'. "
     f"Ejecuta '{_VISUAL_EXTRA_INSTALL_COMMAND}' antes de volver a intentarlo."

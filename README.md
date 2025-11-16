@@ -125,7 +125,7 @@ Los subcomandos `export-csv` y `backup` muestran los resultados de forma visual 
 El paquete base evita instalar dependencias gráficas para mantener una huella ligera. Si deseas abrir el visor accesible de los subcomandos `fetch` o `list-tables` (`--viewer`) o aprovechar `sqliteplus visual-dashboard`, instala el extra opcional `visual`:
 
 ```bash
-pip install sqliteplus-enhanced[visual]
+pip install "sqliteplus-enhanced[visual]"
 ```
 
 Este extra añade Flet y FletPlus. Puedes instalarlo de forma combinada con otros extras (`pip install sqliteplus-enhanced[dev,visual]`).

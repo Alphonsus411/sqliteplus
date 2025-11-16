@@ -21,7 +21,7 @@ def test_viewer_imports_suggest_visual_extra(monkeypatch):
     with pytest.raises(click.ClickException) as excinfo:
         cli_module._import_visual_viewer_dependencies()
 
-    assert "sqliteplus-enhanced[visual]" in str(excinfo.value)
+    assert 'pip install "sqliteplus-enhanced[visual]"' in str(excinfo.value)
 
 
 def test_dashboard_imports_suggest_visual_extra(monkeypatch):
@@ -30,4 +30,4 @@ def test_dashboard_imports_suggest_visual_extra(monkeypatch):
     with pytest.raises(click.ClickException) as excinfo:
         cli_module._import_visual_dashboard_dependencies()
 
-    assert "sqliteplus-enhanced[visual]" in str(excinfo.value)
+    assert 'pip install "sqliteplus-enhanced[visual]"' in str(excinfo.value)
