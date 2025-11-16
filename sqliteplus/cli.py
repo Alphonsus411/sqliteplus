@@ -509,13 +509,17 @@ def fetch(
         normalized_columns = []
 
     if output.lower() == "json":
+        json_ready_rows = [
+            tuple(_normalize_json_value(value) for value in row)
+            for row in displayed_rows
+        ]
         if normalized_columns:
             payload = [
                 {normalized_columns[idx]: row[idx] for idx in range(len(row))}
-                for row in displayed_rows
+                for row in json_ready_rows
             ]
         else:
-            payload = [list(row) for row in displayed_rows]
+            payload = [list(row) for row in json_ready_rows]
         json_text = json.dumps(payload, ensure_ascii=False, indent=2)
         console_obj.print(
             Panel(

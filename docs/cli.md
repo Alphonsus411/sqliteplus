@@ -32,6 +32,7 @@ Los resultados aparecen fila a fila. Si la consulta no devuelve datos el program
 - Usa `--summary` para generar una tabla adicional con mínimos, máximos y promedios de las columnas numéricas.
 - Con `--viewer` se abre un visor accesible construido con FletPlus; admite filtros en vivo, cambio de tema (`--viewer-theme`) y ajuste del tamaño del texto.
 - Si necesitas paginar conjuntos grandes, combina `--viewer` con `--viewer-page-size` o `--viewer-virtual` para cargar filas bajo demanda.
+- Cuando eliges `--output json`, cada valor de la consulta se normaliza antes de mostrarse: los BLOBs se codifican en Base64, los `Decimal` se convierten a números o cadenas y las fechas/horas se expresan en ISO 8601, evitando errores de serialización.
 
 ### Listar tablas disponibles
 
