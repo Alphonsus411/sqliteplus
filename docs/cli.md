@@ -34,6 +34,8 @@ Los resultados aparecen fila a fila. Si la consulta no devuelve datos el program
 - Si necesitas paginar conjuntos grandes, combina `--viewer` con `--viewer-page-size` o `--viewer-virtual` para cargar filas bajo demanda.
 - Cuando eliges `--output json`, cada valor de la consulta se normaliza antes de mostrarse: los BLOBs se codifican en Base64, los `Decimal` se convierten a números o cadenas y las fechas/horas se expresan en ISO 8601, evitando errores de serialización.
 
+> Para usar `--viewer` debes instalar el extra opcional `visual`: `pip install sqliteplus-enhanced[visual]`.
+
 ### Listar tablas disponibles
 
 ```bash
@@ -65,6 +67,8 @@ sqliteplus visual-dashboard --theme dark --accent-color BLUE_200
 ```
 
 Abre un panel enriquecido que aprovecha la nueva actualización de FletPlus. Puedes elegir el tema (`--theme`), personalizar el color primario (`--accent-color`) y navegar por vistas dedicadas a resumen, consultas, historial y ayudas de accesibilidad. Desde el propio panel es posible acceder a la paleta de comandos (Ctrl+K) o consultar los consejos incorporados.
+
+> Este comando también requiere instalar el extra `visual` mediante `pip install sqliteplus-enhanced[visual]`.
 
 ## Exportar una tabla a CSV
 

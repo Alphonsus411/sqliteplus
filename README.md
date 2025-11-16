@@ -120,6 +120,16 @@ Comandos disponibles:
 
 Los subcomandos `export-csv` y `backup` muestran los resultados de forma visual con Rich, mientras que las utilidades internas solo devuelven la ruta generada. Así puedes reutilizar la API desde scripts externos sin producir mensajes duplicados: toda la salida visible procede de la CLI.
 
+### Activar el visor visual (extra opcional)
+
+El paquete base evita instalar dependencias gráficas para mantener una huella ligera. Si deseas abrir el visor accesible de los subcomandos `fetch` o `list-tables` (`--viewer`) o aprovechar `sqliteplus visual-dashboard`, instala el extra opcional `visual`:
+
+```bash
+pip install sqliteplus-enhanced[visual]
+```
+
+Este extra añade Flet y FletPlus. Puedes instalarlo de forma combinada con otros extras (`pip install sqliteplus-enhanced[dev,visual]`).
+
 Gracias a la integración con [Rich](https://rich.readthedocs.io/en/stable/) todos los mensajes de la CLI se muestran con colores, paneles y tablas que facilitan su lectura y accesibilidad.
 
 Ejemplo combinando opciones:
