@@ -61,6 +61,13 @@ escapan con comillas dobles.
 
 Elimina la tabla indicada. No falla si la tabla no existe.
 
+- **Query**: `table_name` (obligatorio)
+
+```bash
+curl -X DELETE "http://127.0.0.1:8000/databases/demo/drop_table?table_name=logs" \
+     -H "Authorization: Bearer <TOKEN>"
+```
+
 ---
 
 ## Operaciones CRUD
