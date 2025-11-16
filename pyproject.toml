@@ -22,7 +22,6 @@ dependencies = [
     "PyJWT",
     "python-multipart",
     "rich",
-    "fletplus"
 ]
 
 classifiers = [
@@ -44,6 +43,11 @@ dev = [
 
 redis = [
     "redis"
+]
+
+visual = [
+    "fletplus",
+    "flet"
 ]
 
 [project.scripts]

@@ -12,6 +12,7 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     raise SystemExit()
 
 import csv
+import importlib
 import json
 import math
 import sqlite3
@@ -36,6 +37,34 @@ from sqliteplus.utils.sqliteplus_sync import (
 from sqliteplus.utils.replication_sync import SQLiteReplication
 
 
+_VISUAL_EXTRA_INSTALL_COMMAND = "pip install sqliteplus-enhanced[visual]"
+_VISUAL_EXTRA_MESSAGE = (
+    "La funcionalidad visual requiere instalar el extra opcional 'visual'. "
+    f"Ejecuta '{_VISUAL_EXTRA_INSTALL_COMMAND}' antes de volver a intentarlo."
+)
+
+
+def _import_visual_viewer_dependencies():
+    try:
+        ft = importlib.import_module("flet")
+        smart_table_module = importlib.import_module("fletplus.components.smart_table")
+        style_module = importlib.import_module("fletplus.styles.style")
+    except ModuleNotFoundError as exc:  # pragma: no cover - depende de extras opcionales
+        raise click.ClickException(_VISUAL_EXTRA_MESSAGE) from exc
+
+    return ft, smart_table_module.SmartTable, style_module.Style
+
+
+def _import_visual_dashboard_dependencies():
+    try:
+        ft = importlib.import_module("flet")
+        core_module = importlib.import_module("fletplus.core")
+    except ModuleNotFoundError as exc:  # pragma: no cover - depende de extras opcionales
+        raise click.ClickException(_VISUAL_EXTRA_MESSAGE) from exc
+
+    return core_module.FletPlusApp, ft
+
+
 def _launch_fletplus_viewer(
     columns: list[str] | None,
     rows: Iterable[Iterable[object]],
@@ -48,15 +77,7 @@ def _launch_fletplus_viewer(
 ) -> None:
     """Abre un visor interactivo con FletPlus para mostrar los resultados."""
 
-    try:
-        import flet as ft
-        from fletplus.components.smart_table import SmartTable
-        from fletplus.styles.style import Style
-    except Exception as exc:  # pragma: no cover - dependencias externas
-        raise click.ClickException(
-            "No se pudo inicializar el visor interactivo basado en FletPlus. "
-            "Asegúrate de que las dependencias gráficas estén disponibles."
-        ) from exc
+    ft, SmartTable, Style = _import_visual_viewer_dependencies()
 
     materialized_rows = [tuple(row) for row in rows]
     normalized_columns = (
@@ -399,7 +420,10 @@ def execute(ctx, query):
     "--viewer/--no-viewer",
     "show_viewer",
     default=False,
-    help="Abre un visor interactivo con FletPlus para explorar el resultado.",
+    help=(
+        "Abre un visor interactivo con FletPlus para explorar el resultado. "
+        f"Requiere '{_VISUAL_EXTRA_INSTALL_COMMAND}'."
+    ),
 )
 @click.option(
     "--viewer-theme",
@@ -783,7 +807,10 @@ def backup(ctx, db_path):
     "--viewer/--no-viewer",
     "show_viewer",
     default=False,
-    help="Abre una vista enriquecida con FletPlus para explorar el inventario.",
+    help=(
+        "Abre una vista enriquecida con FletPlus para explorar el inventario. "
+        f"Requiere '{_VISUAL_EXTRA_INSTALL_COMMAND}'."
+    ),
 )
 @click.option(
     "--viewer-theme",
@@ -1003,7 +1030,13 @@ def database_info(ctx):
 
     console_obj.print(Panel(info_table, title="Base de datos", border_style="magenta"))
 
-@click.command(name="visual-dashboard", help="Abre un panel visual construido con FletPlus para explorar la base.")
+@click.command(
+    name="visual-dashboard",
+    help=(
+        "Abre un panel visual construido con FletPlus para explorar la base. "
+        f"Requiere '{_VISUAL_EXTRA_INSTALL_COMMAND}'."
+    ),
+)
 @click.option(
     "--include-views/--exclude-views",
     default=True,
@@ -1040,13 +1073,7 @@ def database_info(ctx):
 def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_color):
     """Lanza una experiencia accesible e interactiva usando la librería FletPlus."""
 
-    try:
-        from fletplus.core import FletPlusApp
-        import flet as ft
-    except ModuleNotFoundError as exc:  # pragma: no cover - depende del entorno del usuario
-        raise click.ClickException(
-            "La funcionalidad visual requiere el paquete fletplus. Instálalo con 'pip install fletplus'."
-        ) from exc
+    FletPlusApp, ft = _import_visual_dashboard_dependencies()
 
     db_path = ctx.obj.get("db_path")
     cipher_key = ctx.obj.get("cipher_key")
