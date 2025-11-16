@@ -92,6 +92,7 @@ curl -X POST "http://127.0.0.1:8000/databases/demo/insert?table_name=logs" \
      -d '{"msg": "Texto"}'
 ```
 
+- `404 Not Found`: la tabla indicada en `table_name` no existe en la base solicitada.
 - `409 Conflict`: violación de restricciones (`UNIQUE`, `NOT NULL`, etc.).
 
 ### `GET /databases/{db_name}/fetch`
@@ -105,7 +106,7 @@ curl -X GET "http://127.0.0.1:8000/databases/demo/fetch?table_name=logs" \
      -H "Authorization: Bearer <TOKEN>"
 ```
 
-> Nota: Los códigos `404` solo aparecen en operaciones de lectura o borrado cuando la tabla indicada no existe.
+> Nota: Los códigos `404` pueden aparecer tanto en lecturas como en inserciones o borrados cuando la tabla indicada no existe.
 
 Respuesta de ejemplo:
 
