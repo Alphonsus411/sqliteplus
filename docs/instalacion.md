@@ -3,7 +3,7 @@
 ## Requisitos previos
 
 - Python 3.10 o superior.
-- SQLite con modo WAL habilitado (viene activado por defecto en SQLite moderno).
+- Una versión moderna de SQLite (el soporte para WAL viene incluido y el proyecto aplica `PRAGMA journal_mode=WAL` automáticamente).
 - Opcional: Redis (la integración de caché está en desarrollo; consulta el [CHANGELOG](changelog.md) para conocer el estado actual del extra `redis`).
 
 ## Desde el repositorio
@@ -22,6 +22,8 @@ pytest -v
 ```
 
 > **Nota:** La integración con Redis aún no está disponible en la aplicación. El extra `redis` únicamente instala las dependencias preliminares y puede cambiar en futuras versiones. Revisa el [CHANGELOG](changelog.md) para seguir el progreso.
+
+> **Nota rápida:** No necesitas ninguna configuración manual adicional: el código fuerza `PRAGMA journal_mode=WAL` cada vez que abre una conexión (consulta `sqliteplus/core/db.py`).
 
 Si aun así deseas preparar el entorno con las dependencias de Redis instala el extra:
 
