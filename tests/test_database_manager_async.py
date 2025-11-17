@@ -9,7 +9,7 @@ import aiosqlite
 
 from fastapi import HTTPException
 
-from sqliteplus.core.db import AsyncDatabaseManager
+from sqliteplus.core.db import AsyncDatabaseManager, _INITIALIZED_DATABASES
 
 
 
@@ -254,6 +254,54 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(exc_info.exception.status_code, 503)
         failing_connection.close.assert_awaited_once()
         self.assertNotIn("failing_db", manager.connections)
+
+    async def test_retries_initialization_after_pragma_key_failure(self):
+        """Si PRAGMA key falla se debe intentar inicializar de nuevo."""
+
+        await self.manager.close_connections()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_dir = Path(tmpdir)
+            db_name = "retry_pragma_failure"
+            absolute_key = str((base_dir / f"{db_name}.db").resolve())
+
+            first_connection = mock.AsyncMock()
+            second_connection = mock.AsyncMock()
+
+            async def first_execute(sql, *_):
+                if sql.startswith("PRAGMA key"):
+                    raise aiosqlite.OperationalError("cipher failed")
+                return mock.AsyncMock()
+
+            async def second_execute(sql, *_):
+                return mock.AsyncMock()
+
+            first_connection.execute.side_effect = first_execute
+            first_connection.commit = mock.AsyncMock()
+            first_connection.close = mock.AsyncMock()
+
+            second_connection.execute.side_effect = second_execute
+            second_connection.commit = mock.AsyncMock()
+            second_connection.close = mock.AsyncMock()
+
+            connect_mock = mock.AsyncMock(side_effect=[first_connection, second_connection])
+
+            manager = AsyncDatabaseManager(base_dir=base_dir)
+            try:
+                with mock.patch("sqliteplus.core.db.aiosqlite.connect", new=connect_mock):
+                    with self.assertRaises(HTTPException):
+                        await manager.get_connection(db_name)
+
+                    self.assertNotIn(absolute_key, _INITIALIZED_DATABASES)
+                    first_connection.close.assert_awaited_once()
+
+                    connection = await manager.get_connection(db_name)
+
+                self.assertIs(connection, second_connection)
+                self.assertIn(absolute_key, _INITIALIZED_DATABASES)
+                self.assertEqual(connect_mock.await_count, 2)
+            finally:
+                await manager.close_connections()
 
     async def test_encrypted_database_reopens_with_valid_key(self):
         """Confirma que con clave válida se puede operar sobre la base cifrada."""
