@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+import sqliteplus.utils.constants as constants
 from sqliteplus.utils import sqliteplus_sync
 from sqliteplus.utils.replication_sync import SQLiteReplication
 from sqliteplus.utils.sqliteplus_sync import SQLitePlus, SQLitePlusCipherError
@@ -15,6 +16,22 @@ def test_sqliteplus_creates_database_file(tmp_path, monkeypatch):
     SQLitePlus(db_path=db_filename)
 
     assert os.path.isfile(tmp_path / db_filename)
+
+
+def test_sqliteplus_default_db_prefers_local_path(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    package_db = tmp_path / "pkg" / "databases" / "database.db"
+    package_db.parent.mkdir(parents=True)
+    package_db.write_text("package-db")
+
+    monkeypatch.setattr(constants, "PACKAGE_DB_PATH", package_db)
+
+    db = SQLitePlus()
+
+    local_db = tmp_path / "sqliteplus" / "databases" / "database.db"
+    assert Path(db.db_path) == local_db.resolve()
+    assert local_db.exists()
+    assert package_db.read_text() == "package-db"
 
 
 def test_sqliteplus_expands_user_home(tmp_path, monkeypatch):
