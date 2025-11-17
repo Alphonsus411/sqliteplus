@@ -31,6 +31,16 @@ Si aun así deseas preparar el entorno con las dependencias de Redis instala el 
 pip install -e '.[redis]'
 ```
 
+### Extra `visual`
+
+El extra `visual` instala las dependencias necesarias para los comandos de inspección enriquecida (tablas formateadas y diagramas que ayudan a explorar la base de datos desde la CLI).
+
+```bash
+pip install -e '.[visual]'
+```
+
+> **Nota:** Consulta [docs/cli.md](cli.md) para revisar los comandos que requieren el extra `visual`.
+
 ## Desde PyPI
 
 ```bash
@@ -44,6 +54,14 @@ Para incluir estas dependencias opcionales de Redis usa:
 ```bash
 pip install 'sqliteplus-enhanced[redis]'
 ```
+
+Para habilitar las capacidades visuales desde PyPI instala el extra correspondiente:
+
+```bash
+pip install "sqliteplus-enhanced[visual]"
+```
+
+> **Nota:** En [docs/cli.md](cli.md) encontrarás los comandos que dependen del extra `visual`.
 
 > **Consejo:** Las comillas simples evitan que shells como `zsh` intenten expandir los corchetes, lo que podría generar errores al instalar los extras.
 
