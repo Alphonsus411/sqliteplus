@@ -72,8 +72,8 @@ y semántica de versiones [SemVer](https://semver.org/lang/es/).
 
 ## [1.0.2] - 2025-03-03
 ### Corregido
-- Corrección de errores en `server_async.py`
-- Soporte para múltiples clientes simultáneos
+- Correcciones en el servidor asíncrono (migrado posteriormente a `sqliteplus/core/db.py`) para soportar múltiples clientes simultáneos
+- Nota histórica: desde la refactorización de la versión 1.0.4 la funcionalidad de `server_async.py` vive en `sqliteplus/core/db.py`, manteniendo el mismo gestor asíncrono.
 
 ---
 

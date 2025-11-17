@@ -25,7 +25,8 @@ Esta página resume los principales hitos publicados en el proyecto. Para revisa
 - Primera versión de los endpoints en FastAPI.
 
 ## 1.0.2 · 2025-03-03
-- Correcciones en `server_async.py` para soportar múltiples clientes simultáneos.
+- Correcciones en el servidor asíncrono (actualmente en `sqliteplus/core/db.py`) para soportar múltiples clientes simultáneos.
+- Nota: tras la refactorización de la versión 1.0.4 la funcionalidad de `server_async.py` se consolidó en `sqliteplus/core/db.py` para mantener un único gestor.
 
 ## 1.0.0 · 2025-03-02
 - Prototipo inicial de SQLitePlus basado en FastAPI.
