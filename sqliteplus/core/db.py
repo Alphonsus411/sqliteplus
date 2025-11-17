@@ -150,7 +150,6 @@ class AsyncDatabaseManager:
                                 canonical_name,
                                 exc,
                             )
-                _INITIALIZED_DATABASES.add(absolute_key)
                 raw_encryption_key = os.getenv("SQLITE_DB_KEY")
                 stripped_encryption_key = None
                 if raw_encryption_key is not None:
@@ -167,8 +166,9 @@ class AsyncDatabaseManager:
                         detail="Base de datos no disponible: falta la clave de cifrado requerida",
                     )
 
-                connection = await aiosqlite.connect(str(db_path))
+                connection = None
                 try:
+                    connection = await aiosqlite.connect(str(db_path))
                     if raw_encryption_key is not None:
                         escaped_key = raw_encryption_key.replace("'", "''")
                         try:
@@ -186,13 +186,16 @@ class AsyncDatabaseManager:
                     await connection.execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
                     await connection.commit()
                 except Exception:
-                    await connection.close()
+                    if connection is not None:
+                        await connection.close()
+                    _INITIALIZED_DATABASES.discard(absolute_key)
                     raise
 
                 self.connections[canonical_name] = connection
                 self._connection_loops[canonical_name] = current_loop
                 self.locks[canonical_name] = asyncio.Lock()
                 self._initialized_keys[canonical_name] = absolute_key
+                _INITIALIZED_DATABASES.add(absolute_key)
             else:
                 self.locks.setdefault(canonical_name, asyncio.Lock())
                 self._connection_loops.setdefault(canonical_name, current_loop)
