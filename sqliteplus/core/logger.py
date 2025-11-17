@@ -23,6 +23,8 @@ class AsyncSQLitePlus:
         if self.initialized:
             return
         async with self.lock:
+            if self.initialized:
+                return
             async with aiosqlite.connect(str(self.db_path)) as conn:
                 await conn.execute("""
                     CREATE TABLE IF NOT EXISTS logs (

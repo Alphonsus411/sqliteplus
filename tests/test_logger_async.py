@@ -1,3 +1,5 @@
+import asyncio
+
 import aiosqlite
 import pytest
 
@@ -37,3 +39,35 @@ async def test_fetch_query_propagates_aiosqlite_error(tmp_path):
 
     with pytest.raises(aiosqlite.OperationalError):
         await logger.fetch_query("SELECT * FROM tabla_inexistente")
+
+
+@pytest.mark.asyncio
+async def test_initialize_runs_create_table_once(monkeypatch, tmp_path):
+    db_file = tmp_path / "logs.db"
+    logger = AsyncSQLitePlus(db_path=db_file)
+
+    queries = []
+
+    class DummyConnection:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+
+        async def execute(self, query, params=None):
+            queries.append(query)
+
+        async def commit(self):
+            return None
+
+    def fake_connect(*args, **kwargs):
+        return DummyConnection()
+
+    monkeypatch.setattr(aiosqlite, "connect", fake_connect)
+
+    await asyncio.gather(logger.initialize(), logger.initialize())
+
+    create_table_queries = [q for q in queries if "CREATE TABLE" in q]
+
+    assert len(create_table_queries) == 1
