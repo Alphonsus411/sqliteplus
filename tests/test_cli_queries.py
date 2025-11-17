@@ -2,6 +2,7 @@ import builtins
 import importlib
 import sys
 from datetime import datetime
+from pathlib import Path
 
 import click
 from click.testing import CliRunner
@@ -25,6 +26,16 @@ def test_fetch_command_reports_sql_error():
 
     assert result.exit_code != 0
     assert "Error al ejecutar la consulta SQL" in result.output
+
+
+def test_cli_creates_default_db_in_working_directory():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        result = runner.invoke(cli, ["init-db"])
+
+        assert result.exit_code == 0, result.output
+        default_db = Path("sqliteplus/databases/database.db")
+        assert default_db.exists()
 
 
 def test_cli_passes_cipher_key_to_execute(monkeypatch):
@@ -141,13 +152,15 @@ def test_cli_commands_work_without_rich(monkeypatch):
             reloaded_cli.list_tables,
             obj={"db_path": "demo.db", "cipher_key": None, "console": reloaded_cli.Console()},
         )
-        reloaded_cli.list_tables.callback(ctx_tables, False, False, "system", 12)
+        with ctx_tables:
+            reloaded_cli.list_tables.callback(False, False, "system", 12)
 
         ctx_info = click.Context(
             reloaded_cli.database_info,
             obj={"db_path": "demo.db", "cipher_key": None, "console": reloaded_cli.Console()},
         )
-        reloaded_cli.database_info.callback(ctx_info)
+        with ctx_info:
+            reloaded_cli.database_info.callback()
     finally:
         builtins.__import__ = original_import
         sys.modules.update(removed_modules)

@@ -28,7 +28,7 @@ import click
 from sqliteplus.utils.rich_compat import Console, Panel, Syntax, Table, Text, box
 from sqliteplus.utils.json_serialization import normalize_json_value as _normalize_json_value
 
-from sqliteplus.utils.constants import DEFAULT_DB_PATH
+from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
 from sqliteplus.utils.sqliteplus_sync import (
     SQLitePlus,
     SQLitePlusCipherError,
@@ -344,14 +344,21 @@ console = Console()
     default=DEFAULT_DB_PATH,
     show_default=True,
     type=click.Path(dir_okay=False, resolve_path=True, path_type=str),
-    help="Ruta del archivo de base de datos a utilizar en todos los comandos.",
+    help=(
+        "Ruta del archivo de base de datos a utilizar en todos los comandos. "
+        "Si no se indica, se creará en ./sqliteplus/databases/database.db "
+        "respecto al directorio actual."
+    ),
 )
 @click.pass_context
 def cli(ctx, cipher_key, db_path):
     """Herramientas de consola para trabajar con SQLitePlus sin programar."""
     ctx.ensure_object(dict)
     ctx.obj["cipher_key"] = cipher_key
-    ctx.obj["db_path"] = db_path
+    normalized_db_path = Path(db_path).expanduser()
+    if normalized_db_path == Path(DEFAULT_DB_PATH):
+        normalized_db_path = resolve_default_db_path(prefer_package=False)
+    ctx.obj["db_path"] = str(Path(normalized_db_path).expanduser().resolve())
     ctx.obj["console"] = console
 
 

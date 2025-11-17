@@ -106,6 +106,10 @@ El comando principal admite dos opciones globales:
 - `--cipher-key` o la variable `SQLITE_DB_KEY` para abrir bases cifradas.
 - `--db-path` para indicar el archivo de base de datos que usarán todos los subcomandos.
 
+Si no se especifica `--db-path`, la CLI crea (o reutiliza) automáticamente el archivo
+`sqliteplus/databases/database.db` dentro del directorio de trabajo actual, de modo
+que no se modifica la base distribuida con el paquete.
+
 Comandos disponibles:
 
 - `sqliteplus init-db` crea la base y deja constancia en la tabla `logs`.
