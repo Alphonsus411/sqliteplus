@@ -66,7 +66,10 @@ class SQLitePlus:
     ):
         raw_path = Path(db_path).expanduser()
         if raw_path == Path(DEFAULT_DB_PATH):
-            resolved_db_path = resolve_default_db_path()
+            # Cuando no se especifica una ruta se fuerza la creación de una base
+            # local en el directorio de trabajo. La ruta del paquete solo se
+            # utiliza al solicitarla explícitamente.
+            resolved_db_path = resolve_default_db_path(prefer_package=False)
         else:
             resolved_db_path = raw_path
 
