@@ -10,8 +10,8 @@ ruta de autenticación `token` (que se publicará respetando el `root_path`).
 
 ## Gestión de bases y tablas
 
-- `POST /databases/{db_name}/create_table` – valida columnas con Pydantic y escapa identificadores.
-- `DELETE /databases/{db_name}/drop_table` – elimina la tabla si existe.
+- `POST /databases/{db_name}/create_table` – valida columnas con Pydantic, escapa identificadores y requiere `table_name` como parámetro de consulta (por ejemplo, `/databases/db_demo/create_table?table_name=clientes`).
+- `DELETE /databases/{db_name}/drop_table` – elimina la tabla si existe y también exige `table_name` como query (ejemplo: `/databases/db_demo/drop_table?table_name=clientes`).
 
 ## Operaciones CRUD
 
