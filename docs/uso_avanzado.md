@@ -7,9 +7,11 @@ base temporal antes de cada suite, evitando datos residuales entre ejecuciones. 
 versión la comprobación es perezosa: el gestor vuelve a leer `PYTEST_CURRENT_TEST` (y la variable
 `SQLITEPLUS_FORCE_RESET`) cada vez que necesita crear una conexión. De este modo puedes activar el
 modo limpieza incluso si el objeto global ya estaba instanciado o si quieres forzar el borrado desde
-la app FastAPI (por ejemplo, antes de lanzar un lote de pruebas de integración). Usa valores como
-`1`, `true` o `on` para activar `SQLITEPLUS_FORCE_RESET` y elimina la variable cuando dejes de
-necesitar el borrado automático.
+la app FastAPI (por ejemplo, antes de lanzar un lote de pruebas de integración). Si la variable se
+activa cuando ya existe una conexión viva en el mismo bucle, el gestor la cierra, elimina los ficheros
+`*.db`, `*.db-wal` y `*.db-shm` y vuelve a levantar una base limpia. Usa valores como `1`, `true` o `on`
+para activar `SQLITEPLUS_FORCE_RESET` y elimina la variable cuando dejes de necesitar el borrado
+automático.
 
 ## Conexiones por bucle de eventos
 
