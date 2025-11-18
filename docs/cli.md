@@ -70,6 +70,13 @@ Abre un panel enriquecido que aprovecha la nueva actualización de FletPlus. Pue
 
 > Este comando también requiere instalar el extra `visual` mediante `pip install "sqliteplus-enhanced[visual]"`.
 
+#### Escenario manual: validar `max_rows` en `visual-dashboard`
+
+1. Ejecuta `sqliteplus init-db` y crea una tabla con al menos 1 000 filas (por ejemplo, `INSERT INTO demo SELECT NULL FROM generate_series(1,1000)` si trabajas desde `sqlite3` o un bucle con la CLI).
+2. Abre el panel con `sqliteplus visual-dashboard --max-rows 25` y dirígete a la pestaña de consultas.
+3. Lanza `SELECT * FROM demo` sin cláusula `LIMIT`. El panel solo mostrará 25 filas y el mensaje inferior indicará que la consulta se truncó por el límite configurado.
+4. Repite la consulta añadiendo `LIMIT 10` para comprobar que el mensaje cambia y ya no se advierte truncamiento.
+
 ## Exportar una tabla a CSV
 
 ```bash

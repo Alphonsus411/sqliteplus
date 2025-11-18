@@ -7,7 +7,8 @@ from pathlib import Path
 import click
 from click.testing import CliRunner
 
-from sqliteplus.cli import _format_numeric, cli
+from sqliteplus.cli import _fetch_rows_respecting_limit, _format_numeric, cli
+from sqliteplus.utils.sqliteplus_sync import SQLitePlus
 
 
 def test_execute_command_reports_sql_error():
@@ -166,3 +167,38 @@ def test_cli_commands_work_without_rich(monkeypatch):
         sys.modules.update(removed_modules)
         importlib.reload(rich_compat_module)
         importlib.reload(cli_module)
+
+
+def test_visual_dashboard_helper_truncates_rows(tmp_path):
+    db_path = tmp_path / "limit.db"
+    database = SQLitePlus(db_path=str(db_path))
+    database.execute_query("CREATE TABLE demo(id INTEGER)")
+    for value in range(50):
+        database.execute_query("INSERT INTO demo (id) VALUES (?)", (value,))
+
+    columns, rows, truncated = _fetch_rows_respecting_limit(
+        database, "SELECT id FROM demo ORDER BY id", 5
+    )
+
+    assert columns == ["id"]
+    assert len(rows) == 5
+    assert rows[0][0] == 0
+    assert rows[-1][0] == 4
+    assert truncated is True
+
+
+def test_visual_dashboard_helper_reports_full_result_when_under_limit(tmp_path):
+    db_path = tmp_path / "limit-ok.db"
+    database = SQLitePlus(db_path=str(db_path))
+    database.execute_query("CREATE TABLE demo(id INTEGER)")
+    for value in range(3):
+        database.execute_query("INSERT INTO demo (id) VALUES (?)", (value,))
+
+    columns, rows, truncated = _fetch_rows_respecting_limit(
+        database, "SELECT id FROM demo ORDER BY id", 10
+    )
+
+    assert columns == ["id"]
+    assert len(rows) == 3
+    assert [row[0] for row in rows] == [0, 1, 2]
+    assert truncated is False

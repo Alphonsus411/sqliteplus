@@ -19,6 +19,7 @@ import sqlite3
 import webbrowser
 from datetime import date, datetime, time
 from decimal import Decimal
+from itertools import islice
 from numbers import Number
 from pathlib import Path
 from typing import Iterable
@@ -63,6 +64,32 @@ def _import_visual_dashboard_dependencies():
         raise click.ClickException(_VISUAL_EXTRA_MESSAGE) from exc
 
     return core_module.FletPlusApp, ft
+
+
+def _fetch_rows_respecting_limit(
+    database: SQLitePlus, sql: str, max_rows: int
+) -> tuple[list[str], list[tuple[object, ...]], bool]:
+    """Ejecuta una consulta de solo lectura limitando las filas consumidas."""
+
+    if max_rows <= 0:
+        return [], [], False
+
+    with database.lock:
+        with database.get_connection() as conn:
+            cursor = conn.cursor()
+            try:
+                cursor.execute(sql)
+            except sqlite3.Error as exc:  # pragma: no cover - validado en tests existentes
+                raise SQLitePlusQueryError(sql, exc) from exc
+
+            column_names = [col[0] for col in cursor.description or []]
+            # Consumimos una fila extra para detectar si la consulta tiene más resultados.
+            fetched_rows = list(islice(cursor, max_rows + 1))
+            truncated = len(fetched_rows) > max_rows
+            if truncated:
+                fetched_rows = fetched_rows[:max_rows]
+
+            return column_names, fetched_rows, truncated
 
 
 def _launch_fletplus_viewer(
@@ -1282,8 +1309,9 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
 
             try:
                 if keyword in {"select", "pragma", "with"}:
-                    columns, rows = database.fetch_query_with_columns(sql)
-                    limited_rows = rows[:max_rows]
+                    columns, limited_rows, truncated = _fetch_rows_respecting_limit(
+                        database, sql, max_rows
+                    )
                     result_table.columns = [
                         ft.DataColumn(ft.Text(column or f"columna {index + 1}"))
                         for index, column in enumerate(columns or [])
@@ -1303,7 +1331,13 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
                         )
                         for row in limited_rows
                     ]
-                    status_text.value = f"Se muestran {len(limited_rows)} de {len(rows)} fila(s)."
+                    if truncated:
+                        status_text.value = (
+                            f"Se muestran {len(limited_rows)} fila(s) (límite configurado: {max_rows}). "
+                            "Añade LIMIT a la consulta para obtener más resultados."
+                        )
+                    else:
+                        status_text.value = f"La consulta devolvió {len(limited_rows)} fila(s)."
                     status_text.color = ft.Colors.GREEN
                 elif read_only:
                     status_text.value = "La interfaz está en modo solo lectura. Usa --allow-write para habilitar cambios."
