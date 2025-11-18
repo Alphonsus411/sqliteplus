@@ -1,3 +1,4 @@
+# Se importa click para poder referenciar click.ClickException en las pruebas.
 import click
 import pytest
 
