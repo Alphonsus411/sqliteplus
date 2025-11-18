@@ -8,7 +8,7 @@
 | `PYTEST_CURRENT_TEST` | Detectada automáticamente por pytest para reiniciar bases temporales. |
 | `SECRET_KEY` | Clave obligatoria para firmar JWT. Se valida en tiempo de ejecución. |
 | `SQLITEPLUS_FORCE_RESET` | Fuerza la reinicialización de las bases sin depender de `PYTEST_CURRENT_TEST`. Admite `1`, `true` o `on`. La sección "Reinicialización automática en pruebas" de `docs/uso_avanzado.md` detalla el flujo. |
-| `SQLITEPLUS_USERS_FILE` | Ruta (admite `~`) del archivo JSON con usuarios y hashes `bcrypt`. |
+| `SQLITEPLUS_USERS_FILE` | Ruta (admite `~`) del archivo JSON con usuarios y hashes `bcrypt`. Solo es obligatorio al exponer la API/autenticación. |
 | `SQLITE_DB_KEY` | Clave SQLCipher opcional. Si no existe, se omite el cifrado. |
 
 ## Directorios de trabajo

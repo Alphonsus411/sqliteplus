@@ -8,6 +8,8 @@ export SQLITE_DB_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
 export SQLITEPLUS_USERS_FILE="$(pwd)/users.json"
 ```
 
+> `SQLITEPLUS_USERS_FILE` solo es obligatorio para la API protegida con JWT. La CLI local puede trabajar sin ese archivo.
+
 Crea el archivo `users.json` con hashes `bcrypt`:
 
 ```bash

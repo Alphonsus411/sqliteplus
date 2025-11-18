@@ -41,12 +41,21 @@ pip install -e .
 
 Guarda tus claves como variables de entorno para evitar dejarlas en el código.
 
-| Variable | Obligatoria | Para qué sirve |
-| --- | --- | --- |
-| `SECRET_KEY` | ✅ | Firmar los tokens JWT de la API. |
-| `SQLITEPLUS_USERS_FILE` | ✅ | Ubicación del JSON con usuarios y contraseñas hasheadas con `bcrypt`. |
-| `SQLITE_DB_KEY` | Opcional | Clave SQLCipher para abrir bases cifradas desde la API o la CLI. |
-| `SQLITEPLUS_FORCE_RESET` | Opcional | Valores como `1`, `true` o `on` fuerzan el borrado del archivo SQLite antes de recrear la conexión. |
+### Variables obligatorias para la API y la autenticación
+
+| Variable | Para qué sirve |
+| --- | --- |
+| `SECRET_KEY` | Firmar los tokens JWT expuestos por la API. |
+| `SQLITEPLUS_USERS_FILE` | Ubicación del JSON con usuarios y contraseñas hasheadas con `bcrypt`. Es obligatoria **solo** cuando levantas la API o usas la autenticación integrada. |
+
+### Variables opcionales (API y CLI)
+
+| Variable | Para qué sirve |
+| --- | --- |
+| `SQLITE_DB_KEY` | Clave SQLCipher para abrir bases cifradas desde la API o la CLI. |
+| `SQLITEPLUS_FORCE_RESET` | Valores como `1`, `true` o `on` fuerzan el borrado del archivo SQLite antes de recrear la conexión. |
+
+> Los comandos locales de la CLI no dependen de `SQLITEPLUS_USERS_FILE`; puedes ejecutar `sqliteplus` en modo standalone sin definirlo.
 
 Ejemplo rápido para generar valores seguros:
 
@@ -105,6 +114,8 @@ El comando principal admite dos opciones globales:
 
 - `--cipher-key` o la variable `SQLITE_DB_KEY` para abrir bases cifradas.
 - `--db-path` para indicar el archivo de base de datos que usarán todos los subcomandos.
+
+> Nota: Los subcomandos locales no consultan `SQLITEPLUS_USERS_FILE`. Este archivo solo es necesario cuando expones la API protegida con JWT.
 
 Si no se especifica `--db-path`, la CLI crea (o reutiliza) automáticamente el archivo
 `sqliteplus/databases/database.db` dentro del directorio de trabajo actual, de modo
