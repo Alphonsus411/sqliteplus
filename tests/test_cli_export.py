@@ -124,6 +124,40 @@ def test_export_query_json_normalizes_blob_values(tmp_path):
     assert decoded == blob_value
 
 
+def test_export_query_json_handles_duplicate_columns(tmp_path):
+    db_path = tmp_path / "test.db"
+    _prepare_database(db_path)
+
+    output_path = tmp_path / "duplicados.json"
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "--db-path",
+            str(db_path),
+            "export-query",
+            "--format",
+            "json",
+            str(output_path),
+            "SELECT",
+            "name",
+            "AS",
+            "nombre,",
+            "UPPER(name)",
+            "AS",
+            "nombre",
+            "FROM",
+            "valid_table",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    data = json.loads(output_path.read_text(encoding="utf-8"))
+    assert isinstance(data, dict)
+    assert data["columns"] == ["nombre", "nombre"]
+    assert data["rows"] == [["Alice", "ALICE"], ["Bob", "BOB"]]
+
+
 def test_export_csv_cli_rejects_invalid_table_name(tmp_path):
     db_path = tmp_path / "test.db"
     output_path = tmp_path / "out.csv"
