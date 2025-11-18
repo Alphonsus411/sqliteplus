@@ -736,6 +736,11 @@ def export_query(ctx, export_format, limit, overwrite, output_file, query):
     normalized_columns = columns or [
         f"columna_{index + 1}" for index in range(len(rows[0]) if rows else 0)
     ]
+    has_duplicate_column_names = (
+        len(set(normalized_columns)) != len(normalized_columns)
+        if normalized_columns
+        else False
+    )
 
     if export_format.lower() == "json":
         json_ready_rows = [
@@ -743,13 +748,18 @@ def export_query(ctx, export_format, limit, overwrite, output_file, query):
             for row in rows
         ]
 
-        if normalized_columns:
+        if not normalized_columns:
+            payload = [list(row) for row in json_ready_rows]
+        elif has_duplicate_column_names:
+            payload = {
+                "columns": normalized_columns,
+                "rows": [list(row) for row in json_ready_rows],
+            }
+        else:
             payload = [
                 {normalized_columns[idx]: row[idx] for idx in range(len(row))}
                 for row in json_ready_rows
             ]
-        else:
-            payload = [list(row) for row in json_ready_rows]
         path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     else:
         with path.open("w", encoding="utf-8", newline="") as file_handle:
