@@ -760,9 +760,18 @@ def export_query(ctx, export_format, limit, overwrite, output_file, query):
     if limit is not None:
         rows = rows[:limit]
 
-    normalized_columns = columns or [
-        f"columna_{index + 1}" for index in range(len(rows[0]) if rows else 0)
-    ]
+    if columns:
+        normalized_columns = [
+            column if column not in (None, "") else f"columna_{index + 1}"
+            for index, column in enumerate(columns)
+        ]
+    elif rows:
+        normalized_columns = [
+            f"columna_{index + 1}"
+            for index in range(len(rows[0]))
+        ]
+    else:
+        normalized_columns = []
     has_duplicate_column_names = (
         len(set(normalized_columns)) != len(normalized_columns)
         if normalized_columns
