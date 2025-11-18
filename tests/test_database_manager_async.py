@@ -131,6 +131,58 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
 
             await manager.close_connections()
 
+    async def test_force_reset_recreates_active_connection_in_same_loop(self):
+        """`SQLITEPLUS_FORCE_RESET` debe cerrar y recrear la conexión activa."""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_dir = Path(tmpdir)
+
+            with mock.patch.dict(os.environ, {}, clear=False):
+                os.environ.pop("SQLITEPLUS_FORCE_RESET", None)
+                manager = AsyncDatabaseManager(
+                    base_dir=base_dir,
+                    require_encryption=False,
+                    reset_on_init=False,
+                )
+
+                try:
+                    db_name = "force_reset_same_loop"
+                    db_path = (base_dir / f"{db_name}.db").resolve()
+                    conn = await manager.get_connection(db_name)
+                    await conn.execute(
+                        "CREATE TABLE data (value TEXT)"
+                    )
+                    await conn.execute(
+                        "INSERT INTO data (value) VALUES ('persistente')"
+                    )
+                    await conn.commit()
+
+                    initial_inode = db_path.stat().st_ino
+                    cursor = await conn.execute(
+                        "SELECT COUNT(*) FROM sqlite_master WHERE name = 'data'"
+                    )
+                    existing_rows = await cursor.fetchall()
+                    self.assertEqual(existing_rows[0][0], 1)
+
+                    os.environ["SQLITEPLUS_FORCE_RESET"] = "1"
+                    new_conn = await manager.get_connection(db_name)
+
+                    cursor = await new_conn.execute(
+                        "SELECT COUNT(*) FROM sqlite_master WHERE name = 'data'"
+                    )
+                    rows = await cursor.fetchall()
+                    self.assertEqual(rows[0][0], 0)
+
+                    new_inode = db_path.stat().st_ino
+                    self.assertNotEqual(
+                        initial_inode,
+                        new_inode,
+                        "La base debe eliminarse y recrearse tras forzar el reset.",
+                    )
+                finally:
+                    os.environ.pop("SQLITEPLUS_FORCE_RESET", None)
+                    await manager.close_connections()
+
     async def asyncTearDown(self):
         """ Limpieza después de cada prueba """
         await self.manager.close_connections()

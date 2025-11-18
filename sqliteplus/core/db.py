@@ -112,19 +112,27 @@ class AsyncDatabaseManager:
 
         async with self._creation_lock:
             recreate_connection = False
+            should_reset = self._should_reset_database()
 
             if canonical_name in self.connections:
                 stored_loop = self._connection_loops.get(canonical_name)
-                if stored_loop is not current_loop:
+                if stored_loop is not current_loop or should_reset:
                     await self.connections[canonical_name].close()
                     recreate_connection = True
+
+                    self.connections.pop(canonical_name, None)
+                    self.locks.pop(canonical_name, None)
+                    self._connection_loops.pop(canonical_name, None)
+                    absolute_key_cleanup = self._initialized_keys.pop(canonical_name, None)
+                    if absolute_key_cleanup is not None:
+                        _INITIALIZED_DATABASES.discard(absolute_key_cleanup)
             else:
                 recreate_connection = True
 
             absolute_key = str(db_path)
 
             if recreate_connection:
-                should_reset = self._should_reset_database()
+                # `should_reset` ya se evaluó antes para evitar reusar conexiones obsoletas
                 if should_reset:
                     _INITIALIZED_DATABASES.discard(absolute_key)
                 if absolute_key not in _INITIALIZED_DATABASES:

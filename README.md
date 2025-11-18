@@ -104,7 +104,7 @@ pip install -e '.[dev]'
 pytest -v
 ```
 
-Cuando detecta pytest, `AsyncDatabaseManager` borra y recrea las bases ubicadas en `databases/` antes de abrirlas en lugar de moverlas a carpetas temporales. La detección es **perezosa**: en cada `get_connection()` vuelve a comprobar `PYTEST_CURRENT_TEST` y la nueva variable `SQLITEPLUS_FORCE_RESET`, por lo que puedes pedir un reinicio incluso si el gestor global ya se creó (por ejemplo, desde la app FastAPI). Revisa la [reinicialización automática en pruebas](./docs/uso_avanzado.md#reinicialización-automática-en-pruebas) o el código correspondiente en [`sqliteplus/core/db.py`](./sqliteplus/core/db.py).
+Cuando detecta pytest, `AsyncDatabaseManager` borra y recrea las bases ubicadas en `databases/` antes de abrirlas en lugar de moverlas a carpetas temporales. La detección es **perezosa**: en cada `get_connection()` vuelve a comprobar `PYTEST_CURRENT_TEST` y la nueva variable `SQLITEPLUS_FORCE_RESET`, por lo que puedes pedir un reinicio incluso si el gestor global ya se creó (por ejemplo, desde la app FastAPI). Si activas `SQLITEPLUS_FORCE_RESET` mientras una conexión sigue abierta en el mismo bucle de eventos, el gestor la cierra, elimina el archivo `.db` y lo vuelve a crear antes de devolverte la conexión limpia. Revisa la [reinicialización automática en pruebas](./docs/uso_avanzado.md#reinicialización-automática-en-pruebas) o el código correspondiente en [`sqliteplus/core/db.py`](./sqliteplus/core/db.py).
 
 ---
 
