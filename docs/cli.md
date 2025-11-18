@@ -107,16 +107,16 @@ Permite ejecutar una consulta `SELECT` y guardar el resultado en un archivo JSON
 - `--limit` restringe el número de filas exportadas sin alterar la consulta original.
 - `--overwrite` habilita la sobrescritura del archivo de destino cuando ya existe.
 
-Cuando eliges `--format json`, los valores especiales se transforman automáticamente para garantizar que el archivo pueda serializarse sin errores: los BLOBs y `memoryview` se codifican en Base64 con el prefijo `base64:`, los `Decimal` se convierten a números de punto flotante (o cadenas si exceden el rango) y las fechas/horas se expresan en ISO 8601.
+Cuando eliges `--format json`, los valores especiales se transforman automáticamente para garantizar que el archivo pueda serializarse sin errores: los BLOBs y `memoryview` se codifican en Base64 con el prefijo `base64:`, los `Decimal` se convierten a números de punto flotante (o cadenas si exceden el rango) y las fechas/horas se expresan en ISO 8601. Además, si una columna carece de nombre o SQLite retorna una cadena vacía, el comando genera encabezados genéricos (`columna_1`, `columna_2`, etc.) para asegurar claves válidas en cada registro JSON.
 
-Si optas por CSV, los encabezados se generan a partir de los nombres de las columnas devueltas por la consulta.
+Si optas por CSV ocurre lo mismo: se respetan los nombres de columna provistos por la consulta, pero los huecos o celdas sin alias se sustituyen por esos identificadores automáticos, manteniendo la estructura tabular coherente.
 
 ```bash
 sqliteplus export-query --format csv --limit 100 --overwrite resumen.csv \
   "SELECT level, COUNT(*) AS eventos FROM logs GROUP BY level ORDER BY level"
 ```
 
-Cuando la consulta no devuelve nombres de columna (por ejemplo, al usar expresiones), la CLI crea encabezados genéricos para mantener una estructura coherente en el archivo final.
+Cuando la consulta no devuelve nombres de columna o estos llegan vacíos (por ejemplo, al usar `SELECT '' AS ""` o expresiones similares), la CLI crea los encabezados `columna_n` para mantener una estructura coherente en el archivo final.
 
 ## Crear copias de seguridad
 

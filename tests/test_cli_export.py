@@ -158,6 +158,81 @@ def test_export_query_json_handles_duplicate_columns(tmp_path):
     assert data["rows"] == [["Alice", "ALICE"], ["Bob", "BOB"]]
 
 
+@pytest.mark.parametrize("export_format", ["json", "csv"])
+def test_export_query_generates_headers_for_blank_columns(tmp_path, export_format):
+    db_path = tmp_path / "test.db"
+    with sqlite3.connect(db_path) as conn:
+        conn.execute("CREATE TABLE datos (valor TEXT)")
+        conn.execute("INSERT INTO datos (valor) VALUES ('dato')")
+
+    output_path = tmp_path / (
+        "sin_alias.json" if export_format == "json" else "sin_alias.csv"
+    )
+
+    runner = CliRunner()
+    sql = "SELECT '' AS '', valor FROM datos"
+    result = runner.invoke(
+        cli,
+        [
+            "--db-path",
+            str(db_path),
+            "export-query",
+            "--format",
+            export_format,
+            str(output_path),
+            sql,
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert output_path.exists()
+
+    if export_format == "json":
+        data = json.loads(output_path.read_text(encoding="utf-8"))
+        assert data == [{"columna_1": "", "valor": "dato"}]
+    else:
+        content = output_path.read_text(encoding="utf-8").splitlines()
+        assert content[0] == "columna_1,valor"
+        assert content[1].endswith(",dato")
+
+
+@pytest.mark.parametrize("export_format", ["json", "csv"])
+def test_export_query_handles_queries_without_aliases(tmp_path, export_format):
+    db_path = tmp_path / "test.db"
+    with sqlite3.connect(db_path):
+        pass
+
+    output_path = tmp_path / (
+        "expresiones.json" if export_format == "json" else "expresiones.csv"
+    )
+
+    runner = CliRunner()
+    sql = "SELECT '' AS '', '' AS ''"
+    result = runner.invoke(
+        cli,
+        [
+            "--db-path",
+            str(db_path),
+            "export-query",
+            "--format",
+            export_format,
+            str(output_path),
+            sql,
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert output_path.exists()
+
+    if export_format == "json":
+        data = json.loads(output_path.read_text(encoding="utf-8"))
+        assert data == [{"columna_1": "", "columna_2": ""}]
+    else:
+        content = output_path.read_text(encoding="utf-8").splitlines()
+        assert content[0] == "columna_1,columna_2"
+        assert content[1] == ","
+
+
 def test_export_csv_cli_rejects_invalid_table_name(tmp_path):
     db_path = tmp_path / "test.db"
     output_path = tmp_path / "out.csv"
