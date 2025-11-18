@@ -72,10 +72,18 @@ Abre un panel enriquecido que aprovecha la nueva actualización de FletPlus. Pue
 
 #### Escenario manual: validar `max_rows` en `visual-dashboard`
 
-1. Ejecuta `sqliteplus init-db` y crea una tabla con al menos 1 000 filas (por ejemplo, `INSERT INTO demo SELECT NULL FROM generate_series(1,1000)` si trabajas desde `sqlite3` o un bucle con la CLI).
+1. Ejecuta `sqliteplus init-db` y crea una tabla con al menos 1 000 filas usando únicamente comandos compatibles con cualquier instalación base:
+
+   ```bash
+   sqliteplus execute "CREATE TABLE IF NOT EXISTS demo (id INTEGER PRIMARY KEY, note TEXT)"
+   sqliteplus execute "WITH RECURSIVE counter(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM counter WHERE x < 1000) INSERT INTO demo(note) SELECT printf('fila %d', x) FROM counter"
+   ```
+
 2. Abre el panel con `sqliteplus visual-dashboard --max-rows 25` y dirígete a la pestaña de consultas.
 3. Lanza `SELECT * FROM demo` sin cláusula `LIMIT`. El panel solo mostrará 25 filas y el mensaje inferior indicará que la consulta se truncó por el límite configurado.
 4. Repite la consulta añadiendo `LIMIT 10` para comprobar que el mensaje cambia y ya no se advierte truncamiento.
+
+> Si prefieres usar extensiones como `generate_series`, recuerda cargar explícitamente la extensión antes de ejecutar los ejemplos (`SELECT load_extension('mod_spatialite');`, etc.). El tutorial incluye instrucciones que funcionan sin extensiones para que puedas copiar y pegar los comandos en la CLI estándar de inmediato.
 
 ## Exportar una tabla a CSV
 
