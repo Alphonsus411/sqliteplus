@@ -50,6 +50,54 @@ def test_export_csv_cli_success(tmp_path):
     assert content[2].endswith(",Bob")
 
 
+def test_export_csv_cli_protects_existing_files(tmp_path):
+    db_path = tmp_path / "test.db"
+    output_path = tmp_path / "out.csv"
+    _prepare_database(db_path)
+    output_path.write_text("contenido previo", encoding="utf-8")
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "export-csv",
+            "valid_table",
+            str(output_path),
+            "--db-path",
+            str(db_path),
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert "ya existe" in result.output
+    assert output_path.read_text(encoding="utf-8") == "contenido previo"
+
+
+def test_export_csv_cli_supports_overwrite_flag(tmp_path):
+    db_path = tmp_path / "test.db"
+    output_path = tmp_path / "out.csv"
+    _prepare_database(db_path)
+    output_path.write_text("contenido previo", encoding="utf-8")
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "export-csv",
+            "valid_table",
+            str(output_path),
+            "--db-path",
+            str(db_path),
+            "--overwrite",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    content = output_path.read_text(encoding="utf-8").splitlines()
+    assert content[0] == "id,name"
+    assert content[1].endswith(",Alice")
+
+
 @pytest.mark.parametrize("export_format", ["json", "csv"])
 def test_export_query_creates_missing_directories(tmp_path, export_format):
     db_path = tmp_path / "test.db"

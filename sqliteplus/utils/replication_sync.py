@@ -59,7 +59,7 @@ class SQLiteReplication:
         self.cipher_key = cipher_key if cipher_key is not None else os.getenv("SQLITE_DB_KEY")
         self.backup_dir.mkdir(parents=True, exist_ok=True)
 
-    def export_to_csv(self, table_name: str, output_file: str):
+    def export_to_csv(self, table_name: str, output_file: str, overwrite: bool = False):
         """
         Exporta los datos de una tabla a un archivo CSV.
         """
@@ -74,6 +74,11 @@ class SQLiteReplication:
         query = f"SELECT * FROM {self._escape_identifier(table_name)}"
 
         output_path = Path(output_file).expanduser().resolve()
+
+        if output_path.exists() and not overwrite:
+            raise FileExistsError(
+                f"El archivo de salida ya existe: {output_path}. Usa --overwrite para reemplazarlo."
+            )
 
         try:
             with sqlite3.connect(self.db_path) as conn:

@@ -130,7 +130,7 @@ Comandos disponibles:
 - `sqliteplus describe-table <tabla>` resume las columnas, índices y relaciones de la tabla indicada.
 - `sqliteplus db-info` muestra un resumen del archivo activo (ruta, tamaño, tablas, vistas y filas totales).
 - `sqliteplus export-query ...` ejecuta una consulta de lectura y guarda el resultado en JSON o CSV; consulta la [guía detallada](./docs/cli.md#exportar-resultados-de-una-consulta).
-- `sqliteplus export-csv <tabla> <archivo.csv>` guarda la tabla en un CSV con encabezados.
+- `sqliteplus export-csv <tabla> <archivo.csv>` guarda la tabla en un CSV con encabezados y, por defecto, protege archivos existentes a menos que añadas `--overwrite`.
 - `sqliteplus backup` genera un respaldo fechado en la carpeta `backups/`. Puedes especificar otra ruta con `--db-path`.
 
 Los subcomandos `export-csv` y `backup` muestran los resultados de forma visual con Rich, mientras que las utilidades internas solo devuelven la ruta generada. Así puedes reutilizar la API desde scripts externos sin producir mensajes duplicados: toda la salida visible procede de la CLI.
