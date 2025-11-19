@@ -36,6 +36,15 @@ Los resultados aparecen fila a fila. Si la consulta no devuelve datos el program
 
 > Para usar `--viewer` debes instalar el extra opcional `visual`: `pip install "sqliteplus-enhanced[visual]"`.
 
+## Comandos y flags que requieren el extra `visual`
+
+Los visores interactivos de FletPlus solo están disponibles cuando instalas el extra `visual`. Instálalo si necesitas alguno de
+los siguientes flujos:
+
+- `sqliteplus fetch --viewer`: habilita una cuadrícula interactiva donde también puedes combinar `--viewer-theme`, `--viewer-page-size` y `--viewer-virtual` para ajustar el aspecto y la paginación.
+- `sqliteplus list-tables --viewer`: muestra un panel navegable para explorar tablas y vistas con filtros y ordenación.
+- `sqliteplus visual-dashboard`: abre el panel completo de FletPlus y admite los flags `--theme`, `--accent-color` y `--max-rows` para personalizar el entorno.
+
 ### Listar tablas disponibles
 
 ```bash
