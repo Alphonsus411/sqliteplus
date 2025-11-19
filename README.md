@@ -35,6 +35,18 @@ Si solo quieres experimentar con la librería dentro del repositorio puedes mant
 pip install -e .
 ```
 
+### ¿Qué pasa con `bcrypt`?
+
+El paquete incluye una implementación pura en Python que se activa automáticamente si el intérprete no puede importar el módulo oficial. Así, las funciones de autenticación siguen operativas aunque no tengas compiladores o binarios nativos disponibles.
+
+Si quieres usar la extensión oficial siempre que el entorno lo permita, instala el extra opcional `security`:
+
+```bash
+pip install "sqliteplus-enhanced[security]"
+```
+
+Cuando el intérprete detecta `bcrypt`, automáticamente sustituye el *fallback* por el módulo nativo.
+
 ---
 
 ## 🔐 Configuración mínima
