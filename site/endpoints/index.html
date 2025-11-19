@@ -41,10 +41,13 @@
                                 <a href="../api/" class="nav-link">API REST - SQLitePlus Enhanced</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../cli/" class="nav-link">Cli</a>
+                                <a href="../changelog/" class="nav-link">Resumen del historial de cambios</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../configuracion/" class="nav-link">Configuración Avanzada</a>
+                                <a href="../cli/" class="nav-link">CLI sqliteplus</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../configuracion/" class="nav-link">Configuración avanzada</a>
                             </li>
                             <li class="nav-item">
                                 <a href="./" class="nav-link active" aria-current="page">Endpoints REST</a>
@@ -53,10 +56,10 @@
                                 <a href="../instalacion/" class="nav-link">Instalación</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../uso_avanzado/" class="nav-link">Uso avanzado</a>
+                                <a href="../uso_avanzado/" class="nav-link">Casos de uso avanzados</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../uso_basico/" class="nav-link">Uso Básico</a>
+                                <a href="../uso_basico/" class="nav-link">Uso básico</a>
                             </li>
                         </ul>
 
@@ -100,7 +103,7 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-bs-level="2"><a href="#gestion-de-base-de-datos" class="nav-link">Gestión de Base de Datos</a>
+            <li class="nav-item" data-bs-level="2"><a href="#gestion-de-bases-y-tablas" class="nav-link">Gestión de bases y tablas</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -116,21 +119,24 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="endpoints-rest">Endpoints REST</h1>
-<p>Consulta interactiva disponible en <code>/docs</code>.</p>
+<p>Resumen rápido de los recursos disponibles. Todos requieren <code>Authorization: Bearer &lt;token&gt;</code> salvo la
+ruta de autenticación <code>token</code> (que se publicará respetando el <code>root_path</code>).</p>
 <h2 id="autenticacion">Autenticación</h2>
 <ul>
-<li><code>POST /token</code>: Obtener token JWT</li>
+<li><code>POST /token</code> – genera un JWT firmado con <code>SECRET_KEY</code>. Usa el fichero <code>SQLITEPLUS_USERS_FILE</code> y se
+  mostrará como <code>&lt;prefijo&gt;/token</code> cuando la app se monte bajo un prefijo.</li>
 </ul>
-<h2 id="gestion-de-base-de-datos">Gestión de Base de Datos</h2>
+<h2 id="gestion-de-bases-y-tablas">Gestión de bases y tablas</h2>
 <ul>
-<li><code>POST /databases/{db}/create_table</code></li>
-<li><code>DELETE /databases/{db}/drop_table</code></li>
+<li><code>POST /databases/{db_name}/create_table</code> – valida columnas con Pydantic, escapa identificadores y requiere <code>table_name</code> como parámetro de consulta (por ejemplo, <code>/databases/db_demo/create_table?table_name=clientes</code>).</li>
+<li><code>DELETE /databases/{db_name}/drop_table</code> – elimina la tabla si existe y también exige <code>table_name</code> como query (ejemplo: <code>/databases/db_demo/drop_table?table_name=clientes</code>).</li>
 </ul>
 <h2 id="operaciones-crud">Operaciones CRUD</h2>
 <ul>
-<li><code>POST /databases/{db}/insert</code></li>
-<li><code>GET /databases/{db}/fetch</code></li>
-</ul></div>
+<li><code>POST /databases/{db_name}/insert</code> – inserta filas usando placeholders <code>?</code>, requiere <code>table_name</code> como query y responde con <code>404</code> si la tabla no existe.</li>
+<li><code>GET /databases/{db_name}/fetch</code> – devuelve todas las filas de la tabla indicado en <code>table_name</code>; responde con <code>404</code> si la tabla no existe.</li>
+</ul>
+<p>Consulta <code>docs/api.md</code> para conocer los cuerpos de petición y respuestas detalladas.</p></div>
             </div>
         </div>
 

@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Cli - My Docs</title>
+        <title>CLI sqliteplus - My Docs</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/fontawesome.min.css" rel="stylesheet">
         <link href="../css/brands.min.css" rel="stylesheet">
@@ -41,10 +41,13 @@
                                 <a href="../api/" class="nav-link">API REST - SQLitePlus Enhanced</a>
                             </li>
                             <li class="nav-item">
-                                <a href="./" class="nav-link active" aria-current="page">Cli</a>
+                                <a href="../changelog/" class="nav-link">Resumen del historial de cambios</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../configuracion/" class="nav-link">Configuración Avanzada</a>
+                                <a href="./" class="nav-link active" aria-current="page">CLI sqliteplus</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../configuracion/" class="nav-link">Configuración avanzada</a>
                             </li>
                             <li class="nav-item">
                                 <a href="../endpoints/" class="nav-link">Endpoints REST</a>
@@ -53,10 +56,10 @@
                                 <a href="../instalacion/" class="nav-link">Instalación</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../uso_avanzado/" class="nav-link">Uso avanzado</a>
+                                <a href="../uso_avanzado/" class="nav-link">Casos de uso avanzados</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../uso_basico/" class="nav-link">Uso Básico</a>
+                                <a href="../uso_basico/" class="nav-link">Uso básico</a>
                             </li>
                         </ul>
 
@@ -67,7 +70,7 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../api/" class="nav-link">
+                                <a rel="prev" href="../changelog/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
@@ -94,38 +97,44 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-bs-level="2"><a href="#cli-interfaz-de-linea-de-comandos" class="nav-link">CLI - Interfaz de Línea de Comandos</a>
+            <li class="nav-item" data-bs-level="1"><a href="#cli-sqliteplus" class="nav-link">CLI sqliteplus</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#inicializar-la-base" class="nav-link">Inicializar la base</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-bs-level="2"><a href="#inicializar-la-base-de-datos" class="nav-link">📦 Inicializar la base de datos</a>
+            <li class="nav-item" data-bs-level="2"><a href="#ejecutar-consultas-de-escritura" class="nav-link">Ejecutar consultas de escritura</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-bs-level="2"><a href="#ejecutar-consulta-de-escritura" class="nav-link">🛠 Ejecutar consulta de escritura</a>
+            <li class="nav-item" data-bs-level="2"><a href="#consultar-informacion" class="nav-link">Consultar información</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-bs-level="2"><a href="#ejecutar-consulta-de-lectura" class="nav-link">🔎 Ejecutar consulta de lectura</a>
+            <li class="nav-item" data-bs-level="2"><a href="#comandos-y-flags-que-requieren-el-extra-visual" class="nav-link">Comandos y flags que requieren el extra visual</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-bs-level="2"><a href="#exportar-tabla-a-csv" class="nav-link">🧾 Exportar tabla a CSV</a>
+            <li class="nav-item" data-bs-level="2"><a href="#exportar-una-tabla-a-csv" class="nav-link">Exportar una tabla a CSV</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-bs-level="2"><a href="#crear-copia-de-seguridad" class="nav-link">💾 Crear copia de seguridad</a>
+            <li class="nav-item" data-bs-level="2"><a href="#exportar-resultados-de-una-consulta" class="nav-link">Exportar resultados de una consulta</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-bs-level="2"><a href="#i-ayuda" class="nav-link">ℹ️ Ayuda</a>
+            <li class="nav-item" data-bs-level="2"><a href="#crear-copias-de-seguridad" class="nav-link">Crear copias de seguridad</a>
               <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#trabajar-con-sqlcipher" class="nav-link">Trabajar con SQLCipher</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#nuevo-aspecto-con-rich" class="nav-link">Nuevo aspecto con Rich</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -133,32 +142,109 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h2 id="cli-interfaz-de-linea-de-comandos">CLI - Interfaz de Línea de Comandos</h2>
-<p>SQLitePlus Enhanced ofrece una CLI sencilla para ejecutar acciones rápidas sobre tu base de datos.</p>
-<hr />
-<h2 id="inicializar-la-base-de-datos">📦 Inicializar la base de datos</h2>
-<pre><code class="language-bash">sqliteplus-enhanced init-db
+<h1 id="cli-sqliteplus">CLI <code>sqliteplus</code></h1>
+<p>El paquete instala el comando <code>sqliteplus</code>, pensado para quienes prefieren gestionar la base sin levantar la API. El comando principal acepta dos opciones globales:</p>
+<ul>
+<li><code>--cipher-key</code> (o la variable <code>SQLITE_DB_KEY</code>) para abrir bases cifradas.</li>
+<li><code>--db-path</code> para indicar qué archivo <code>.db</code> usarán los subcomandos.</li>
+</ul>
+<h2 id="inicializar-la-base">Inicializar la base</h2>
+<pre><code class="language-bash">sqliteplus init-db
 </code></pre>
-<p>Crea el archivo database.db y registra el log de inicialización.</p>
-<h2 id="ejecutar-consulta-de-escritura">🛠 Ejecutar consulta de escritura</h2>
-<pre><code class="language-bash">sqliteplus-enhanced execute &quot;INSERT INTO logs (msg) VALUES ('Mensaje desde CLI')&quot;
+<p>Si la base no existe se crea automáticamente y se anota la acción en la tabla <code>logs</code>. El mensaje de salida confirma la ruta final del archivo.</p>
+<h2 id="ejecutar-consultas-de-escritura">Ejecutar consultas de escritura</h2>
+<pre><code class="language-bash">sqliteplus execute INSERT INTO logs (action) VALUES ('Mensaje desde CLI')
 </code></pre>
-<p>Inserta directamente un registro o ejecuta cualquier consulta de escritura.</p>
-<h2 id="ejecutar-consulta-de-lectura">🔎 Ejecutar consulta de lectura</h2>
-<pre><code class="language-bash">sqliteplus-enhanced fetch &quot;SELECT * FROM logs&quot;
+<p>El comando muestra un mensaje de éxito y, cuando hay una inserción, informa el último ID generado. Los errores de SQLite se convierten en mensajes claros de Click.</p>
+<h2 id="consultar-informacion">Consultar información</h2>
+<pre><code class="language-bash">sqliteplus fetch SELECT * FROM logs
 </code></pre>
-<p>Devuelve y muestra el resultado de cualquier consulta SELECT.</p>
-<h2 id="exportar-tabla-a-csv">🧾 Exportar tabla a CSV</h2>
-<pre><code class="language-bash">sqliteplus-enhanced export-csv logs salida.csv
+<p>Los resultados aparecen fila a fila. Si la consulta no devuelve datos el programa lo avisa para evitar confusiones.</p>
+<ul>
+<li>Usa <code>--summary</code> para generar una tabla adicional con mínimos, máximos y promedios de las columnas numéricas.</li>
+<li>Con <code>--viewer</code> se abre un visor accesible construido con FletPlus; admite filtros en vivo, cambio de tema (<code>--viewer-theme</code>) y ajuste del tamaño del texto.</li>
+<li>Si necesitas paginar conjuntos grandes, combina <code>--viewer</code> con <code>--viewer-page-size</code> o <code>--viewer-virtual</code> para cargar filas bajo demanda.</li>
+<li>Cuando eliges <code>--output json</code>, cada valor de la consulta se normaliza antes de mostrarse: los BLOBs se codifican en Base64, los <code>Decimal</code> se convierten a números o cadenas y las fechas/horas se expresan en ISO 8601, evitando errores de serialización.</li>
+</ul>
+<blockquote>
+<p>Para usar <code>--viewer</code> debes instalar el extra opcional <code>visual</code>: <code>pip install "sqliteplus-enhanced[visual]"</code>.</p>
+</blockquote>
+<h2 id="comandos-y-flags-que-requieren-el-extra-visual">Comandos y flags que requieren el extra <code>visual</code></h2>
+<p>Los visores interactivos de FletPlus solo están disponibles cuando instalas el extra <code>visual</code>. Instálalo si necesitas alguno de
+los siguientes flujos:</p>
+<ul>
+<li><code>sqliteplus fetch --viewer</code>: habilita una cuadrícula interactiva donde también puedes combinar <code>--viewer-theme</code>, <code>--viewer-page-size</code> y <code>--viewer-virtual</code> para ajustar el aspecto y la paginación.</li>
+<li><code>sqliteplus list-tables --viewer</code>: muestra un panel navegable para explorar tablas y vistas con filtros y ordenación.</li>
+<li><code>sqliteplus visual-dashboard</code>: abre el panel completo de FletPlus y admite los flags <code>--theme</code>, <code>--accent-color</code> y <code>--max-rows</code> para personalizar el entorno.</li>
+</ul>
+<h3 id="listar-tablas-disponibles">Listar tablas disponibles</h3>
+<pre><code class="language-bash">sqliteplus list-tables
 </code></pre>
-<p>Guarda los datos de la tabla logs en un archivo CSV llamado salida.csv</p>
-<h2 id="crear-copia-de-seguridad">💾 Crear copia de seguridad</h2>
-<pre><code class="language-bash">sqliteplus-enhanced backup
+<p>Muestra una tabla con todas las tablas de usuario y el número de filas registradas. Añade <code>--include-views</code> si también quieres ver las vistas definidas. Con <code>--viewer</code> obtienes un catálogo visual donde puedes ordenar y navegar por los objetos con ayuda de la última versión de FletPlus.</p>
+<h3 id="describir-la-estructura-de-una-tabla">Describir la estructura de una tabla</h3>
+<pre><code class="language-bash">sqliteplus describe-table logs
 </code></pre>
-<p>Genera una copia en la carpeta backups/ con fecha y hora.</p>
-<h2 id="i-ayuda">ℹ️ Ayuda</h2>
-<pre><code class="language-bash">sqliteplus-enhanced --help
-</code></pre></div>
+<p>Obtendrás un resumen con el número de filas, columnas, índices y claves foráneas de la tabla seleccionada.</p>
+<h3 id="ver-estadisticas-generales">Ver estadísticas generales</h3>
+<pre><code class="language-bash">sqliteplus db-info
+</code></pre>
+<p>Imprime la ruta del archivo activo, su tamaño en disco y el total de tablas, vistas y filas.</p>
+<h3 id="panel-visual-con-fletplus">Panel visual con FletPlus</h3>
+<pre><code class="language-bash">sqliteplus visual-dashboard --theme dark --accent-color BLUE_200
+</code></pre>
+<p>Abre un panel enriquecido que aprovecha la nueva actualización de FletPlus. Puedes elegir el tema (<code>--theme</code>), personalizar el color primario (<code>--accent-color</code>) y navegar por vistas dedicadas a resumen, consultas, historial y ayudas de accesibilidad. Desde el propio panel es posible acceder a la paleta de comandos (Ctrl+K) o consultar los consejos incorporados.</p>
+<blockquote>
+<p>Este comando también requiere instalar el extra <code>visual</code> mediante <code>pip install "sqliteplus-enhanced[visual]"</code>.</p>
+</blockquote>
+<h4 id="escenario-manual-validar-max_rows-en-visual-dashboard">Escenario manual: validar <code>max_rows</code> en <code>visual-dashboard</code></h4>
+<ol>
+<li>Ejecuta <code>sqliteplus init-db</code> y crea una tabla con al menos 1 000 filas usando únicamente comandos compatibles con cualquier instalación base:</li>
+</ol>
+<p><code>bash
+   sqliteplus execute "CREATE TABLE IF NOT EXISTS demo (id INTEGER PRIMARY KEY, note TEXT)"
+   sqliteplus execute "WITH RECURSIVE counter(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM counter WHERE x &lt; 1000) INSERT INTO demo(note) SELECT printf('fila %d', x) FROM counter"</code></p>
+<ol>
+<li>Abre el panel con <code>sqliteplus visual-dashboard --max-rows 25</code> y dirígete a la pestaña de consultas.</li>
+<li>Lanza <code>SELECT * FROM demo</code> sin cláusula <code>LIMIT</code>. El panel solo mostrará 25 filas y el mensaje inferior indicará que la consulta se truncó por el límite configurado.</li>
+<li>Repite la consulta añadiendo <code>LIMIT 10</code> para comprobar que el mensaje cambia y ya no se advierte truncamiento.</li>
+</ol>
+<blockquote>
+<p>Si prefieres usar extensiones como <code>generate_series</code>, recuerda cargar explícitamente la extensión antes de ejecutar los ejemplos (<code>SELECT load_extension('mod_spatialite');</code>, etc.). El tutorial incluye instrucciones que funcionan sin extensiones para que puedas copiar y pegar los comandos en la CLI estándar de inmediato.</p>
+</blockquote>
+<h2 id="exportar-una-tabla-a-csv">Exportar una tabla a CSV</h2>
+<pre><code class="language-bash">sqliteplus export-csv logs logs.csv
+</code></pre>
+<p>Genera un CSV con encabezados listo para compartir. Puedes utilizar nombres de tabla con espacios o guiones (<code>"logs con espacios"</code>, <code>"logs-con-guion"</code>), la herramienta se encarga de escaparlos sin perder seguridad. Si necesitas otra base diferente a la global, añade <code>--db-path /ruta/a/otra.db</code>.</p>
+<p>De forma predeterminada, <code>export-csv</code> evita sobrescribir archivos ya existentes para que no pierdas datos accidentalmente. Si realmente deseas reemplazar el archivo, pasa el flag <code>--overwrite</code> y el comando continuará sin detenerse.</p>
+<blockquote>
+<p>Nota: la utilidad <code>SQLiteReplication.export_to_csv</code> únicamente devuelve la ruta final; la CLI se encarga de mostrarla en un panel Rich para evitar mensajes duplicados cuando reutilices la función desde tus propios scripts.</p>
+</blockquote>
+<h2 id="exportar-resultados-de-una-consulta">Exportar resultados de una consulta</h2>
+<pre><code class="language-bash">sqliteplus export-query --format json resultados.json &quot;SELECT * FROM logs ORDER BY created_at DESC&quot;
+</code></pre>
+<p>Permite ejecutar una consulta <code>SELECT</code> y guardar el resultado en un archivo JSON o CSV sin pasar por la API. Es útil para compartir subconjuntos filtrados o preparar datos para otras herramientas sin modificar la base.</p>
+<ul>
+<li><code>--format</code> controla el formato de salida (<code>json</code> por defecto o <code>csv</code>).</li>
+<li><code>--limit</code> restringe el número de filas exportadas sin alterar la consulta original.</li>
+<li><code>--overwrite</code> habilita la sobrescritura del archivo de destino cuando ya existe.</li>
+</ul>
+<p>Cuando eliges <code>--format json</code>, los valores especiales se transforman automáticamente para garantizar que el archivo pueda serializarse sin errores: los BLOBs y <code>memoryview</code> se codifican en Base64 con el prefijo <code>base64:</code>, los <code>Decimal</code> se convierten a números de punto flotante (o cadenas si exceden el rango) y las fechas/horas se expresan en ISO 8601. Además, si una columna carece de nombre o SQLite retorna una cadena vacía, el comando genera encabezados genéricos (<code>columna_1</code>, <code>columna_2</code>, etc.) para asegurar claves válidas en cada registro JSON.</p>
+<p>Si optas por CSV ocurre lo mismo: se respetan los nombres de columna provistos por la consulta, pero los huecos o celdas sin alias se sustituyen por esos identificadores automáticos, manteniendo la estructura tabular coherente.</p>
+<pre><code class="language-bash">sqliteplus export-query --format csv --limit 100 --overwrite resumen.csv \
+  &quot;SELECT level, COUNT(*) AS eventos FROM logs GROUP BY level ORDER BY level&quot;
+</code></pre>
+<p>Cuando la consulta no devuelve nombres de columna o estos llegan vacíos (por ejemplo, al usar <code>SELECT '' AS ""</code> o expresiones similares), la CLI crea los encabezados <code>columna_n</code> para mantener una estructura coherente en el archivo final.</p>
+<h2 id="crear-copias-de-seguridad">Crear copias de seguridad</h2>
+<pre><code class="language-bash">sqliteplus backup
+</code></pre>
+<p>Obtendrás un respaldo fechado en la carpeta <code>backups/</code>. El comando indica el archivo final. También puedes pasar <code>--db-path</code> para copiar una base concreta.</p>
+<p>De forma análoga, <code>SQLiteReplication.backup_database</code> retorna la ubicación creada sin imprimir mensajes directos, lo que garantiza que toda la salida visible provenga de la CLI y puedas reutilizar la función en otros contextos.</p>
+<h2 id="trabajar-con-sqlcipher">Trabajar con SQLCipher</h2>
+<pre><code class="language-bash">sqliteplus --cipher-key &quot;$SQLITE_DB_KEY&quot; backup
+</code></pre>
+<p>Si la clave es incorrecta o el intérprete no soporta SQLCipher, la CLI mostrará un error fácil de entender para guiarte en la corrección.</p>
+<h2 id="nuevo-aspecto-con-rich">Nuevo aspecto con Rich</h2>
+<p>Gracias a la librería <a href="https://rich.readthedocs.io/en/stable/">Rich</a>, todos los comandos muestran tablas, paneles y colores que facilitan la lectura, especialmente en pantallas oscuras o cuando necesitas compartir los resultados por terminal.</p></div>
             </div>
         </div>
 

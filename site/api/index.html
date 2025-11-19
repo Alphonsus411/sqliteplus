@@ -41,10 +41,13 @@
                                 <a href="./" class="nav-link active" aria-current="page">API REST - SQLitePlus Enhanced</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../cli/" class="nav-link">Cli</a>
+                                <a href="../changelog/" class="nav-link">Resumen del historial de cambios</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../configuracion/" class="nav-link">Configuración Avanzada</a>
+                                <a href="../cli/" class="nav-link">CLI sqliteplus</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../configuracion/" class="nav-link">Configuración avanzada</a>
                             </li>
                             <li class="nav-item">
                                 <a href="../endpoints/" class="nav-link">Endpoints REST</a>
@@ -53,10 +56,10 @@
                                 <a href="../instalacion/" class="nav-link">Instalación</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../uso_avanzado/" class="nav-link">Uso avanzado</a>
+                                <a href="../uso_avanzado/" class="nav-link">Casos de uso avanzados</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../uso_basico/" class="nav-link">Uso Básico</a>
+                                <a href="../uso_basico/" class="nav-link">Uso básico</a>
                             </li>
                         </ul>
 
@@ -72,7 +75,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../cli/" class="nav-link">
+                                <a rel="next" href="../changelog/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
@@ -96,40 +99,19 @@
             
             <li class="nav-item" data-bs-level="1"><a href="#api-rest-sqliteplus-enhanced" class="nav-link">API REST - SQLitePlus Enhanced</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-bs-level="2"><a href="#autenticacion" class="nav-link">🔐 Autenticación</a>
+            <li class="nav-item" data-bs-level="2"><a href="#autenticacion" class="nav-link">Autenticación</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-              </ul>
-            </li>
-            
-            <li class="nav-item" data-bs-level="1"><a href="#query" class="nav-link">Query:</a>
-              <ul class="nav flex-column">
-            <li class="nav-item" data-bs-level="2"><a href="#crud-sobre-datos" class="nav-link">📝 CRUD sobre Datos</a>
+            <li class="nav-item" data-bs-level="2"><a href="#gestion-de-tablas" class="nav-link">Gestión de tablas</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-              </ul>
-            </li>
-            
-            <li class="nav-item" data-bs-level="1"><a href="#query_1" class="nav-link">Query:</a>
+            <li class="nav-item" data-bs-level="2"><a href="#operaciones-crud" class="nav-link">Operaciones CRUD</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-bs-level="1"><a href="#body-json" class="nav-link">Body (JSON):</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            
-            <li class="nav-item" data-bs-level="1"><a href="#query_2" class="nav-link">Query:</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            
-            <li class="nav-item" data-bs-level="1"><a href="#respuesta_1" class="nav-link">Respuesta:</a>
-              <ul class="nav flex-column">
-            <li class="nav-item" data-bs-level="2"><a href="#requiere-token" class="nav-link">🛑 Requiere Token</a>
+            <li class="nav-item" data-bs-level="2"><a href="#reglas-generales" class="nav-link">Reglas generales</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -141,82 +123,130 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="api-rest-sqliteplus-enhanced">API REST - SQLitePlus Enhanced</h1>
-<p>La API proporciona endpoints para gestionar bases de datos SQLite de forma segura y asincrónica, protegidos con JWT.</p>
+<p>La API ofrece operaciones CRUD sobre múltiples bases SQLite protegidas por JWT.</p>
 <blockquote>
-<p>📍 Swagger disponible en: <code>http://localhost:8000/docs</code></p>
+<p>Swagger disponible en: <code>http://localhost:8000/docs</code></p>
 </blockquote>
 <hr />
-<h2 id="autenticacion">🔐 Autenticación</h2>
+<h2 id="autenticacion">Autenticación</h2>
 <h3 id="post-token"><code>POST /token</code></h3>
-<p>Genera un token JWT válido por 1 hora.</p>
-<h4 id="parametros-form-data">Parámetros (form-data):</h4>
+<p>Genera un token JWT válido por una hora. Las credenciales se validan contra el archivo definido en
+<code>SQLITEPLUS_USERS_FILE</code>.</p>
+<blockquote>
+<p>Nota: la ruta se anuncia de forma relativa en el esquema OpenAPI, por lo que en despliegues con
+<code>root_path</code> o montajes aparecerá como <code>&lt;prefijo&gt;/token</code>.</p>
+</blockquote>
 <ul>
-<li><code>username</code>: <code>admin</code></li>
-<li><code>password</code>: <code>admin</code></li>
+<li><strong>Body (form-urlencoded)</strong></li>
+<li><code>username</code></li>
+<li><code>password</code></li>
+<li><strong>Respuestas</strong></li>
+<li><code>200 OK</code>: <code>{ "access_token": "&lt;jwt&gt;", "token_type": "bearer" }</code></li>
+<li><code>400 Bad Request</code>: credenciales incorrectas o formulario inválido.</li>
+<li><code>500 Internal Server Error</code>: problemas al cargar el archivo de usuarios.</li>
 </ul>
-<h4 id="respuesta">Respuesta:</h4>
+<hr />
+<h2 id="gestion-de-tablas">Gestión de tablas</h2>
+<h3 id="post-databasesdb_namecreate_table"><code>POST /databases/{db_name}/create_table</code></h3>
+<p>Crea una tabla si no existe. Los nombres de columnas se validan mediante <code>CreateTableSchema</code> y se
+escapan con comillas dobles.</p>
+<p><strong>Normalización y validaciones de nombres</strong></p>
+<ul>
+<li>Se eliminan espacios iniciales/finales de cada nombre antes de validar el patrón de SQLite.</li>
+<li>La comparación para detectar duplicados se hace con <code>casefold()</code>, por lo que <code>"Nombre"</code> y
+  <code>" nombre "</code> se consideran el mismo identificador.</li>
+<li>
+<p>Si después de normalizar hay nombres repetidos, la API responde con <code>400 Bad Request</code>.</p>
+</li>
+<li>
+<p><strong>Query</strong>: <code>table_name</code> (puede incluir espacios o guiones; la API lo escapará automáticamente)</p>
+</li>
+<li><strong>Body</strong>:</li>
+</ul>
 <pre><code class="language-json">{
-  &quot;access_token&quot;: &quot;&lt;JWT&gt;&quot;,
-  &quot;token_type&quot;: &quot;bearer&quot;
-}
-````
-
-## 🧱 Gestión de Tablas
-
-</code></pre>
-<p>POST /databases/{db_name}/create_table</p>
-<pre><code>
-Crea una tabla en la base de datos indicada.
-
-Headers:
-- ````Authorization: Bearer &lt;token&gt;````
-
-Query:
-- ```table_name: Nombre de la tabla```
-
-# Body (JSON):
-
-```json
-{
   &quot;columns&quot;: {
     &quot;id&quot;: &quot;INTEGER PRIMARY KEY&quot;,
-    &quot;msg&quot;: &quot;TEXT&quot;
+    &quot;msg&quot;: &quot;TEXT&quot;,
+    &quot;created_at&quot;: &quot;TEXT&quot;
   }
 }
-
 </code></pre>
-<pre><code>DELETE /databases/{db_name}/drop_table
-</code></pre>
-<p>Elimina una tabla.</p>
-<h1 id="query">Query:</h1>
 <ul>
-<li>table_name: Nombre de la tabla a eliminar</li>
+<li><strong>Errores comunes</strong></li>
+<li><code>400</code>: nombre de tabla inválido, columnas duplicadas o tipos vacíos.</li>
+<li><code>500</code>: error inesperado en la base.</li>
 </ul>
-<h2 id="crud-sobre-datos">📝 CRUD sobre Datos</h2>
-<p><code>POST /databases/{db_name}/insert</code></p>
-<p>Inserta un registro en una tabla existente.</p>
-<h1 id="query_1">Query:</h1>
-<p><code>table_name: nombre de la tabla</code></p>
-<h1 id="body-json">Body (JSON):</h1>
-<pre><code class="language-json">{
-  &quot;msg&quot;: &quot;Texto de ejemplo&quot;
-}
+<h3 id="delete-databasesdb_namedrop_table"><code>DELETE /databases/{db_name}/drop_table</code></h3>
+<p>Elimina la tabla indicada. No falla si la tabla no existe.</p>
+<ul>
+<li><strong>Query</strong>: <code>table_name</code> (obligatorio)</li>
+</ul>
+<pre><code class="language-bash">curl -X DELETE &quot;http://127.0.0.1:8000/databases/demo/drop_table?table_name=logs&quot; \
+     -H &quot;Authorization: Bearer &lt;TOKEN&gt;&quot;
 </code></pre>
-<p><code>GET /databases/{db_name}/fetch</code></p>
-<p>Recupera todos los registros de la tabla indicada.</p>
-<h1 id="query_2">Query:</h1>
-<p><code>table_name: Nombre de la tabla a consultar</code></p>
-<h1 id="respuesta_1">Respuesta:</h1>
+<hr />
+<h2 id="operaciones-crud">Operaciones CRUD</h2>
+<h3 id="post-databasesdb_nameinsert"><code>POST /databases/{db_name}/insert</code></h3>
+<p>Inserta un registro en la tabla especificada. El payload puede llegar ya normalizado bajo la
+clave <code>values</code> o como un objeto plano (por compatibilidad con clientes sencillos); en este último
+caso, la API lo reestructura internamente a <code>{"values": { ... }}</code> antes de procesarlo.</p>
+<ul>
+<li><strong>Query</strong>: <code>table_name</code> (obligatorio)</li>
+<li><strong>Body (JSON)</strong>: <code>{ "values": { "columna": "valor", ... } }</code> o <code>{ "columna": "valor", ... }</code></li>
+</ul>
+<pre><code class="language-bash">curl -X POST &quot;http://127.0.0.1:8000/databases/demo/insert?table_name=logs&quot; \
+     -H &quot;Authorization: Bearer &lt;TOKEN&gt;&quot; \
+     -H &quot;Content-Type: application/json&quot; \
+     -d '{
+           &quot;values&quot;: {
+             &quot;msg&quot;: &quot;Texto desde la API&quot;
+           }
+         }'
+</code></pre>
+<pre><code class="language-bash">curl -X POST &quot;http://127.0.0.1:8000/databases/demo/insert?table_name=logs&quot; \
+     -H &quot;Authorization: Bearer &lt;TOKEN&gt;&quot; \
+     -H &quot;Content-Type: application/json&quot; \
+     -d '{&quot;msg&quot;: &quot;Texto&quot;}'
+</code></pre>
+<ul>
+<li><code>404 Not Found</code>: la tabla indicada en <code>table_name</code> no existe en la base solicitada.</li>
+<li><code>409 Conflict</code>: violación de restricciones (<code>UNIQUE</code>, <code>NOT NULL</code>, etc.).</li>
+</ul>
+<h3 id="get-databasesdb_namefetch"><code>GET /databases/{db_name}/fetch</code></h3>
+<p>Devuelve todas las filas de la tabla e incluye el nombre de cada columna en la
+respuesta para facilitar el consumo desde clientes genéricos. La clave <code>data</code>
+es un alias de <code>rows</code> para mantener compatibilidad con integraciones previas.</p>
+<ul>
+<li><strong>Query</strong>: <code>table_name</code> (obligatorio)</li>
+</ul>
+<pre><code class="language-bash">curl -X GET &quot;http://127.0.0.1:8000/databases/demo/fetch?table_name=logs&quot; \
+     -H &quot;Authorization: Bearer &lt;TOKEN&gt;&quot;
+</code></pre>
+<blockquote>
+<p>Nota: Los códigos <code>404</code> pueden aparecer tanto en lecturas como en inserciones o borrados cuando la tabla indicada no existe.</p>
+</blockquote>
+<p>Respuesta de ejemplo:</p>
 <pre><code class="language-json">{
+  &quot;columns&quot;: [&quot;id&quot;, &quot;msg&quot;, &quot;created_at&quot;, &quot;payload&quot;],
+  &quot;rows&quot;: [
+    [1, &quot;Texto desde la API&quot;, &quot;2025-05-30T10:00:00&quot;, &quot;base64:AQID&quot;]
+  ],
   &quot;data&quot;: [
-    [1, &quot;Texto de ejemplo&quot;]
+    [1, &quot;Texto desde la API&quot;, &quot;2025-05-30T10:00:00&quot;, &quot;base64:AQID&quot;]
   ]
 }
 </code></pre>
-<h2 id="requiere-token">🛑 Requiere Token</h2>
-<p>Todos los endpoints excepto <code>/token</code> requieren un token JWT en el header:</p>
-<pre><code class="language-http">Authorization: Bearer &lt;token&gt;
-</code></pre></div>
+<ul>
+<li>Los valores binarios se devuelven como cadenas con prefijo <code>base64:</code>.</li>
+<li>Los objetos <code>date</code>, <code>time</code> o <code>datetime</code> se serializan en formato ISO 8601.</li>
+</ul>
+<hr />
+<h2 id="reglas-generales">Reglas generales</h2>
+<ul>
+<li>Todos los endpoints (excepto <code>token</code>) exigen <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+<li>Los nombres de base de datos se normalizan y deben terminar en <code>.db</code> o se añade el sufijo.</li>
+<li>Los gestores asincrónico y síncrono fuerzan <code>PRAGMA journal_mode=WAL</code> para mejorar la concurrencia.</li>
+</ul></div>
             </div>
         </div>
 

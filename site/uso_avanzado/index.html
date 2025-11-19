@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Uso avanzado - My Docs</title>
+        <title>Casos de uso avanzados - My Docs</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/fontawesome.min.css" rel="stylesheet">
         <link href="../css/brands.min.css" rel="stylesheet">
@@ -41,10 +41,13 @@
                                 <a href="../api/" class="nav-link">API REST - SQLitePlus Enhanced</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../cli/" class="nav-link">Cli</a>
+                                <a href="../changelog/" class="nav-link">Resumen del historial de cambios</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../configuracion/" class="nav-link">Configuración Avanzada</a>
+                                <a href="../cli/" class="nav-link">CLI sqliteplus</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../configuracion/" class="nav-link">Configuración avanzada</a>
                             </li>
                             <li class="nav-item">
                                 <a href="../endpoints/" class="nav-link">Endpoints REST</a>
@@ -53,10 +56,10 @@
                                 <a href="../instalacion/" class="nav-link">Instalación</a>
                             </li>
                             <li class="nav-item">
-                                <a href="./" class="nav-link active" aria-current="page">Uso avanzado</a>
+                                <a href="./" class="nav-link active" aria-current="page">Casos de uso avanzados</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../uso_basico/" class="nav-link">Uso Básico</a>
+                                <a href="../uso_basico/" class="nav-link">Uso básico</a>
                             </li>
                         </ul>
 
@@ -93,12 +96,74 @@
     
     <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
         <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#casos-de-uso-avanzados" class="nav-link">Casos de uso avanzados</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#reinicializacion-automatica-en-pruebas" class="nav-link">Reinicialización automática en pruebas</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#conexiones-por-bucle-de-eventos" class="nav-link">Conexiones por bucle de eventos</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#aplicar-sqlcipher-solo-si-existe-clave" class="nav-link">Aplicar SQLCipher solo si existe clave</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#replicacion-y-exportaciones-automatizadas" class="nav-link">Replicación y exportaciones automatizadas</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#actualizacion-caliente-de-usuarios" class="nav-link">Actualización caliente de usuarios</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
         </ul>
     </div>
 </div></div>
                     <div class="col-md-9" role="main">
 
-</div>
+<h1 id="casos-de-uso-avanzados">Casos de uso avanzados</h1>
+<h2 id="reinicializacion-automatica-en-pruebas">Reinicialización automática en pruebas</h2>
+<p><code>AsyncDatabaseManager</code> detecta la variable <code>PYTEST_CURRENT_TEST</code> y elimina automáticamente la
+base temporal antes de cada suite, evitando datos residuales entre ejecuciones. A partir de esta
+versión la comprobación es perezosa: el gestor vuelve a leer <code>PYTEST_CURRENT_TEST</code> (y la variable
+<code>SQLITEPLUS_FORCE_RESET</code>) cada vez que necesita crear una conexión. De este modo puedes activar el
+modo limpieza incluso si el objeto global ya estaba instanciado o si quieres forzar el borrado desde
+la app FastAPI (por ejemplo, antes de lanzar un lote de pruebas de integración). Si la variable se
+activa cuando ya existe una conexión viva en el mismo bucle, el gestor la cierra, elimina los ficheros
+<code>*.db</code>, <code>*.db-wal</code> y <code>*.db-shm</code> y vuelve a levantar una base limpia. Usa valores como <code>1</code>, <code>true</code> o <code>on</code>
+para activar <code>SQLITEPLUS_FORCE_RESET</code> y elimina la variable cuando dejes de necesitar el borrado
+automático.</p>
+<h2 id="conexiones-por-bucle-de-eventos">Conexiones por bucle de eventos</h2>
+<p>Cuando se reutiliza el mismo nombre de base en distintos bucles de eventos (por ejemplo, al usar
+<code>httpx.AsyncClient</code> en paralelo), el gestor cierra y recrea la conexión para ese bucle, evitando
+errores de "conexión ligada a otro loop".</p>
+<h2 id="aplicar-sqlcipher-solo-si-existe-clave">Aplicar SQLCipher solo si existe clave</h2>
+<p>Si <code>SQLITE_DB_KEY</code> está vacío, la API trabaja sin cifrado. Al definir la variable se ejecuta
+<code>PRAGMA key</code> y se propagan los posibles errores de SQLCipher en los logs.</p>
+<h2 id="replicacion-y-exportaciones-automatizadas">Replicación y exportaciones automatizadas</h2>
+<p>El módulo <code>sqliteplus.utils.replication_sync.SQLiteReplication</code> permite:</p>
+<ul>
+<li><code>backup_database()</code> – genera copias fechadas y duplica ficheros WAL/SHM si existen.</li>
+<li><code>replicate_database(&lt;ruta&gt;)</code> – clona la base en otra ruta aplicando la misma clave SQLCipher.</li>
+<li><code>export_to_csv(&lt;tabla&gt;, &lt;archivo&gt;)</code> – exporta columnas y filas preservando el nombre de campos.</li>
+</ul>
+<p>A partir de esta versión, al instanciar <code>SQLiteReplication()</code> sin argumentos se crea una copia
+local en <code>./sqliteplus/databases/database.db</code>, exactamente igual que hace la CLI. Esto evita que
+los procesos automatizados modifiquen el paquete instalado y garantiza que cualquier replicación o
+exportación parta de un archivo sobre el que se puede escribir en el directorio de trabajo. Cuando
+el origen solicitado está dentro del paquete o se detecta que no es escribible, el módulo realiza
+una copia byte a byte en el directorio local (incluyendo los pares <code>-wal</code>/<code>-shm</code>). Si la base de
+datos original no existe se aborta la operación con un mensaje claro en lugar de crear un archivo
+vacío.</p>
+<h2 id="actualizacion-caliente-de-usuarios">Actualización caliente de usuarios</h2>
+<p><code>sqliteplus.auth.users.get_user_service()</code> mantiene una caché basada en la firma del archivo. Al
+modificar <code>SQLITEPLUS_USERS_FILE</code> se detecta el cambio automáticamente y se recarga la lista de
+usuarios sin reiniciar el proceso.</p></div>
             </div>
         </div>
 

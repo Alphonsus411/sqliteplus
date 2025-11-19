@@ -41,10 +41,13 @@
                                 <a href="../api/" class="nav-link">API REST - SQLitePlus Enhanced</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../cli/" class="nav-link">Cli</a>
+                                <a href="../changelog/" class="nav-link">Resumen del historial de cambios</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../configuracion/" class="nav-link">Configuración Avanzada</a>
+                                <a href="../cli/" class="nav-link">CLI sqliteplus</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../configuracion/" class="nav-link">Configuración avanzada</a>
                             </li>
                             <li class="nav-item">
                                 <a href="../endpoints/" class="nav-link">Endpoints REST</a>
@@ -53,10 +56,10 @@
                                 <a href="./" class="nav-link active" aria-current="page">Instalación</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../uso_avanzado/" class="nav-link">Uso avanzado</a>
+                                <a href="../uso_avanzado/" class="nav-link">Casos de uso avanzados</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../uso_basico/" class="nav-link">Uso Básico</a>
+                                <a href="../uso_basico/" class="nav-link">Uso básico</a>
                             </li>
                         </ul>
 
@@ -96,7 +99,15 @@
             
             <li class="nav-item" data-bs-level="1"><a href="#instalacion" class="nav-link">Instalación</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-bs-level="2"><a href="#requisitos" class="nav-link">Requisitos</a>
+            <li class="nav-item" data-bs-level="2"><a href="#requisitos-previos" class="nav-link">Requisitos previos</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#desde-el-repositorio" class="nav-link">Desde el repositorio</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#desde-pypi" class="nav-link">Desde PyPI</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -108,21 +119,53 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="instalacion">Instalación</h1>
-<p>Puedes instalar SQLitePlus Enhanced desde PyPI con:</p>
+<h2 id="requisitos-previos">Requisitos previos</h2>
+<ul>
+<li>Python 3.10 o superior.</li>
+<li>Una versión moderna de SQLite (el soporte para WAL viene incluido y el proyecto aplica <code>PRAGMA journal_mode=WAL</code> automáticamente).</li>
+<li>Opcional: Redis (la integración de caché está en desarrollo; consulta el <a href="../changelog/">CHANGELOG</a> para conocer el estado actual del extra <code>redis</code>).</li>
+</ul>
+<h2 id="desde-el-repositorio">Desde el repositorio</h2>
+<pre><code class="language-bash">python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+</code></pre>
+<p>Si vas a ejecutar las pruebas, el lint o contribuir con cambios instala también las dependencias opcionales y, a continuación, ejecuta la suite con Pytest:</p>
+<pre><code class="language-bash">pip install -e '.[dev]'
+pytest -v
+</code></pre>
+<blockquote>
+<p><strong>Nota:</strong> La integración con Redis aún no está disponible en la aplicación. El extra <code>redis</code> únicamente instala las dependencias preliminares y puede cambiar en futuras versiones. Revisa el <a href="../changelog/">CHANGELOG</a> para seguir el progreso.</p>
+<p><strong>Nota rápida:</strong> No necesitas ninguna configuración manual adicional: el código fuerza <code>PRAGMA journal_mode=WAL</code> cada vez que abre una conexión (consulta <code>sqliteplus/core/db.py</code> y <code>sqliteplus/utils/sqliteplus_sync.py</code>).</p>
+</blockquote>
+<p>Si aun así deseas preparar el entorno con las dependencias de Redis instala el extra:</p>
+<pre><code class="language-bash">pip install -e '.[redis]'
+</code></pre>
+<h3 id="extra-visual">Extra <code>visual</code></h3>
+<p>La instalación principal ya incluye Rich, así que todas las tablas, paneles y mensajes de la CLI lucen correctamente sin pasos adicionales. El extra <code>visual</code> es opcional y añade únicamente las dependencias de los visores interactivos basados en FletPlus.</p>
+<p>Instálalo solo si planeas usar los subcomandos o flags que abren esos visores (<code>sqliteplus fetch --viewer</code>, <code>sqliteplus list-tables --viewer</code>, <code>sqliteplus visual-dashboard</code>, etc.). Puedes consultar la <a href="../cli/#comandos-y-flags-que-requieren-el-extra-visual">lista completa en docs/cli.md</a> para comprobar rápidamente si lo necesitas.</p>
+<pre><code class="language-bash">pip install -e '.[visual]'
+</code></pre>
+<blockquote>
+<p><strong>Nota:</strong> Consulta <a href="../cli/">docs/cli.md</a> para revisar los comandos que requieren el extra <code>visual</code>.</p>
+</blockquote>
+<h2 id="desde-pypi">Desde PyPI</h2>
 <pre><code class="language-bash">pip install sqliteplus-enhanced
 </code></pre>
-<h2 id="requisitos">Requisitos</h2>
-<ul>
-<li>
-<p>Python 3.7 o superior</p>
-</li>
-<li>
-<p>SQLite</p>
-</li>
-<li>
-<p>Redis (opcional pero recomendado)</p>
-</li>
-</ul></div>
+<blockquote>
+<p><strong>Nota:</strong> La integración con Redis está pendiente; instalar <code>sqliteplus-enhanced[redis]</code> solo añade las dependencias necesarias para futuras versiones. Consulta el <a href="../changelog/">CHANGELOG</a> para conocer el estado actualizado.</p>
+</blockquote>
+<p>Para incluir estas dependencias opcionales de Redis usa:</p>
+<pre><code class="language-bash">pip install 'sqliteplus-enhanced[redis]'
+</code></pre>
+<p>Para habilitar las capacidades visuales desde PyPI instala el extra correspondiente:</p>
+<pre><code class="language-bash">pip install &quot;sqliteplus-enhanced[visual]&quot;
+</code></pre>
+<blockquote>
+<p><strong>Nota:</strong> En <a href="../cli/">docs/cli.md</a> encontrarás los comandos que dependen del extra <code>visual</code>.</p>
+<p><strong>Consejo:</strong> Las comillas simples evitan que shells como <code>zsh</code> intenten expandir los corchetes, lo que podría generar errores al instalar los extras.</p>
+</blockquote>
+<p>La distribución incluye el comando <code>sqliteplus</code> y el paquete <code>sqliteplus.main</code> listo para ejecutarse con Uvicorn.</p></div>
             </div>
         </div>
 

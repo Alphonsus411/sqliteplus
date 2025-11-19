@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Configuración Avanzada - My Docs</title>
+        <title>Configuración avanzada - My Docs</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/fontawesome.min.css" rel="stylesheet">
         <link href="../css/brands.min.css" rel="stylesheet">
@@ -41,10 +41,13 @@
                                 <a href="../api/" class="nav-link">API REST - SQLitePlus Enhanced</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../cli/" class="nav-link">Cli</a>
+                                <a href="../changelog/" class="nav-link">Resumen del historial de cambios</a>
                             </li>
                             <li class="nav-item">
-                                <a href="./" class="nav-link active" aria-current="page">Configuración Avanzada</a>
+                                <a href="../cli/" class="nav-link">CLI sqliteplus</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="./" class="nav-link active" aria-current="page">Configuración avanzada</a>
                             </li>
                             <li class="nav-item">
                                 <a href="../endpoints/" class="nav-link">Endpoints REST</a>
@@ -53,10 +56,10 @@
                                 <a href="../instalacion/" class="nav-link">Instalación</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../uso_avanzado/" class="nav-link">Uso avanzado</a>
+                                <a href="../uso_avanzado/" class="nav-link">Casos de uso avanzados</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../uso_basico/" class="nav-link">Uso Básico</a>
+                                <a href="../uso_basico/" class="nav-link">Uso básico</a>
                             </li>
                         </ul>
 
@@ -94,13 +97,21 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-bs-level="1"><a href="#configuracion-avanzada" class="nav-link">Configuración Avanzada</a>
+            <li class="nav-item" data-bs-level="1"><a href="#configuracion-avanzada" class="nav-link">Configuración avanzada</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-bs-level="2"><a href="#variables-de-entorno" class="nav-link">Variables de entorno</a>
+            <li class="nav-item" data-bs-level="2"><a href="#variables-de-entorno-soportadas" class="nav-link">Variables de entorno soportadas</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-bs-level="2"><a href="#lifespan-y-cierre-de-conexiones" class="nav-link">Lifespan y cierre de conexiones</a>
+            <li class="nav-item" data-bs-level="2"><a href="#directorios-de-trabajo" class="nav-link">Directorios de trabajo</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#opciones-de-la-cli" class="nav-link">Opciones de la CLI</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#autenticacion-externa" class="nav-link">Autenticación externa</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -111,15 +122,61 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="configuracion-avanzada">Configuración Avanzada</h1>
-<h2 id="variables-de-entorno">Variables de entorno</h2>
+<h1 id="configuracion-avanzada">Configuración avanzada</h1>
+<h2 id="variables-de-entorno-soportadas">Variables de entorno soportadas</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>HOME</code></td>
+<td>Utilizada al expandir rutas con <code>~</code> en <code>SQLITEPLUS_USERS_FILE</code>.</td>
+</tr>
+<tr>
+<td><code>PYTEST_CURRENT_TEST</code></td>
+<td>Detectada automáticamente por pytest para reiniciar bases temporales.</td>
+</tr>
+<tr>
+<td><code>SECRET_KEY</code></td>
+<td>Clave obligatoria para firmar JWT. Se valida en tiempo de ejecución.</td>
+</tr>
+<tr>
+<td><code>SQLITEPLUS_FORCE_RESET</code></td>
+<td>Fuerza la reinicialización de las bases sin depender de <code>PYTEST_CURRENT_TEST</code>. Admite <code>1</code>, <code>true</code> o <code>on</code>. La sección "Reinicialización automática en pruebas" de <code>docs/uso_avanzado.md</code> detalla el flujo.</td>
+</tr>
+<tr>
+<td><code>SQLITEPLUS_USERS_FILE</code></td>
+<td>Ruta (admite <code>~</code>) del archivo JSON con usuarios y hashes <code>bcrypt</code>. Solo es obligatorio al exponer la API/autenticación.</td>
+</tr>
+<tr>
+<td><code>SQLITE_DB_KEY</code></td>
+<td>Clave SQLCipher opcional. Si no existe, se omite el cifrado.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="directorios-de-trabajo">Directorios de trabajo</h2>
 <ul>
-<li><code>SECRET_KEY</code>: Clave JWT</li>
-<li><code>SQLITE_DB_KEY</code>: Clave de cifrado para SQLCipher</li>
-<li><code>REDIS_HOST</code>, <code>REDIS_PORT</code>: Datos de conexión a Redis</li>
+<li>Las bases asincrónicas se almacenan en la carpeta <code>databases/</code> por defecto.</li>
+<li>Las copias de seguridad generadas por la CLI residen en <code>backups/</code>.</li>
+<li><code>SQLiteReplication</code> copia los ficheros <code>-wal</code> y <code>-shm</code> asociados para mantener la integridad.</li>
 </ul>
-<h2 id="lifespan-y-cierre-de-conexiones">Lifespan y cierre de conexiones</h2>
-<p>FastAPI cierra automáticamente las conexiones al apagar el servidor gracias al manejador <code>lifespan</code>.</p></div>
+<h2 id="opciones-de-la-cli">Opciones de la CLI</h2>
+<ul>
+<li><code>--cipher-key</code> / <code>SQLITE_DB_KEY</code>: permite usar SQLCipher en las operaciones sincrónicas.</li>
+<li>Los subcomandos <code>export-csv</code> y <code>backup</code> aceptan rutas personalizadas conservando nombres seguros.</li>
+</ul>
+<h2 id="autenticacion-externa">Autenticación externa</h2>
+<p>El archivo apuntado por <code>SQLITEPLUS_USERS_FILE</code> debe tener la estructura:</p>
+<pre><code class="language-json">{
+  &quot;admin&quot;: &quot;$2b$12$...&quot;
+}
+</code></pre>
+<p>Puedes generar nuevos hashes con el módulo <code>bcrypt</code> desde Python, tal como se muestra en la guía de
+uso básico.</p></div>
             </div>
         </div>
 
