@@ -100,9 +100,13 @@ class SQLitePlus:
         conn = sqlite3.connect(self.db_path, check_same_thread=False)
         try:
             apply_cipher_key(conn, self.cipher_key)
+            conn.execute("PRAGMA journal_mode=WAL;")
         except SQLitePlusCipherError:
             conn.close()
             raise
+        except sqlite3.Error as exc:
+            conn.close()
+            raise SQLitePlusQueryError("PRAGMA journal_mode=WAL", exc) from exc
         return conn
 
     def execute_query(self, query, params=()):

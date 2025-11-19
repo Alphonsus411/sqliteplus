@@ -140,4 +140,4 @@ Respuesta de ejemplo:
 
 - Todos los endpoints (excepto `token`) exigen `Authorization: Bearer <token>`.
 - Los nombres de base de datos se normalizan y deben terminar en `.db` o se añade el sufijo.
-- El gestor asincrónico fuerza `PRAGMA journal_mode=WAL` para mejorar la concurrencia.
+- Los gestores asincrónico y síncrono fuerzan `PRAGMA journal_mode=WAL` para mejorar la concurrencia.
