@@ -14,12 +14,33 @@ Crea el archivo `users.json` con hashes `bcrypt`:
 
 ```bash
 python - <<'PY'
-import bcrypt, json, pathlib
+from sqliteplus._compat import ensure_bcrypt
+import json, pathlib
+
+bcrypt = ensure_bcrypt()
 password = "admin"
 path = pathlib.Path("users.json")
-path.write_text(json.dumps({"admin": bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()}))
+path.write_text(
+    json.dumps({"admin": bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()})
+)
 PY
 ```
+
+Alternativamente puedes generar hashes con el helper integrado, que delega en
+`ensure_bcrypt()` y evita tener que conocer si el backend nativo está
+disponible. Si no pasas la contraseña como argumento, se solicitará de forma
+oculta con `getpass`:
+
+```bash
+python -m sqliteplus.auth.users hash admin
+# o bien:
+python -m sqliteplus.auth.users hash
+```
+
+Cuando ejecutes cualquiera de los ejemplos anteriores sin la dependencia
+compilada instalada, `ensure_bcrypt()` activará automáticamente el módulo
+`sqliteplus._compat.bcrypt`. Si prefieres trabajar siempre con el backend
+oficial instala el extra `security` (`pip install "sqliteplus-enhanced[security]"`).
 
 ## 2. Arranca la API
 

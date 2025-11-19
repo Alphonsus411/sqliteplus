@@ -13,9 +13,12 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     run_module("sqliteplus.auth.users", run_name="__main__")
     raise SystemExit()
 
+import argparse
+import getpass
 import importlib
 import json
 import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
@@ -202,3 +205,63 @@ def reset_user_service_cache() -> None:
     global _cached_service, _cached_source_signature
     _cached_service = None
     _cached_source_signature = None
+
+
+def _build_cli_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="python -m sqliteplus.auth.users",
+        description="Herramientas auxiliares para gestionar usuarios de SQLitePlus.",
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    hash_parser = subparsers.add_parser(
+        "hash", help="Genera un hash bcrypt listo para el archivo JSON de usuarios."
+    )
+    hash_parser.add_argument(
+        "password",
+        nargs="?",
+        help="Contraseña en texto plano. Si se omite se solicitará mediante getpass.",
+    )
+    hash_parser.add_argument(
+        "-r",
+        "--rounds",
+        type=int,
+        default=12,
+        help="Número de rondas de bcrypt. Debe ser un entero entre 4 y 31 (por defecto: 12).",
+    )
+
+    return parser
+
+
+def _hash_password(password: str, rounds: int) -> str:
+    if not 4 <= rounds <= 31:
+        raise SystemExit("--rounds debe estar entre 4 y 31")
+
+    backend = ensure_bcrypt()
+    salt = backend.gensalt(rounds=rounds)
+    return backend.hashpw(password.encode("utf-8"), salt).decode("utf-8")
+
+
+def _prompt_password() -> str:
+    password = getpass.getpass("Contraseña: ")
+    if not password:
+        raise SystemExit("La contraseña no puede estar vacía")
+    return password
+
+
+def _main(argv: list[str] | None = None) -> int:
+    parser = _build_cli_parser()
+    args = parser.parse_args(argv)
+
+    if args.command == "hash":
+        password = args.password if args.password is not None else _prompt_password()
+        hashed = _hash_password(password, rounds=args.rounds)
+        print(hashed)
+        return 0
+
+    parser.error("Comando desconocido")
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(_main(sys.argv[1:]))
