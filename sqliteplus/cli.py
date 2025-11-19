@@ -92,6 +92,46 @@ def _fetch_rows_respecting_limit(
             return column_names, fetched_rows, truncated
 
 
+def _normalize_column_names(
+    columns: list[str] | None,
+    rows: Iterable[Iterable[object]] | None,
+    *,
+    placeholder_template: str = "columna_{index}",
+) -> tuple[list[str], bool]:
+    """Normaliza nombres de columna y detecta duplicados."""
+
+    normalized_columns: list[str]
+    if rows is None:
+        materialized_rows: list[Iterable[object]] = []
+    elif isinstance(rows, list):
+        materialized_rows = rows
+    else:
+        materialized_rows = list(rows)
+
+    if columns:
+        normalized_columns = [
+            column
+            if column not in (None, "")
+            else placeholder_template.format(index=index + 1)
+            for index, column in enumerate(columns)
+        ]
+    elif materialized_rows:
+        normalized_columns = [
+            placeholder_template.format(index=index + 1)
+            for index in range(len(materialized_rows[0]))
+        ]
+    else:
+        normalized_columns = []
+
+    has_duplicates = (
+        len(set(normalized_columns)) != len(normalized_columns)
+        if normalized_columns
+        else False
+    )
+
+    return normalized_columns, has_duplicates
+
+
 def _launch_fletplus_viewer(
     columns: list[str] | None,
     rows: Iterable[Iterable[object]],
@@ -531,28 +571,29 @@ def fetch(
 
     displayed_rows = [tuple(row) for row in displayed_rows]
 
-    if columns:
-        normalized_columns = [
-            column or f"columna {index + 1}"
-            for index, column in enumerate(columns)
-        ]
-    elif displayed_rows:
-        normalized_columns = [f"columna {index + 1}" for index in range(len(displayed_rows[0]))]
-    else:
-        normalized_columns = []
+    normalized_columns, has_duplicate_column_names = _normalize_column_names(
+        columns,
+        displayed_rows,
+        placeholder_template="columna {index}",
+    )
 
     if output.lower() == "json":
         json_ready_rows = [
             tuple(_normalize_json_value(value) for value in row)
             for row in displayed_rows
         ]
-        if normalized_columns:
+        if not normalized_columns:
+            payload = [list(row) for row in json_ready_rows]
+        elif has_duplicate_column_names:
+            payload = {
+                "columns": normalized_columns,
+                "rows": [list(row) for row in json_ready_rows],
+            }
+        else:
             payload = [
                 {normalized_columns[idx]: row[idx] for idx in range(len(row))}
                 for row in json_ready_rows
             ]
-        else:
-            payload = [list(row) for row in json_ready_rows]
         json_text = json.dumps(payload, ensure_ascii=False, indent=2)
         console_obj.print(
             Panel(
@@ -769,22 +810,10 @@ def export_query(ctx, export_format, limit, overwrite, output_file, query):
     if limit is not None:
         rows = rows[:limit]
 
-    if columns:
-        normalized_columns = [
-            column if column not in (None, "") else f"columna_{index + 1}"
-            for index, column in enumerate(columns)
-        ]
-    elif rows:
-        normalized_columns = [
-            f"columna_{index + 1}"
-            for index in range(len(rows[0]))
-        ]
-    else:
-        normalized_columns = []
-    has_duplicate_column_names = (
-        len(set(normalized_columns)) != len(normalized_columns)
-        if normalized_columns
-        else False
+    normalized_columns, has_duplicate_column_names = _normalize_column_names(
+        columns,
+        rows,
+        placeholder_template="columna_{index}",
     )
 
     if export_format.lower() == "json":
