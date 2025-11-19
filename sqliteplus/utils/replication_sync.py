@@ -19,7 +19,11 @@ import sqlite3
 from pathlib import Path
 
 from sqliteplus.core.schemas import is_valid_sqlite_identifier
-from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
+from sqliteplus.utils.constants import (
+    DEFAULT_DB_PATH,
+    PACKAGE_DB_PATH,
+    resolve_default_db_path,
+)
 from sqliteplus.utils.sqliteplus_sync import apply_cipher_key, SQLitePlusCipherError
 
 
@@ -38,7 +42,7 @@ class SQLiteReplication:
         cipher_key: str | None = None,
     ):
         if db_path is None:
-            resolved_path = resolve_default_db_path()
+            resolved_path = resolve_default_db_path(prefer_package=False)
         else:
             raw_path = Path(db_path).expanduser()
             if raw_path == Path(DEFAULT_DB_PATH):
@@ -47,6 +51,7 @@ class SQLiteReplication:
                 resolved_path = raw_path
 
         normalized_db_path = Path(resolved_path).expanduser().resolve()
+        normalized_db_path = self._select_writable_path(normalized_db_path)
         self.db_path = str(normalized_db_path)
 
         backup_base = Path(backup_dir).expanduser().resolve()
@@ -195,6 +200,52 @@ class SQLiteReplication:
                 copied_files.append(str(dest_file))
 
         return copied_files
+
+    @staticmethod
+    def _default_local_db() -> Path:
+        return (Path.cwd() / Path(DEFAULT_DB_PATH)).resolve()
+
+    def _select_writable_path(self, candidate: Path) -> Path:
+        local_default = self._default_local_db()
+
+        if self._is_inside_package(candidate) or not self._can_write_to(candidate.parent):
+            logger.warning(
+                "La ruta %s no es segura para escritura. Se utilizará %s en su lugar.",
+                candidate,
+                local_default,
+            )
+            candidate = local_default
+
+        if candidate == local_default:
+            self._ensure_local_database(candidate)
+
+        return candidate
+
+    @staticmethod
+    def _is_inside_package(path: Path) -> bool:
+        package_root = PACKAGE_DB_PATH.parent.parent
+        try:
+            path.relative_to(package_root)
+        except ValueError:
+            return False
+        return True
+
+    @staticmethod
+    def _can_write_to(directory: Path) -> bool:
+        probe = directory
+        while probe and not probe.exists():
+            parent = probe.parent
+            if parent == probe:
+                break
+            probe = parent
+
+        return os.access(probe, os.W_OK)
+
+    @staticmethod
+    def _ensure_local_database(target: Path) -> None:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if not target.exists():
+            target.touch()
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 import sqliteplus.utils.constants as constants
+import sqliteplus.utils.replication_sync as replication_module
 from sqliteplus.utils import sqliteplus_sync
 from sqliteplus.utils.replication_sync import SQLiteReplication
 from sqliteplus.utils.sqliteplus_sync import SQLitePlus, SQLitePlusCipherError
@@ -124,6 +125,40 @@ def test_replication_expands_user_paths(tmp_path, monkeypatch):
     replicated_file = Path(replicator.replicate_database(str(target_path)))
     assert replicated_file == (tmp_path / "replicas" / "copy.db").resolve()
     assert replicated_file.exists()
+
+
+def test_replication_default_creates_local_copy(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    package_db = tmp_path / "pkg" / "databases" / "database.db"
+    package_db.parent.mkdir(parents=True)
+    package_db.write_text("package-db")
+
+    monkeypatch.setattr(constants, "PACKAGE_DB_PATH", package_db)
+    monkeypatch.setattr(replication_module, "PACKAGE_DB_PATH", package_db)
+
+    replicator = SQLiteReplication()
+
+    local_db = tmp_path / "sqliteplus" / "databases" / "database.db"
+    assert Path(replicator.db_path) == local_db.resolve()
+    assert local_db.exists()
+    assert package_db.read_text() == "package-db"
+
+
+def test_replication_falls_back_when_using_package_path(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    package_db = tmp_path / "pkg" / "databases" / "database.db"
+    package_db.parent.mkdir(parents=True)
+    package_db.write_text("package-db")
+
+    monkeypatch.setattr(constants, "PACKAGE_DB_PATH", package_db)
+    monkeypatch.setattr(replication_module, "PACKAGE_DB_PATH", package_db)
+
+    replicator = SQLiteReplication(db_path=str(package_db))
+
+    local_db = tmp_path / "sqliteplus" / "databases" / "database.db"
+    assert Path(replicator.db_path) == local_db.resolve()
+    assert local_db.exists()
+    assert package_db.read_text() == "package-db"
 
 
 def test_sqliteplus_raises_cipher_error_when_key_fails(monkeypatch, tmp_path):
