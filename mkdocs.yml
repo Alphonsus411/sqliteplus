@@ -1,1 +1,17 @@
-site_name: My Docs
+site_name: SQLitePlus Enhanced
+theme:
+  name: material
+
+nav:
+  - Inicio: index.md
+  - Instalación: instalacion.md
+  - Uso Básico: uso_basico.md
+  - Uso Avanzado: uso_avanzado.md
+  - API: api.md
+  - CLI: cli.md
+  - Configuración: configuracion.md
+  - Endpoints: endpoints.md
+  - Changelog: changelog.md
+
+site_dir: docs
+
