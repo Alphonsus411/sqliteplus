@@ -18,7 +18,6 @@ dependencies = [
     "click",
     "fastapi",
     "uvicorn",
-    "bcrypt",
     "PyJWT",
     "python-multipart",
     "rich",
@@ -48,6 +47,10 @@ redis = [
 visual = [
     "fletplus",
     "flet"
+]
+
+security = [
+    "bcrypt"
 ]
 
 [project.scripts]
