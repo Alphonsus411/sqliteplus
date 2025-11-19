@@ -115,6 +115,29 @@ def test_fetch_json_normalizes_special_types(monkeypatch):
     assert recorded_queries == ["SELECT * FROM demo"]
 
 
+def test_fetch_json_handles_duplicate_aliases(monkeypatch):
+    runner = CliRunner()
+
+    class DummySQLitePlus:
+        def __init__(self, db_path=None, cipher_key=None):
+            pass
+
+        def fetch_query_with_columns(self, query):
+            return (["valor", "valor"], [(1, 2)])
+
+    monkeypatch.setattr("sqliteplus.cli.SQLitePlus", DummySQLitePlus)
+
+    result = runner.invoke(
+        cli,
+        ["fetch", "--output", "json", "SELECT", "valor", "AS", "valor"],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert '"columns": [' in result.output
+    assert result.output.count('"valor"') >= 2
+    assert '"rows": [' in result.output
+
+
 def test_cli_commands_work_without_rich(monkeypatch):
     import sqliteplus.cli as cli_module
     import sqliteplus.utils.rich_compat as rich_compat_module

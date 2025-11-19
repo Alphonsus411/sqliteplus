@@ -32,7 +32,7 @@ Los resultados aparecen fila a fila. Si la consulta no devuelve datos el program
 - Usa `--summary` para generar una tabla adicional con mínimos, máximos y promedios de las columnas numéricas.
 - Con `--viewer` se abre un visor accesible construido con FletPlus; admite filtros en vivo, cambio de tema (`--viewer-theme`) y ajuste del tamaño del texto.
 - Si necesitas paginar conjuntos grandes, combina `--viewer` con `--viewer-page-size` o `--viewer-virtual` para cargar filas bajo demanda.
-- Cuando eliges `--output json`, cada valor de la consulta se normaliza antes de mostrarse: los BLOBs se codifican en Base64, los `Decimal` se convierten a números o cadenas y las fechas/horas se expresan en ISO 8601, evitando errores de serialización.
+- Cuando eliges `--output json`, cada valor de la consulta se normaliza antes de mostrarse: los BLOBs se codifican en Base64, los `Decimal` se convierten a números o cadenas y las fechas/horas se expresan en ISO 8601, evitando errores de serialización. Si la consulta devuelve columnas duplicadas, la salida adopta un objeto con `{"columns": [...], "rows": [...]}` para que ninguna posición se pierda al convertir a JSON.
 
 > Para usar `--viewer` debes instalar el extra opcional `visual`: `pip install "sqliteplus-enhanced[visual]"`.
 
@@ -119,6 +119,7 @@ Permite ejecutar una consulta `SELECT` y guardar el resultado en un archivo JSON
 - `--overwrite` habilita la sobrescritura del archivo de destino cuando ya existe.
 
 Cuando eliges `--format json`, los valores especiales se transforman automáticamente para garantizar que el archivo pueda serializarse sin errores: los BLOBs y `memoryview` se codifican en Base64 con el prefijo `base64:`, los `Decimal` se convierten a números de punto flotante (o cadenas si exceden el rango) y las fechas/horas se expresan en ISO 8601. Además, si una columna carece de nombre o SQLite retorna una cadena vacía, el comando genera encabezados genéricos (`columna_1`, `columna_2`, etc.) para asegurar claves válidas en cada registro JSON.
+En el caso de alias duplicados, la exportación crea un objeto con las claves `columns` y `rows` para preservar la estructura completa sin colisiones de nombres.
 
 Si optas por CSV ocurre lo mismo: se respetan los nombres de columna provistos por la consulta, pero los huecos o celdas sin alias se sustituyen por esos identificadores automáticos, manteniendo la estructura tabular coherente.
 
@@ -128,6 +129,7 @@ sqliteplus export-query --format csv --limit 100 --overwrite resumen.csv \
 ```
 
 Cuando la consulta no devuelve nombres de columna o estos llegan vacíos (por ejemplo, al usar `SELECT '' AS ""` o expresiones similares), la CLI crea los encabezados `columna_n` para mantener una estructura coherente en el archivo final.
+La misma convención `{"columns": [...], "rows": [...]}` se emplea si `fetch --output json` detecta duplicados, de modo que ambos comandos mantengan un formato compatible.
 
 ## Crear copias de seguridad
 
