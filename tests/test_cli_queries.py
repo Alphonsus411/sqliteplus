@@ -1,5 +1,6 @@
 import builtins
 import importlib
+import sqlite3
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -37,6 +38,19 @@ def test_cli_creates_default_db_in_working_directory():
         assert result.exit_code == 0, result.output
         default_db = Path("sqliteplus/databases/database.db")
         assert default_db.exists()
+
+
+def test_cli_initializes_db_using_wal_mode():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        result = runner.invoke(cli, ["init-db"])
+
+        assert result.exit_code == 0, result.output
+        default_db = Path("sqliteplus/databases/database.db")
+        with sqlite3.connect(default_db) as conn:
+            journal_mode = conn.execute("PRAGMA journal_mode;").fetchone()[0]
+
+    assert journal_mode.lower() == "wal"
 
 
 def test_cli_passes_cipher_key_to_execute(monkeypatch):
