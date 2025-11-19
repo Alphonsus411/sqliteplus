@@ -677,8 +677,13 @@ def fetch(
     type=click.Path(dir_okay=False, resolve_path=True, path_type=str),
     help="Ruta específica de la base que quieres exportar (por defecto usa la global).",
 )
+@click.option(
+    "--overwrite/--no-overwrite",
+    default=False,
+    help="Permite sobrescribir el archivo de salida si ya existe.",
+)
 @click.pass_context
-def export_csv(ctx, table_name, output_file, db_path):
+def export_csv(ctx, table_name, output_file, db_path, overwrite):
     """Exporta una tabla a CSV."""
     resolved_db_path = db_path or ctx.obj.get("db_path")
     replicator = SQLiteReplication(
@@ -686,9 +691,13 @@ def export_csv(ctx, table_name, output_file, db_path):
         cipher_key=ctx.obj.get("cipher_key"),
     )
     try:
-        export_path = replicator.export_to_csv(table_name, output_file)
+        export_path = replicator.export_to_csv(
+            table_name, output_file, overwrite=overwrite
+        )
     except ValueError as exc:
         raise click.BadParameter(str(exc), param_hint="table_name") from exc
+    except FileExistsError as exc:
+        raise click.ClickException(str(exc)) from exc
     except sqlite3.Error as exc:
         raise click.ClickException(str(exc)) from exc
     except (SQLitePlusCipherError, RuntimeError) as exc:

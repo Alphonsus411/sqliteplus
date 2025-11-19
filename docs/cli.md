@@ -102,6 +102,8 @@ sqliteplus export-csv logs logs.csv
 
 Genera un CSV con encabezados listo para compartir. Puedes utilizar nombres de tabla con espacios o guiones (`"logs con espacios"`, `"logs-con-guion"`), la herramienta se encarga de escaparlos sin perder seguridad. Si necesitas otra base diferente a la global, añade `--db-path /ruta/a/otra.db`.
 
+De forma predeterminada, `export-csv` evita sobrescribir archivos ya existentes para que no pierdas datos accidentalmente. Si realmente deseas reemplazar el archivo, pasa el flag `--overwrite` y el comando continuará sin detenerse.
+
 > Nota: la utilidad `SQLiteReplication.export_to_csv` únicamente devuelve la ruta final; la CLI se encarga de mostrarla en un panel Rich para evitar mensajes duplicados cuando reutilices la función desde tus propios scripts.
 
 ## Exportar resultados de una consulta
