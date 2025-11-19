@@ -82,8 +82,10 @@ Crear un archivo de usuarios con el login `admin`:
 
 ```bash
 python - <<'PY'
-import bcrypt, json, pathlib
+from sqliteplus._compat import ensure_bcrypt
+import json, pathlib
 
+bcrypt = ensure_bcrypt()
 password = "admin"
 hash_ = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 path = pathlib.Path("users.json")
@@ -93,6 +95,21 @@ PY
 
 export SQLITEPLUS_USERS_FILE="$(pwd)/users.json"
 ```
+
+Si prefieres evitar scripts ad hoc puedes delegar la generación del hash en el
+helper integrado, que ya usa internamente `ensure_bcrypt()` y solicita la
+contraseña de forma segura cuando no se proporciona como argumento:
+
+```bash
+python -m sqliteplus.auth.users hash admin
+# o bien (la contraseña se pedirá sin eco):
+python -m sqliteplus.auth.users hash
+```
+
+Si ejecutas los comandos anteriores en una máquina sin compiladores o binarios
+nativos, la importación `ensure_bcrypt()` activará el *fallback* puro Python de
+forma transparente. Cuando quieras forzar el backend nativo instala el extra
+`security` (`pip install "sqliteplus-enhanced[security]"`).
 
 ---
 
