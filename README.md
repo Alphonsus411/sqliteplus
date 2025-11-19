@@ -163,6 +163,9 @@ Comandos disponibles:
 - `sqliteplus export-query ...` ejecuta una consulta de lectura y guarda el resultado en JSON o CSV; consulta la [guía detallada](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/docs/cli.md#exportar-resultados-de-una-consulta).
 - `sqliteplus export-csv <tabla> <archivo.csv>` guarda la tabla en un CSV con encabezados y, por defecto, protege archivos existentes a menos que añadas `--overwrite`.
 - `sqliteplus backup` genera un respaldo fechado en la carpeta `backups/`. Puedes especificar otra ruta con `--db-path`.
+- `sqliteplus visual-dashboard` abre el panel interactivo de FletPlus para explorar tablas, consultas y resultados en modo gráfico; admite banderas como `--theme`, `--max-rows`, `--accent-color` y `--read-only/--allow-write` para personalizar el visor.
+
+Todos los subcomandos y sus opciones se documentan en [`docs/cli.md`](docs/cli.md); úsalo como índice de referencia rápida cuando necesites repasar los `--flags` disponibles.
 
 Los subcomandos `export-csv` y `backup` muestran los resultados de forma visual con Rich, mientras que las utilidades internas solo devuelven la ruta generada. Así puedes reutilizar la API desde scripts externos sin producir mensajes duplicados: toda la salida visible procede de la CLI.
 
