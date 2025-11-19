@@ -13,15 +13,59 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     run_module("sqliteplus.auth.users", run_name="__main__")
     raise SystemExit()
 
+import importlib
 import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from types import ModuleType
 from typing import Dict, Tuple
 
 from sqliteplus._compat import ensure_bcrypt
 
-bcrypt = ensure_bcrypt()
+
+def _build_bcrypt_adapter() -> ModuleType:
+    """Crea un adaptador que decide qué backend usar según el hash recibido."""
+
+    primary_backend = ensure_bcrypt()
+    compat_backend = importlib.import_module("sqliteplus._compat.bcrypt")
+
+    if primary_backend is compat_backend:
+        return compat_backend
+
+    compat_prefix = getattr(compat_backend, "_PREFIX", "compatbcrypt$")
+
+    class _BcryptAdapter(ModuleType):
+        def __init__(self) -> None:
+            super().__init__("bcrypt")
+            self._primary = primary_backend
+            self._compat = compat_backend
+            self._compat_prefix = compat_prefix
+
+        def __getattr__(self, name: str):
+            return getattr(self._primary, name)
+
+        def checkpw(self, password, hashed_password):  # type: ignore[override]
+            hashed_str = _try_decode_ascii(hashed_password)
+            if hashed_str is not None and hashed_str.startswith(self._compat_prefix):
+                return self._compat.checkpw(password, hashed_password)
+            return self._primary.checkpw(password, hashed_password)
+
+    return _BcryptAdapter()
+
+
+def _try_decode_ascii(value) -> str | None:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (bytes, bytearray)):
+        try:
+            return bytes(value).decode("ascii")
+        except UnicodeDecodeError:
+            return None
+    return None
+
+
+bcrypt = _build_bcrypt_adapter()
 
 
 class UserSourceError(RuntimeError):

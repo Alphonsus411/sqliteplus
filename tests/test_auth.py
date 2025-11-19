@@ -4,6 +4,7 @@ import os
 import secrets
 import sys
 import time
+from types import ModuleType
 
 from datetime import datetime, timedelta, timezone
 
@@ -20,6 +21,7 @@ from sqliteplus.auth.users import (
     reset_user_service_cache,
     UserSourceError,
 )
+import sqliteplus.auth.users as users_module
 
 TOKEN_PATH = app.url_path_for("login")
 
@@ -196,3 +198,41 @@ def test_verify_credentials_reports_incompatible_hash(tmp_path, monkeypatch):
         service.verify_credentials("admin", "any")
 
     assert "bcrypt" in str(excinfo.value)
+
+
+def test_verify_credentials_accepts_compat_hash_with_native_backend(tmp_path, monkeypatch):
+    compat_bcrypt = importlib.import_module("sqliteplus._compat.bcrypt")
+    compat_hash = compat_bcrypt.hashpw(b"bridge-pass", compat_bcrypt.gensalt()).decode("ascii")
+
+    users_file = tmp_path / "users.json"
+    users_file.write_text(json.dumps({"admin": compat_hash}), encoding="utf-8")
+
+    monkeypatch.setenv("SQLITEPLUS_USERS_FILE", str(users_file))
+
+    fake_native = ModuleType("bcrypt")
+
+    def _native_checkpw(_password, hashed_password):
+        hashed_str = hashed_password.decode("ascii") if isinstance(hashed_password, bytes) else str(hashed_password)
+        if hashed_str.startswith("compatbcrypt$"):
+            raise ValueError("Hash incompatible: generado con el fallback")
+        return False
+
+    fake_native.checkpw = _native_checkpw  # type: ignore[attr-defined]
+    fake_native.hashpw = lambda password, salt: b"native"  # type: ignore[attr-defined]
+    fake_native.gensalt = lambda: b"native"  # type: ignore[attr-defined]
+
+    original_bcrypt = sys.modules.get("bcrypt")
+    sys.modules["bcrypt"] = fake_native
+
+    try:
+        importlib.reload(users_module)
+        users_module.reset_user_service_cache()
+        service = users_module.get_user_service()
+        assert service.verify_credentials("admin", "bridge-pass")
+    finally:
+        if original_bcrypt is None:
+            sys.modules.pop("bcrypt", None)
+        else:
+            sys.modules["bcrypt"] = original_bcrypt
+        importlib.reload(users_module)
+        users_module.reset_user_service_cache()
