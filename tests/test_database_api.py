@@ -57,11 +57,10 @@ async def test_create_table_and_insert_data():
             json={"values": {"msg": "Hola desde el test", "level": "INFO"}},
             headers=headers
         )
-
-        print("🔎 STATUS:", res_insert.status_code)
-        print("🔎 RESPONSE:", res_insert.text)
-
-        assert res_insert.status_code == 200
+        assert res_insert.status_code == 200, (
+            "La inserción de registros falló: "
+            f"status={res_insert.status_code}, body={res_insert.text}"
+        )
 
         # 4. Consultar datos
         res_select = await ac.get(
@@ -70,9 +69,10 @@ async def test_create_table_and_insert_data():
         )
         assert res_select.status_code == 200
         response_json = res_select.json()
-
-        # Mostramos el contenido real si falla
-        print("Contenido recibido:", response_json)
+        assert "columns" in response_json and "rows" in response_json, (
+            "Respuesta inesperada al consultar la tabla: "
+            f"{response_json}"
+        )
 
         columns = response_json.get("columns", [])
         rows = response_json.get("rows", [])
