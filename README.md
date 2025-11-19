@@ -39,13 +39,15 @@ pip install -e .
 
 El paquete incluye una implementación pura en Python que se activa automáticamente si el intérprete no puede importar el módulo oficial. Así, las funciones de autenticación siguen operativas aunque no tengas compiladores o binarios nativos disponibles.
 
+Los hashes generados por el *fallback* llevan el prefijo `compatbcrypt$`. Aunque más adelante instales la extensión oficial, SQLitePlus detecta ese prefijo durante la autenticación y delega la verificación en `sqliteplus._compat.bcrypt`, por lo que puedes mezclar contraseñas nuevas con antiguas sin romper el inicio de sesión.
+
 Si quieres usar la extensión oficial siempre que el entorno lo permita, instala el extra opcional `security`:
 
 ```bash
 pip install "sqliteplus-enhanced[security]"
 ```
 
-Cuando el intérprete detecta `bcrypt`, automáticamente sustituye el *fallback* por el módulo nativo.
+Cuando el intérprete detecta `bcrypt`, automáticamente sustituye el *fallback* por el módulo nativo. Si deseas migrar las contraseñas antiguas al backend oficial basta con recalcular el hash y actualizar el JSON de usuarios. Un script simple podría iterar por cada entrada con `compatbcrypt$`, verificar la contraseña original (por ejemplo solicitándola al usuario) y escribir un nuevo hash con `bcrypt.hashpw(password.encode(), bcrypt.gensalt())`. Mientras tanto, ambas variantes seguirán funcionando de forma transparente.
 
 ---
 
