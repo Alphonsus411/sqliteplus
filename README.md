@@ -203,13 +203,14 @@ sqliteplus --db-path databases/demo.db --cipher-key "$SQLITE_DB_KEY" backup
 ├── tests/                 # Suite de pytest (fuera del paquete)
 ├── docs/                  # Guías y tutoriales en Markdown
 ├── databases/             # Bases de ejemplo usadas en demos/pruebas manuales
-├── site/                  # Salida estática de la documentación
 └── requirements*.txt      # Listados de dependencias para instalación rápida
 ```
 
-El árbol anterior refleja la jerarquía real: el paquete Python vive en `sqliteplus/` y todo el código de producción (por ej.,
-`sqliteplus/cli.py` o `sqliteplus/main.py`) reside allí. Los directorios `tests/`, `docs/`, `databases/` y el resto de archivos
-de soporte permanecen en la raíz del repositorio, fuera del paquete publicado.
+El árbol anterior refleja la jerarquía real tras ejecutar `git clean -fdx`: el paquete Python vive en `sqliteplus/` y todo el
+código de producción (por ej., `sqliteplus/cli.py` o `sqliteplus/main.py`) reside allí. Los directorios `tests/`, `docs/`,
+`databases/` y el resto de archivos de soporte permanecen en la raíz del repositorio, fuera del paquete publicado. Si ejecutas
+`mkdocs build`, MkDocs (configurado en [`mkdocs.yml`](mkdocs.yml)) generará la carpeta `site/` con la documentación estática,
+pero no forma parte del repositorio limpio.
 
 ---
 
