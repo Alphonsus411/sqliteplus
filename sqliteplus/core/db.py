@@ -332,7 +332,7 @@ class AsyncDatabaseManager:
         except Exception:
             logger.exception("Fallo al liberar conexiones SQLite durante la recolección")
 
-db_manager = AsyncDatabaseManager(require_encryption=False)
+db_manager = AsyncDatabaseManager()
 
 if __name__ == "__main__":
     async def main():

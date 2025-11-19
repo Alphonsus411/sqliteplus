@@ -1,4 +1,5 @@
 import asyncio
+import importlib
 import os
 import unittest
 import tempfile
@@ -198,6 +199,26 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
                 await self.manager.get_connection("test_db_async_missing_key")
 
         self.assertEqual(exc_info.exception.status_code, 503)
+
+
+class TestGlobalDBManagerEmptyKey(unittest.IsolatedAsyncioTestCase):
+    """Escenarios específicos del gestor global instanciado en el módulo."""
+
+    async def test_db_manager_with_empty_key_raises_http_exception(self):
+        """El gestor global debe rechazar claves vacías en cada conexión."""
+
+        import sqliteplus.core.db as db_module
+
+        with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": ""}, clear=True):
+            reloaded_module = importlib.reload(db_module)
+
+            with self.assertRaises(HTTPException) as exc_info:
+                await reloaded_module.db_manager.get_connection("global_empty_key")
+
+            self.assertEqual(exc_info.exception.status_code, 503)
+            await reloaded_module.db_manager.close_connections()
+
+        importlib.reload(db_module)
         self.assertIn("clave de cifrado", exc_info.exception.detail)
 
     async def test_applies_encryption_key_literal_and_raises_on_failure(self):
