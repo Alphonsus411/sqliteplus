@@ -33,7 +33,9 @@ pip install -e '.[redis]'
 
 ### Extra `visual`
 
-El extra `visual` instala las dependencias necesarias para los comandos de inspección enriquecida (tablas formateadas y diagramas que ayudan a explorar la base de datos desde la CLI).
+La instalación principal ya incluye Rich, así que todas las tablas, paneles y mensajes de la CLI lucen correctamente sin pasos adicionales. El extra `visual` es opcional y añade únicamente las dependencias de los visores interactivos basados en FletPlus.
+
+Instálalo solo si planeas usar los subcomandos o flags que abren esos visores (`sqliteplus fetch --viewer`, `sqliteplus list-tables --viewer`, `sqliteplus visual-dashboard`, etc.). Puedes consultar la [lista completa en docs/cli.md](cli.md#comandos-y-flags-que-requieren-el-extra-visual) para comprobar rápidamente si lo necesitas.
 
 ```bash
 pip install -e '.[visual]'
