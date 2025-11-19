@@ -60,10 +60,12 @@ def _import_visual_dashboard_dependencies():
     try:
         ft = importlib.import_module("flet")
         core_module = importlib.import_module("fletplus.core")
+        smart_table_module = importlib.import_module("fletplus.components.smart_table")
+        style_module = importlib.import_module("fletplus.styles.style")
     except ModuleNotFoundError as exc:  # pragma: no cover - depende de extras opcionales
         raise click.ClickException(_VISUAL_EXTRA_MESSAGE) from exc
 
-    return core_module.FletPlusApp, ft
+    return core_module.FletPlusApp, smart_table_module.SmartTable, style_module.Style, ft
 
 
 def _fetch_rows_respecting_limit(
@@ -1164,7 +1166,7 @@ def database_info(ctx):
 def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_color):
     """Lanza una experiencia accesible e interactiva usando la librería FletPlus."""
 
-    FletPlusApp, ft = _import_visual_dashboard_dependencies()
+    FletPlusApp, SmartTable, Style, ft = _import_visual_dashboard_dependencies()
 
     db_path = ctx.obj.get("db_path")
     cipher_key = ctx.obj.get("cipher_key")
@@ -1254,37 +1256,58 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
             open=True,
         )
 
-        rows = [
-            ft.DataRow(
+        summary_columns = ["Nombre", "Tipo", "Filas"]
+
+        def _summary_row(table_item: dict) -> ft.DataRow:
+            return ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Text(item["name"])),
-                    ft.DataCell(ft.Text("Tabla" if item["type"] == "table" else "Vista")),
+                    ft.DataCell(ft.Text(table_item["name"])),
+                    ft.DataCell(
+                        ft.Text("Tabla" if table_item["type"] == "table" else "Vista")
+                    ),
                     ft.DataCell(
                         ft.Text(
-                            "-"
-                            if item["row_count"] is None
-                            else f"{item['row_count']:,}".replace(",", ".")
+                            "NULL"
+                            if table_item["row_count"] is None
+                            else f"{table_item['row_count']:,}".replace(",", ".")
                         )
                     ),
                 ]
             )
-            for item in tables
-        ]
+
+        summary_rows = [_summary_row(item) for item in tables]
+        summary_virtualized = len(summary_rows) > 10
+
+        summary_table = SmartTable(
+            columns=summary_columns,
+            rows=None if summary_virtualized else summary_rows,
+            total_rows=len(summary_rows),
+            page_size=10,
+            virtualized=summary_virtualized,
+            data_provider=(
+                lambda start, end: [_summary_row(item) for item in tables[start:end]]
+                if summary_virtualized
+                else None
+            ),
+            style=Style(
+                bgcolor=ft.Colors.SURFACE,
+                border_radius=14,
+                padding=ft.Padding(12, 14, 12, 16),
+                shadow=ft.BoxShadow(
+                    spread_radius=0,
+                    blur_radius=18,
+                    color=ft.Colors.with_opacity(0.14, ft.Colors.BLACK),
+                ),
+            ),
+        )
+
+        summary_table_container = summary_table.build()
 
         tables_section = ft.Column(
             [
                 ft.Text("Objetos disponibles", weight=ft.FontWeight.BOLD, size=18),
                 ft.Divider(),
-                ft.DataTable(
-                    columns=[
-                        ft.DataColumn(ft.Text("Nombre")),
-                        ft.DataColumn(ft.Text("Tipo")),
-                        ft.DataColumn(ft.Text("Filas")),
-                    ],
-                    rows=rows,
-                    column_spacing=24,
-                    heading_row_color=ft.Colors.SURFACE_VARIANT,
-                ),
+                summary_table_container,
             ],
             spacing=8,
         )
@@ -1321,14 +1344,27 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
         status_text = ft.Text("", size=14)
         progress_bar = ft.ProgressBar(width=400, visible=False)
 
-        result_table = ft.DataTable(columns=[], rows=[], column_spacing=24)
-        result_container = ft.Container(
-            content=result_table,
-            bgcolor=ft.Colors.SURFACE,
-            padding=12,
-            border_radius=12,
-            expand=True,
+        result_table = SmartTable(
+            columns=[],
+            rows=[],
+            page_size=20,
+            virtualized=False,
+            total_rows=0,
+            data_provider=None,
+            style=Style(
+                bgcolor=ft.Colors.SURFACE,
+                border_radius=14,
+                padding=ft.Padding(12, 14, 12, 16),
+                shadow=ft.BoxShadow(
+                    spread_radius=0,
+                    blur_radius=18,
+                    color=ft.Colors.with_opacity(0.14, ft.Colors.BLACK),
+                ),
+            ),
         )
+
+        result_container = result_table.build()
+        data_table = result_container.controls[0]
 
         presets = {
             "Listar tablas": "SELECT name, type FROM sqlite_master WHERE type IN ('table','view') ORDER BY name",
@@ -1341,6 +1377,11 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
             on_change=lambda e: _apply_preset(e, query_field, presets),
             width=350,
         )
+
+        def _create_data_row(record: tuple[object, ...]) -> ft.DataRow:
+            return ft.DataRow(
+                cells=[ft.DataCell(ft.Text("NULL" if value is None else str(value))) for value in record]
+            )
 
         def run_query(event):
             sql = (query_field.value or "").strip()
@@ -1359,25 +1400,31 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
                     columns, limited_rows, truncated = _fetch_rows_respecting_limit(
                         database, sql, max_rows
                     )
-                    result_table.columns = [
-                        ft.DataColumn(ft.Text(column or f"columna {index + 1}"))
+                    resolved_columns = [
+                        column or f"columna {index + 1}"
                         for index, column in enumerate(columns or [])
                     ]
-                    if not result_table.columns:
+                    if not resolved_columns:
                         first_row_length = len(limited_rows[0]) if limited_rows else 0
-                        result_table.columns = [
-                            ft.DataColumn(ft.Text(f"columna {index + 1}"))
-                            for index in range(first_row_length)
-                        ]
-                    result_table.rows = [
-                        ft.DataRow(
-                            cells=[
-                                ft.DataCell(ft.Text("NULL" if value is None else str(value)))
-                                for value in row
-                            ]
+                        resolved_columns = [f"columna {index + 1}" for index in range(first_row_length)]
+
+                    resolved_page_size = min(max_rows, 20)
+                    result_table.columns = resolved_columns
+                    data_table.columns = [ft.DataColumn(ft.Text(name)) for name in resolved_columns]
+                    result_table.page_size = resolved_page_size
+                    result_table.total_rows = len(limited_rows)
+
+                    result_rows = [tuple(row) for row in limited_rows]
+                    result_table.virtualized = len(result_rows) > resolved_page_size
+                    if result_table.virtualized:
+                        result_table.data_provider = (
+                            lambda start, end: [_create_data_row(record) for record in result_rows[start:end]]
                         )
-                        for row in limited_rows
-                    ]
+                        data_table.rows = result_table._get_page_rows()
+                    else:
+                        result_table.rows = [_create_data_row(record) for record in result_rows]
+                        result_table.data_provider = None
+                        data_table.rows = result_table._get_page_rows()
                     if truncated:
                         status_text.value = (
                             f"Se muestran {len(limited_rows)} fila(s) (límite configurado: {max_rows}). "
@@ -1391,10 +1438,20 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
                     status_text.color = ft.Colors.RED
                     result_table.rows = []
                     result_table.columns = []
+                    result_table.total_rows = 0
+                    result_table.data_provider = None
+                    result_table.virtualized = False
+                    data_table.columns = []
+                    data_table.rows = []
                 else:
                     last_id = database.execute_query(sql)
                     result_table.rows = []
                     result_table.columns = []
+                    result_table.total_rows = 0
+                    result_table.data_provider = None
+                    result_table.virtualized = False
+                    data_table.columns = []
+                    data_table.rows = []
                     status_text.value = (
                         "Operación de escritura completada." if last_id is None else f"ID afectado: {last_id}"
                     )
@@ -1404,6 +1461,11 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
                 status_text.color = ft.Colors.RED
                 result_table.rows = []
                 result_table.columns = []
+                result_table.total_rows = 0
+                result_table.data_provider = None
+                result_table.virtualized = False
+                data_table.columns = []
+                data_table.rows = []
             finally:
                 progress_bar.visible = False
                 event.page.update()
