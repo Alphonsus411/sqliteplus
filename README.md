@@ -116,7 +116,7 @@ pip install -e '.[dev]'
 pytest -v
 ```
 
-Cuando detecta pytest, `AsyncDatabaseManager` borra y recrea las bases ubicadas en `databases/` antes de abrirlas en lugar de moverlas a carpetas temporales. La detección es **perezosa**: en cada `get_connection()` vuelve a comprobar `PYTEST_CURRENT_TEST` y la nueva variable `SQLITEPLUS_FORCE_RESET`, por lo que puedes pedir un reinicio incluso si el gestor global ya se creó (por ejemplo, desde la app FastAPI). Si activas `SQLITEPLUS_FORCE_RESET` mientras una conexión sigue abierta en el mismo bucle de eventos, el gestor la cierra, elimina el archivo `.db` y lo vuelve a crear antes de devolverte la conexión limpia. Revisa la [reinicialización automática en pruebas](./docs/uso_avanzado.md#reinicialización-automática-en-pruebas) o el código correspondiente en [`sqliteplus/core/db.py`](./sqliteplus/core/db.py).
+Cuando detecta pytest, `AsyncDatabaseManager` borra y recrea las bases ubicadas en `databases/` antes de abrirlas en lugar de moverlas a carpetas temporales. La detección es **perezosa**: en cada `get_connection()` vuelve a comprobar `PYTEST_CURRENT_TEST` y la nueva variable `SQLITEPLUS_FORCE_RESET`, por lo que puedes pedir un reinicio incluso si el gestor global ya se creó (por ejemplo, desde la app FastAPI). Si activas `SQLITEPLUS_FORCE_RESET` mientras una conexión sigue abierta en el mismo bucle de eventos, el gestor la cierra, elimina el archivo `.db` y lo vuelve a crear antes de devolverte la conexión limpia. Revisa la [reinicialización automática en pruebas](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/docs/uso_avanzado.md#reinicialización-automática-en-pruebas) o el código correspondiente en [`sqliteplus/core/db.py`](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/sqliteplus/core/db.py).
 
 ---
 
@@ -141,7 +141,7 @@ Comandos disponibles:
 - `sqliteplus list-tables` presenta en una tabla rica todas las tablas disponibles y sus recuentos de filas.
 - `sqliteplus describe-table <tabla>` resume las columnas, índices y relaciones de la tabla indicada.
 - `sqliteplus db-info` muestra un resumen del archivo activo (ruta, tamaño, tablas, vistas y filas totales).
-- `sqliteplus export-query ...` ejecuta una consulta de lectura y guarda el resultado en JSON o CSV; consulta la [guía detallada](./docs/cli.md#exportar-resultados-de-una-consulta).
+- `sqliteplus export-query ...` ejecuta una consulta de lectura y guarda el resultado en JSON o CSV; consulta la [guía detallada](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/docs/cli.md#exportar-resultados-de-una-consulta).
 - `sqliteplus export-csv <tabla> <archivo.csv>` guarda la tabla en un CSV con encabezados y, por defecto, protege archivos existentes a menos que añadas `--overwrite`.
 - `sqliteplus backup` genera un respaldo fechado en la carpeta `backups/`. Puedes especificar otra ruta con `--db-path`.
 
