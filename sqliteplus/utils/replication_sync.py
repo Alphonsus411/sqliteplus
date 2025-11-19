@@ -213,18 +213,35 @@ class SQLiteReplication:
     def _select_writable_path(self, candidate: Path) -> Path:
         local_default = self._default_local_db()
 
-        if self._is_inside_package(candidate) or not self._can_write_to(candidate.parent):
+        requires_local_copy = self._is_inside_package(candidate) or not self._can_write_to(
+            candidate.parent
+        )
+
+        if requires_local_copy:
             logger.warning(
                 "La ruta %s no es segura para escritura. Se utilizará %s en su lugar.",
                 candidate,
                 local_default,
             )
+            self._copy_database_to_local(candidate, local_default)
             candidate = local_default
 
         if candidate == local_default:
             self._ensure_local_database(candidate)
 
         return candidate
+
+    def _copy_database_to_local(self, source: Path, destination: Path) -> None:
+        """Replica la base de datos origen y sus archivos asociados al directorio local."""
+
+        if not source.exists():
+            raise FileNotFoundError(
+                f"No se pudo copiar la base de datos {source}: el archivo no existe"
+            )
+
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+        self._copy_wal_and_shm(source, destination)
 
     @staticmethod
     def _is_inside_package(path: Path) -> bool:

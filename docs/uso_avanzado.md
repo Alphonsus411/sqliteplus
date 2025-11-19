@@ -35,7 +35,11 @@ El módulo `sqliteplus.utils.replication_sync.SQLiteReplication` permite:
 A partir de esta versión, al instanciar `SQLiteReplication()` sin argumentos se crea una copia
 local en `./sqliteplus/databases/database.db`, exactamente igual que hace la CLI. Esto evita que
 los procesos automatizados modifiquen el paquete instalado y garantiza que cualquier replicación o
-exportación parta de un archivo sobre el que se puede escribir en el directorio de trabajo.
+exportación parta de un archivo sobre el que se puede escribir en el directorio de trabajo. Cuando
+el origen solicitado está dentro del paquete o se detecta que no es escribible, el módulo realiza
+una copia byte a byte en el directorio local (incluyendo los pares `-wal`/`-shm`). Si la base de
+datos original no existe se aborta la operación con un mensaje claro en lugar de crear un archivo
+vacío.
 
 ## Actualización caliente de usuarios
 
