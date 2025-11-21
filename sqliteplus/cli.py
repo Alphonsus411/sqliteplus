@@ -13,6 +13,7 @@ if __name__ == "__main__" and __package__ in {None, ""}:
 
 import csv
 import importlib
+import importlib.metadata
 import json
 import math
 import sqlite3
@@ -25,6 +26,7 @@ from pathlib import Path
 from typing import Iterable
 
 import click
+import urllib.request
 
 from sqliteplus.utils.rich_compat import Console, Panel, Syntax, Table, Text, box
 from sqliteplus.utils.json_serialization import normalize_json_value as _normalize_json_value
@@ -73,6 +75,32 @@ def _import_visual_dashboard_dependencies():
         context_module.theme_context,
         ft,
     )
+
+
+def _resolve_fletplus_versions() -> dict[str, str | None]:
+    version_info: dict[str, str | None] = {
+        "installed": None,
+        "latest": None,
+        "error": None,
+    }
+
+    try:
+        version_info["installed"] = importlib.metadata.version("fletplus")
+    except importlib.metadata.PackageNotFoundError:
+        version_info["error"] = "FletPlus no está instalado en el entorno actual."
+        return version_info
+    except Exception as exc:  # pragma: no cover - defensivo
+        version_info["error"] = f"No se pudo detectar la versión instalada ({exc})."
+        return version_info
+
+    try:
+        with urllib.request.urlopen("https://pypi.org/pypi/fletplus/json", timeout=5) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+            version_info["latest"] = str(payload.get("info", {}).get("version"))
+    except Exception:  # pragma: no cover - se degrada silenciosamente en modo offline
+        version_info["error"] = "No se pudo comprobar la última versión en PyPI."
+
+    return version_info
 
 
 def _fetch_rows_respecting_limit(
@@ -1175,6 +1203,8 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
 
     FletPlusApp, SmartTable, Style, theme_context, ft = _import_visual_dashboard_dependencies()
 
+    version_info = _resolve_fletplus_versions()
+
     db_path = ctx.obj.get("db_path")
     cipher_key = ctx.obj.get("cipher_key")
 
@@ -1391,6 +1421,53 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
         stats = database.get_database_statistics(include_views=include_views)
         tables = database.list_tables(include_views=include_views, include_row_counts=True)
 
+        def _build_version_notice() -> ft.InfoBar:
+            installed = version_info.get("installed")
+            latest = version_info.get("latest")
+            error_message = version_info.get("error")
+
+            severity = ft.InfoBarSeverity.INFO
+            title = ft.Text("Estado de FletPlus")
+            content_text = ""
+            actions: list[ft.Control] = []
+
+            if installed:
+                content_text = f"Versión instalada: {installed}."
+                if latest:
+                    if latest != installed:
+                        severity = ft.InfoBarSeverity.WARNING
+                        content_text += f" Disponible en PyPI: {latest}."
+                        actions.append(
+                            ft.TextButton(
+                                "Ver en PyPI",
+                                url="https://pypi.org/project/fletplus/",
+                                tooltip="Abrir PyPI en el navegador",
+                            )
+                        )
+                    else:
+                        severity = ft.InfoBarSeverity.SUCCESS
+                        content_text += " Estás al día con la última versión."
+                else:
+                    content_text += " No se pudo comprobar la versión más reciente en PyPI."
+            else:
+                severity = ft.InfoBarSeverity.ERROR
+                content_text = error_message or "No se pudo determinar la instalación de FletPlus."
+                actions.append(
+                    ft.TextButton(
+                        "PyPI",
+                        url="https://pypi.org/project/fletplus/",
+                        tooltip="Abrir el proyecto en PyPI",
+                    )
+                )
+
+            return ft.InfoBar(
+                title=title,
+                severity=severity,
+                content=ft.Text(content_text, size=12),
+                actions=actions,
+                open=True,
+            )
+
         def tinted(color: str, opacity: float = 0.18) -> str:
             try:
                 return ft.Colors.with_opacity(opacity, color)
@@ -1505,6 +1582,7 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
                 [
                     ft.Text("SQLitePlus Studio", size=24, weight=ft.FontWeight.BOLD),
                     ft.Text(f"Ruta actual: {stats['path']}", selectable=True, size=14),
+                    _build_version_notice(),
                     header_notice,
                     theme_controls,
                     ft.Divider(),
