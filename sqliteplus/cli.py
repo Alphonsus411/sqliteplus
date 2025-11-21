@@ -60,12 +60,19 @@ def _import_visual_dashboard_dependencies():
     try:
         ft = importlib.import_module("flet")
         core_module = importlib.import_module("fletplus.core")
+        context_module = importlib.import_module("fletplus.context")
         smart_table_module = importlib.import_module("fletplus.components.smart_table")
         style_module = importlib.import_module("fletplus.styles.style")
     except ModuleNotFoundError as exc:  # pragma: no cover - depende de extras opcionales
         raise click.ClickException(_VISUAL_EXTRA_MESSAGE) from exc
 
-    return core_module.FletPlusApp, smart_table_module.SmartTable, style_module.Style, ft
+    return (
+        core_module.FletPlusApp,
+        smart_table_module.SmartTable,
+        style_module.Style,
+        context_module.theme_context,
+        ft,
+    )
 
 
 def _fetch_rows_respecting_limit(
@@ -1166,7 +1173,7 @@ def database_info(ctx):
 def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_color):
     """Lanza una experiencia accesible e interactiva usando la librería FletPlus."""
 
-    FletPlusApp, SmartTable, Style, ft = _import_visual_dashboard_dependencies()
+    FletPlusApp, SmartTable, Style, theme_context, ft = _import_visual_dashboard_dependencies()
 
     db_path = ctx.obj.get("db_path")
     cipher_key = ctx.obj.get("cipher_key")
@@ -1184,7 +1191,19 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
 
     resolved_theme = theme.lower() if theme else "system"
     primary_color = _resolve_color_name(accent_color, ft.Colors.BLUE_400)
+    theme_state = {"mode": resolved_theme, "accent": primary_color}
     commands = {}
+
+    theme_config: dict[str, object] = {
+        "tokens": {
+            "primary": primary_color,
+            "secondary": ft.Colors.PURPLE_200,
+            "surface": ft.Colors.SURFACE,
+        }
+    }
+
+    if resolved_theme in {"light", "dark"}:
+        theme_config["palette_mode"] = resolved_theme
 
     def _open_docs() -> None:
         documentation_path = Path(__file__).resolve().parent.parent / "docs" / "index.md"
@@ -1193,6 +1212,173 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
 
     commands["Abrir documentación de SQLitePlus"] = _open_docs
     commands["Visitar FletPlus en PyPI"] = lambda: webbrowser.open("https://pypi.org/project/fletplus/")
+
+    theme_status_text = ft.Text(
+        "Tema sincronizado con la preferencia del sistema" if resolved_theme == "system" else f"Tema inicial: {resolved_theme}",
+        size=12,
+        opacity=0.85,
+        selectable=True,
+    )
+
+    accent_swatch: ft.Container | None = None
+    theme_status_container: ft.Container | None = None
+    accent_input: ft.TextField | None = None
+    mode_selector: ft.Dropdown | None = None
+    accent_presets = {
+        "Índigo": ft.Colors.INDIGO_400,
+        "Cian": ft.Colors.CYAN_400,
+        "Esmeralda": ft.Colors.GREEN_400,
+        "Lavanda": ft.Colors.PURPLE_200,
+    }
+
+    def _refresh_theme_helper_labels() -> None:
+        mode_label = {
+            "system": "Sistema",
+            "light": "Claro",
+            "dark": "Oscuro",
+        }.get(theme_state["mode"], theme_state["mode"])
+        theme_status_text.value = (
+            f"Tema: {mode_label} • Acento: {theme_state['accent']}"
+        )
+        if accent_swatch is not None:
+            accent_swatch.bgcolor = theme_state["accent"]
+            accent_swatch.update()
+        if theme_status_container is not None:
+            theme_status_container.bgcolor = ft.Colors.with_opacity(
+                0.04, theme_state["accent"]
+            )
+            theme_status_container.update()
+        theme_status_text.update()
+
+    def _apply_theme_change(page: "ft.Page", *, palette_mode: str | None = None, accent: str | None = None) -> None:
+        nonlocal theme_config, primary_color
+        theme_manager = None
+        try:
+            theme_manager = theme_context.get(None)
+        except Exception:
+            theme_manager = None
+
+        if palette_mode:
+            theme_state["mode"] = palette_mode
+            if palette_mode == "system":
+                theme_config.pop("palette_mode", None)
+                if theme_manager:
+                    theme_manager.set_follow_platform_theme(True, apply_current=True)
+            else:
+                theme_config["palette_mode"] = palette_mode
+                if theme_manager:
+                    theme_manager.set_follow_platform_theme(False, apply_current=False)
+                    theme_manager.set_dark_mode(palette_mode == "dark")
+
+        if accent:
+            theme_state["accent"] = accent
+            theme_config.setdefault("tokens", {})["primary"] = accent
+            primary_color = accent
+            if theme_manager:
+                theme_manager.set_token("colors.primary", accent)
+                theme_manager.set_token("colors.accent", accent)
+
+        if theme_manager:
+            try:
+                page.update()
+            except Exception:
+                pass
+        _refresh_theme_helper_labels()
+
+    def _handle_theme_mode_change(event):
+        selected = (event.control.value or "system").lower()
+        _apply_theme_change(event.page, palette_mode=selected)
+
+    def _handle_accent_submit(event):
+        new_color = _resolve_color_name(event.control.value or "", theme_state["accent"])
+        event.control.value = new_color
+        event.control.update()
+        _apply_theme_change(event.page, accent=new_color)
+
+    def _handle_accent_preset(event):
+        selected = event.control.value
+        if selected and selected in accent_presets:
+            new_color = accent_presets[selected]
+            if accent_input is not None:
+                accent_input.value = new_color
+                accent_input.update()
+            _apply_theme_change(event.page, accent=new_color)
+
+    _refresh_theme_helper_labels()
+
+    def build_theme_controls() -> ft.Control:
+        nonlocal accent_swatch, accent_input, mode_selector
+
+        mode_selector = ft.Dropdown(
+            label="Tema de la app",
+            value=theme_state["mode"],
+            options=[
+                ft.dropdown.Option("system", "Seguir sistema"),
+                ft.dropdown.Option("light", "Modo claro"),
+                ft.dropdown.Option("dark", "Modo oscuro"),
+            ],
+            width=220,
+            on_change=_handle_theme_mode_change,
+            tooltip="Aplica la variante de tema sin recargar la vista",
+        )
+
+        accent_swatch = ft.Container(
+            width=28,
+            height=28,
+            bgcolor=theme_state["accent"],
+            border_radius=8,
+            border=ft.border.all(1, ft.Colors.with_opacity(0.12, ft.Colors.BLACK)),
+        )
+
+        accent_input = ft.TextField(
+            label="Color primario",
+            value=theme_state["accent"],
+            hint_text="Ej: #6750A4 o BLUE_400",
+            prefix_icon=ft.Icons.COLOR_LENS,
+            on_submit=_handle_accent_submit,
+            width=260,
+            tooltip="Introduce un color o nombre de token de Flet para actualizar la paleta",
+        )
+
+        accent_selector = ft.Dropdown(
+            label="Paleta rápida",
+            options=[ft.dropdown.Option(key) for key in accent_presets],
+            width=180,
+            on_change=_handle_accent_preset,
+            tooltip="Aplica combinaciones de acento preparadas",
+        )
+
+        color_row = ft.Row(
+            controls=[accent_input, accent_selector, accent_swatch],
+            spacing=12,
+            vertical_alignment=ft.CrossAxisAlignment.END,
+        )
+
+        _refresh_theme_helper_labels()
+
+        return ft.Container(
+            content=ft.Column(
+                [
+                    ft.Text(
+                        "Personaliza tema y acento sin salir del panel.",
+                        weight=ft.FontWeight.W_600,
+                    ),
+                    ft.ResponsiveRow(
+                        [
+                            ft.Container(content=mode_selector, col=12, md=6),
+                            ft.Container(content=color_row, col=12, md=6),
+                        ],
+                        columns=12,
+                        run_spacing=10,
+                    ),
+                    theme_status_text,
+                ],
+                spacing=8,
+            ),
+            padding=ft.Padding(14, 12, 14, 12),
+            border_radius=12,
+            bgcolor=ft.Colors.with_opacity(0.05, ft.Colors.ON_SURFACE),
+        )
 
     def _apply_preset(event, target_field, preset_map):
         selected = event.control.value
@@ -1250,11 +1436,13 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
             title=ft.Text("Accesibilidad mejorada"),
             severity=ft.InfoBarSeverity.SUCCESS,
             content=ft.Text(
-                "Ajusta tema y color desde la CLI y usa Ctrl+K para abrir la paleta de comandos.",
+                "Ajusta tema y color desde la sección superior o la CLI y usa Ctrl+K para abrir la paleta de comandos.",
                 size=12,
             ),
             open=True,
         )
+
+        theme_controls = build_theme_controls()
 
         summary_columns = ["Nombre", "Tipo", "Filas"]
 
@@ -1318,6 +1506,7 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
                     ft.Text("SQLitePlus Studio", size=24, weight=ft.FontWeight.BOLD),
                     ft.Text(f"Ruta actual: {stats['path']}", selectable=True, size=14),
                     header_notice,
+                    theme_controls,
                     ft.Divider(),
                     cards,
                     ft.Divider(),
@@ -1531,11 +1720,13 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
         )
 
     def build_accessibility_view():
+        nonlocal theme_status_container
+
         tips = [
             "Pulsa Ctrl+K para abrir rápidamente la paleta de comandos.",
-            "Activa el modo oscuro con --theme dark para mejorar el contraste.",
+            "Alterna claro/oscuro desde la cabecera para mejorar el contraste en vivo.",
             "Ajusta el tamaño de texto dentro de las tablas interactivas desde el control deslizante.",
-            "Utiliza --accent-color para personalizar los elementos destacados a tu preferencia.",
+            "Personaliza el color de acento desde el selector rápido sin recargar la sesión.",
         ]
 
         tip_list = ft.ListView(
@@ -1560,6 +1751,20 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
             run_spacing=12,
         )
 
+        theme_status_container = ft.Container(
+            content=ft.Row(
+                [
+                    ft.Icon(ft.Icons.PALETTE_OUTLINED, color=theme_state["accent"]),
+                    theme_status_text,
+                ],
+                spacing=10,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
+            bgcolor=ft.Colors.with_opacity(0.04, theme_state["accent"]),
+            border_radius=12,
+            padding=ft.Padding(12, 10, 12, 10),
+        )
+
         info_cards = ft.Column(
             [
                 ft.Text("Atajos y ayudas", size=22, weight=ft.FontWeight.BOLD),
@@ -1571,6 +1776,7 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
                 badges,
                 ft.Divider(),
                 tip_list,
+                theme_status_container,
             ],
             spacing=12,
             expand=True,
@@ -1591,17 +1797,6 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
         {"title": "Historial", "icon": ft.Icons.HISTORY},
         {"title": "Accesibilidad", "icon": ft.Icons.ACCESSIBILITY_NEW},
     ]
-
-    theme_config = {
-        "tokens": {
-            "primary": primary_color,
-            "secondary": ft.Colors.PURPLE_200,
-            "surface": ft.Colors.SURFACE,
-        }
-    }
-
-    if resolved_theme in {"light", "dark"}:
-        theme_config["palette_mode"] = resolved_theme
 
     FletPlusApp.start(
         routes=routes,
