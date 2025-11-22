@@ -167,6 +167,40 @@ async def test_create_table_with_safe_parenthesized_default():
 
 
 @pytest.mark.asyncio
+async def test_create_table_with_safe_bare_function_default():
+    """Las funciones permitidas sin paréntesis siguen siendo válidas."""
+
+    transport = ASGITransport(app=app)
+    table_name = "logs_bare_defaults"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        headers = await _get_auth_headers(ac)
+
+        body = {
+            "columns": {
+                "id": "INTEGER PRIMARY KEY",
+                "created_at": "TEXT DEFAULT CURRENT_TIMESTAMP",
+                "created_on": "TEXT DEFAULT CURRENT_DATE",
+            }
+        }
+
+        res_create = await ac.post(
+            f"/databases/{DB_NAME}/create_table",
+            params={"table_name": table_name},
+            json=body,
+            headers=headers,
+        )
+
+        assert res_create.status_code == 200, res_create.text
+
+        res_drop = await ac.delete(
+            f"/databases/{DB_NAME}/drop_table?table_name={table_name}",
+            headers=headers,
+        )
+
+        assert res_drop.status_code == 200
+
+
+@pytest.mark.asyncio
 async def test_create_table_with_multiple_primary_keys_returns_bad_request():
     """La API debe rechazar tablas con más de una columna PRIMARY KEY."""
     transport = ASGITransport(app=app)
