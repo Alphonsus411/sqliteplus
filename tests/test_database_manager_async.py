@@ -204,6 +204,19 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
 class TestGlobalDBManagerEmptyKey(unittest.IsolatedAsyncioTestCase):
     """Escenarios específicos del gestor global instanciado en el módulo."""
 
+    async def asyncSetUp(self):
+        """Configura un gestor asíncrono con la clave de pruebas por defecto."""
+
+        self.key_patch = mock.patch.dict(
+            os.environ, {"SQLITE_DB_KEY": "clave-de-prueba"}, clear=False
+        )
+        self.key_patch.start()
+        self.manager = AsyncDatabaseManager()
+
+    async def asyncTearDown(self):
+        await self.manager.close_connections()
+        self.key_patch.stop()
+
     async def test_db_manager_with_empty_key_raises_http_exception(self):
         """El gestor global debe rechazar claves vacías en cada conexión."""
 
