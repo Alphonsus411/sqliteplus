@@ -124,19 +124,20 @@ class AsyncDatabaseManager:
             absolute_key = str(db_path)
 
             if recreate_connection:
+                was_initialized = absolute_key in _INITIALIZED_DATABASES
+                _INITIALIZED_DATABASES.add(absolute_key)
+
                 should_reset = self._should_reset_database()
-                if should_reset:
-                    _INITIALIZED_DATABASES.discard(absolute_key)
-                if absolute_key not in _INITIALIZED_DATABASES:
-                    if should_reset and db_path.exists():
-                        try:
-                            db_path.unlink()
-                        except OSError as exc:
-                            logger.warning(
-                                "No se pudo eliminar la base '%s' antes de reinicializarla: %s",
-                                canonical_name,
-                                exc,
-                            )
+                if should_reset and db_path.exists():
+                    try:
+                        db_path.unlink()
+                    except OSError as exc:
+                        logger.warning(
+                            "No se pudo eliminar la base '%s' antes de reinicializarla: %s",
+                            canonical_name,
+                            exc,
+                        )
+                if should_reset or not was_initialized:
                     wal_shm_paths = [Path(f"{db_path}{suffix}") for suffix in ("-wal", "-shm")]
                     for extra_path in wal_shm_paths:
                         try:
