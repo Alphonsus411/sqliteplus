@@ -82,6 +82,9 @@ class AsyncDatabaseManager:
             return True
         return _is_truthy(os.getenv("SQLITEPLUS_FORCE_RESET"))
 
+    def _is_force_reset_requested(self) -> bool:
+        return _is_truthy(os.getenv("SQLITEPLUS_FORCE_RESET"))
+
     def _normalize_db_name(self, raw_name: str) -> tuple[str, Path]:
         sanitized = raw_name.strip()
         if not sanitized:
@@ -113,10 +116,21 @@ class AsyncDatabaseManager:
         async with self._creation_lock:
             recreate_connection = False
             should_reset = self._should_reset_database()
+            force_reset = self._is_force_reset_requested()
 
             if canonical_name in self.connections:
                 stored_loop = self._connection_loops.get(canonical_name)
-                if stored_loop is not current_loop or should_reset:
+                if stored_loop is not current_loop:
+                    await self.connections[canonical_name].close()
+                    recreate_connection = True
+
+                    self.connections.pop(canonical_name, None)
+                    self.locks.pop(canonical_name, None)
+                    self._connection_loops.pop(canonical_name, None)
+                    absolute_key_cleanup = self._initialized_keys.pop(canonical_name, None)
+                    if absolute_key_cleanup is not None:
+                        _INITIALIZED_DATABASES.discard(absolute_key_cleanup)
+                elif force_reset:
                     await self.connections[canonical_name].close()
                     recreate_connection = True
 
