@@ -192,7 +192,10 @@ class CreateTableSchema(BaseModel):
                     raise ValueError(
                         f"Expresión DEFAULT potencialmente insegura para columna '{raw_name}'"
                     )
-                normalized_parts.append(f"DEFAULT {default_expr}")
+                sanitized_default = self._strip_enclosing_parentheses(default_expr.strip())
+                if self._parse_function_call(sanitized_default):
+                    sanitized_default = f"({sanitized_default})"
+                normalized_parts.append(f"DEFAULT {sanitized_default}")
 
             sanitized_columns[normalized_name] = " ".join(normalized_parts)
 
@@ -201,23 +204,27 @@ class CreateTableSchema(BaseModel):
     @classmethod
     def _is_safe_default_expr(cls, expr: str) -> bool:
         sanitized = cls._strip_enclosing_parentheses(expr.strip())
-        upper = f" {sanitized.upper()} "
+        upper_sanitized = sanitized.upper()
+        padded_upper = f" {upper_sanitized} "
 
         for token in cls._default_expr_disallowed_tokens:
             if token in sanitized:
                 return False
 
         for keyword in cls._default_expr_disallowed_keywords:
-            if keyword in upper:
+            if keyword in padded_upper:
                 return False
 
         if cls._default_expr_numeric_pattern.match(sanitized):
             return True
 
-        if sanitized.upper() in cls._default_expr_allowed_literals:
+        if upper_sanitized in cls._default_expr_allowed_literals:
             return True
 
         if cls._default_expr_string_pattern.match(sanitized):
+            return True
+
+        if upper_sanitized in cls._default_expr_allowed_functions:
             return True
 
         function_call = cls._parse_function_call(sanitized)
