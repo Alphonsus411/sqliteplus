@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Dict, Tuple
 
 from sqliteplus._compat import ensure_bcrypt
+from sqliteplus._compat import bcrypt as compat_bcrypt
 
 bcrypt = ensure_bcrypt()
 
@@ -64,8 +65,13 @@ class UserCredentialsService:
         if not stored_hash:
             return False
 
+        stored_hash_bytes = stored_hash.encode("utf-8")
+
+        if compat_bcrypt.is_compat_hash(stored_hash_bytes):
+            return compat_bcrypt.checkpw(password.encode("utf-8"), stored_hash_bytes)
+
         try:
-            return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
+            return bcrypt.checkpw(password.encode("utf-8"), stored_hash_bytes)
         except ValueError as exc:
             # ``bcrypt`` eleva ``ValueError`` cuando el hash almacenado tiene un
             # formato incompatible (por ejemplo, si fue generado con la versión
