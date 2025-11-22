@@ -7,9 +7,9 @@ import hmac
 import os
 from typing import Final
 
-__all__ = ["gensalt", "hashpw", "checkpw"]
+__all__ = ["gensalt", "hashpw", "checkpw", "is_compat_hash", "COMPAT_PREFIX"]
 
-_PREFIX: Final[str] = "compatbcrypt$"
+COMPAT_PREFIX: Final[str] = "compatbcrypt$"
 _ITERATIONS: Final[int] = 390_000
 _SALT_BYTES: Final[int] = 16
 
@@ -31,7 +31,7 @@ def gensalt(rounds: int | None = None) -> bytes:  # type: ignore[override]
     _ = rounds  # Se acepta el parámetro por compatibilidad.
     random_bytes = os.urandom(_SALT_BYTES)
     salt_token = base64.urlsafe_b64encode(random_bytes).rstrip(b"=")
-    return (_PREFIX + salt_token.decode("ascii")).encode("ascii")
+    return (COMPAT_PREFIX + salt_token.decode("ascii")).encode("ascii")
 
 
 def _derive_digest(password: bytes, salt_token: str) -> str:
@@ -50,13 +50,13 @@ def hashpw(password: bytes | str, salt: bytes | str) -> bytes:
     except UnicodeDecodeError as exc:
         raise ValueError("salt debe ser ASCII") from exc
 
-    if salt_str.startswith(_PREFIX):
-        salt_token = salt_str[len(_PREFIX) :]
+    if salt_str.startswith(COMPAT_PREFIX):
+        salt_token = salt_str[len(COMPAT_PREFIX) :]
     else:
         salt_token = salt_str
 
     digest_token = _derive_digest(password_bytes, salt_token)
-    return f"{_PREFIX}{salt_token}${digest_token}".encode("ascii")
+    return f"{COMPAT_PREFIX}{salt_token}${digest_token}".encode("ascii")
 
 
 def checkpw(password: bytes | str, hashed_password: bytes | str) -> bool:
@@ -70,7 +70,7 @@ def checkpw(password: bytes | str, hashed_password: bytes | str) -> bool:
     except UnicodeDecodeError as exc:
         raise ValueError("El hash almacenado es inválido: no es ASCII") from exc
 
-    if not hashed_str.startswith(_PREFIX):
+    if not hashed_str.startswith(COMPAT_PREFIX):
         raise ValueError("Hash incompatible: no fue generado con la implementación integrada")
 
     try:
@@ -80,3 +80,25 @@ def checkpw(password: bytes | str, hashed_password: bytes | str) -> bool:
 
     recalculated_digest = _derive_digest(password_bytes, salt_token)
     return hmac.compare_digest(recalculated_digest, stored_digest)
+
+
+def is_compat_hash(hashed_password: bytes | str) -> bool:
+    """Indica si ``hashed_password`` fue generado con este *fallback*.
+
+    Se utiliza para conservar compatibilidad cuando el módulo nativo ``bcrypt``
+    está disponible: ese módulo no reconoce el prefijo interno
+    ``compatbcrypt$`` y fallaría al validar contraseñas almacenadas con esta
+    implementación pura.
+    """
+
+    try:
+        hashed_bytes = _ensure_bytes(hashed_password, name="hashed_password")
+    except (TypeError, ValueError):
+        return False
+
+    try:
+        hashed_str = hashed_bytes.decode("ascii")
+    except UnicodeDecodeError:
+        return False
+
+    return hashed_str.startswith(COMPAT_PREFIX)

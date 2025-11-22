@@ -196,3 +196,27 @@ def test_verify_credentials_reports_incompatible_hash(tmp_path, monkeypatch):
         service.verify_credentials("admin", "any")
 
     assert "bcrypt" in str(excinfo.value)
+
+
+def test_verify_credentials_accepts_compat_hash_with_native_bcrypt(tmp_path, monkeypatch):
+    users_file = tmp_path / "users.json"
+
+    compat_bcrypt = importlib.import_module("sqliteplus._compat.bcrypt")
+    compat_hash = compat_bcrypt.hashpw("fallback", compat_bcrypt.gensalt()).decode("ascii")
+    users_file.write_text(json.dumps({"admin": compat_hash}), encoding="utf-8")
+
+    monkeypatch.setenv("SQLITEPLUS_USERS_FILE", str(users_file))
+    reset_user_service_cache()
+    service = get_user_service()
+
+    class NativeBcrypt:
+        @staticmethod
+        def checkpw(_password: bytes, _stored: bytes) -> bool:
+            raise ValueError("Hash incompatible: no fue generado con la implementación integrada")
+
+    monkeypatch.setattr("sqliteplus.auth.users.bcrypt", NativeBcrypt)
+
+    try:
+        assert service.verify_credentials("admin", "fallback")
+    finally:
+        reset_user_service_cache()
