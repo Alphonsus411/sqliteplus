@@ -208,15 +208,20 @@ class SQLiteReplication:
     def _select_writable_path(self, candidate: Path) -> Path:
         local_default = self._default_local_db()
 
+        redirected_from: Path | None = None
+
         if self._is_inside_package(candidate) or not self._can_write_to(candidate.parent):
             logger.warning(
                 "La ruta %s no es segura para escritura. Se utilizará %s en su lugar.",
                 candidate,
                 local_default,
             )
+            redirected_from = candidate
             candidate = local_default
 
-        if candidate == local_default:
+        if redirected_from is not None:
+            self._copy_to_local_database(redirected_from, candidate)
+        elif candidate == local_default:
             self._ensure_local_database(candidate)
 
         return candidate
@@ -246,6 +251,15 @@ class SQLiteReplication:
         target.parent.mkdir(parents=True, exist_ok=True)
         if not target.exists():
             target.touch()
+
+    @classmethod
+    def _copy_to_local_database(cls, source: Path, destination: Path) -> None:
+        if not source.exists():
+            raise FileNotFoundError(f"No se encontró la base de datos origen: {source}")
+
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+        cls._copy_wal_and_shm(source, destination)
 
 
 if __name__ == "__main__":
