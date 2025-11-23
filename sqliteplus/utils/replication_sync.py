@@ -16,6 +16,7 @@ import logging
 import os
 import shutil
 import sqlite3
+import stat
 from pathlib import Path
 
 from sqliteplus.core.schemas import is_valid_sqlite_identifier
@@ -207,6 +208,16 @@ class SQLiteReplication:
         return copied_files
 
     @staticmethod
+    def _ensure_writable(target: Path) -> None:
+        try:
+            current_mode = target.stat().st_mode
+            writable_mode = current_mode | stat.S_IRUSR | stat.S_IWUSR
+            if writable_mode != current_mode:
+                target.chmod(writable_mode)
+        except OSError:
+            logger.warning("No se pudieron ajustar los permisos de %s", target)
+
+    @staticmethod
     def _default_local_db() -> Path:
         return (Path.cwd() / Path(DEFAULT_DB_PATH)).resolve()
 
@@ -241,7 +252,10 @@ class SQLiteReplication:
 
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
-        self._copy_wal_and_shm(source, destination)
+        copied_journal_files = self._copy_wal_and_shm(source, destination)
+        self._ensure_writable(destination)
+        for copied_file in copied_journal_files:
+            self._ensure_writable(Path(copied_file))
 
     @staticmethod
     def _is_inside_package(path: Path) -> bool:
