@@ -1222,6 +1222,7 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
 
     accent_swatch: ft.Container | None = None
     theme_status_container: ft.Container | None = None
+    accessibility_status_text: ft.Text | None = None
     accent_input: ft.TextField | None = None
     mode_selector: ft.Dropdown | None = None
     accent_presets = {
@@ -1237,9 +1238,11 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
             "light": "Claro",
             "dark": "Oscuro",
         }.get(theme_state["mode"], theme_state["mode"])
-        theme_status_text.value = (
-            f"Tema: {mode_label} • Acento: {theme_state['accent']}"
-        )
+        status_message = f"Tema: {mode_label} • Acento: {theme_state['accent']}"
+        theme_status_text.value = status_message
+        if accessibility_status_text is not None:
+            accessibility_status_text.value = status_message
+            accessibility_status_text.update()
         if accent_swatch is not None:
             accent_swatch.bgcolor = theme_state["accent"]
             accent_swatch.update()
@@ -1720,7 +1723,7 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
         )
 
     def build_accessibility_view():
-        nonlocal theme_status_container
+        nonlocal theme_status_container, accessibility_status_text
 
         tips = [
             "Pulsa Ctrl+K para abrir rápidamente la paleta de comandos.",
@@ -1751,11 +1754,18 @@ def visual_dashboard(ctx, include_views, read_only, max_rows, theme, accent_colo
             run_spacing=12,
         )
 
+        accessibility_status_text = ft.Text(
+            theme_status_text.value,
+            size=12,
+            opacity=0.85,
+            selectable=True,
+        )
+
         theme_status_container = ft.Container(
             content=ft.Row(
                 [
                     ft.Icon(ft.Icons.PALETTE_OUTLINED, color=theme_state["accent"]),
-                    theme_status_text,
+                    accessibility_status_text,
                 ],
                 spacing=10,
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,

@@ -45,7 +45,7 @@ redis = [
 ]
 
 visual = [
-    "fletplus",
+    "fletplus>=0.2.5",
     "flet"
 ]
 
