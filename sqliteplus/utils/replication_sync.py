@@ -220,7 +220,10 @@ class SQLiteReplication:
             candidate = local_default
 
         if redirected_from is not None:
-            self._copy_to_local_database(redirected_from, candidate)
+            if redirected_from != candidate:
+                self._copy_to_local_database(redirected_from, candidate)
+            else:
+                self._ensure_local_database(candidate)
         elif candidate == local_default:
             self._ensure_local_database(candidate)
 
