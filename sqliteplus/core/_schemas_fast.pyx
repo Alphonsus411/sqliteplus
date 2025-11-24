@@ -66,29 +66,24 @@ def _parse_function_call_impl(expr: str):
 
     cdef Py_ssize_t idx = 0
     cdef str char
-    cdef Py_ssize_t start = -1
-    cdef Py_ssize_t end = -1
 
     if not (expr[0].isalpha() or expr[0] == "_"):
         return None
 
-    for idx in range(length):
-        char = expr[idx]
-        if char.isalnum() or char == "_":
-            if start == -1:
-                start = idx
-            continue
-        if char == "(":
-            end = idx
-            break
+    while idx < length and (expr[idx].isalnum() or expr[idx] == "_"):
+        idx += 1
+
+    func_name = expr[0:idx]
+
+    while idx < length and expr[idx].isspace():
+        idx += 1
+
+    if idx >= length or expr[idx] != "(":
         return None
 
-    if start == -1 or end == -1:
-        return None
-
-    func_name = expr[start:end]
-    depth = 0
+    cdef Py_ssize_t end = idx
     cdef Py_ssize_t pos
+    cdef Py_ssize_t depth = 0
     for pos in range(end, length):
         char = expr[pos]
         if char == "(":
