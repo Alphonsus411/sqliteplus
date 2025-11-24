@@ -8,8 +8,8 @@ SQLITE_IDENTIFIER_PATTERN = re.compile(r'^(?!\s)(?!.*\s$)[^"\x00-\x1F]+$')
 SQLITE_IDENTIFIER_DISALLOWED_TOKENS: tuple[str, ...] = (";", "--", "/*", "*/")
 
 
-def is_valid_sqlite_identifier(identifier: str) -> bool:
-    """Valida si una cadena puede utilizarse como identificador en SQLite."""
+def _py_is_valid_sqlite_identifier(identifier: str) -> bool:
+    """Implementación original en Python para validar identificadores."""
 
     if not isinstance(identifier, str):
         return False
@@ -18,6 +18,75 @@ def is_valid_sqlite_identifier(identifier: str) -> bool:
         return False
 
     return bool(SQLITE_IDENTIFIER_PATTERN.match(identifier))
+
+
+def _py_has_balanced_parentheses(expr: str) -> bool:
+    depth = 0
+    for char in expr:
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth < 0:
+                return False
+    return depth == 0
+
+
+def _py_strip_enclosing_parentheses(expr: str) -> str:
+    sanitized = expr
+    while (
+        sanitized.startswith("(")
+        and sanitized.endswith(")")
+        and _py_has_balanced_parentheses(sanitized)
+    ):
+        inner = sanitized[1:-1].strip()
+        if not inner:
+            break
+        sanitized = inner
+    return sanitized
+
+
+def _py_parse_function_call(expr: str) -> tuple[str, str] | None:
+    match = re.match(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", expr)
+    if not match:
+        return None
+
+    func_name = match.group(1)
+    idx = match.end() - 1  # position of the opening parenthesis
+    depth = 0
+    for pos in range(idx, len(expr)):
+        char = expr[pos]
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                if pos != len(expr) - 1:
+                    return None
+                args = expr[idx + 1 : pos].strip()
+                return func_name, args
+            if depth < 0:
+                return None
+    return None
+
+
+try:  # pragma: no cover - la rama rápida se valida aparte
+    from sqliteplus.core import _schemas_fast
+except ImportError:  # pragma: no cover - la ausencia también se comprueba
+    _schemas_fast = None
+
+HAS_CYTHON_SPEEDUPS = _schemas_fast is not None
+
+if HAS_CYTHON_SPEEDUPS:
+    is_valid_sqlite_identifier = _schemas_fast.is_valid_sqlite_identifier
+    _has_balanced_parentheses_impl = _schemas_fast.has_balanced_parentheses
+    _strip_enclosing_parentheses_impl = _schemas_fast.strip_enclosing_parentheses
+    _parse_function_call_impl = _schemas_fast.parse_function_call
+else:
+    is_valid_sqlite_identifier = _py_is_valid_sqlite_identifier
+    _has_balanced_parentheses_impl = _py_has_balanced_parentheses
+    _strip_enclosing_parentheses_impl = _py_strip_enclosing_parentheses
+    _parse_function_call_impl = _py_parse_function_call
 
 
 class CreateTableSchema(BaseModel):
@@ -245,53 +314,15 @@ class CreateTableSchema(BaseModel):
 
     @staticmethod
     def _has_balanced_parentheses(expr: str) -> bool:
-        depth = 0
-        for char in expr:
-            if char == "(":
-                depth += 1
-            elif char == ")":
-                depth -= 1
-                if depth < 0:
-                    return False
-        return depth == 0
+        return bool(_has_balanced_parentheses_impl(expr))
 
     @classmethod
     def _strip_enclosing_parentheses(cls, expr: str) -> str:
-        sanitized = expr
-        while (
-            sanitized.startswith("(")
-            and sanitized.endswith(")")
-            and cls._has_balanced_parentheses(sanitized)
-        ):
-            inner = sanitized[1:-1].strip()
-            if not inner:
-                break
-            sanitized = inner
-        return sanitized
+        return _strip_enclosing_parentheses_impl(expr)
 
     @staticmethod
     def _parse_function_call(expr: str) -> tuple[str, str] | None:
-        match = re.match(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", expr)
-        if not match:
-            return None
-
-        func_name = match.group(1)
-        idx = match.end() - 1  # position of the opening parenthesis
-        depth = 0
-        for pos in range(idx, len(expr)):
-            char = expr[pos]
-            if char == "(":
-                depth += 1
-            elif char == ")":
-                depth -= 1
-                if depth == 0:
-                    if pos != len(expr) - 1:
-                        return None
-                    args = expr[idx + 1 : pos].strip()
-                    return func_name, args
-                if depth < 0:
-                    return None
-        return None
+        return _parse_function_call_impl(expr)
 
 
 class InsertDataSchema(BaseModel):
