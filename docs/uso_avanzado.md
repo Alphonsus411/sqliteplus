@@ -46,3 +46,26 @@ vacío.
 `sqliteplus.auth.users.get_user_service()` mantiene una caché basada en la firma del archivo. Al
 modificar `SQLITEPLUS_USERS_FILE` se detecta el cambio automáticamente y se recarga la lista de
 usuarios sin reiniciar el proceso.
+
+## Perfilado de CLI y API
+
+Para detectar cuellos de botella puedes lanzar un perfilado controlado con `cProfile`
+mediante los escenarios preparados en `tools/profile_sqliteplus.py`:
+
+```bash
+make profile PROFILE_SCENARIO=list_tables           # CLI: inventario de tablas
+make profile PROFILE_SCENARIO=db_info               # CLI: resumen de base
+make profile PROFILE_SCENARIO=api_crud PROFILE_FLAGS="--include-io"
+```
+
+- Los reportes se guardan en `reports/profile/<escenario>-<timestamp>.txt`.
+- Por defecto se omiten funciones de E/S habituales (`sqlite3`, `socket`, `pathlib`, etc.)
+  para resaltar el coste puramente Python; añade `--include-io` en `PROFILE_FLAGS` si
+  necesitas ver la imagen completa.
+- El bloque **Top por tiempo acumulado** muestra las funciones que más tiempo absorben
+  incluyendo llamadas internas; **Top por número de llamadas** ayuda a detectar rutas
+  que se ejecutan en exceso, aunque sean ligeras.
+- En la sección **Funciones Python puras destacadas** aparecen solo funciones definidas
+  en módulos `.py`, ideales para valorar migraciones a Cython o refactors: céntrate en
+  las que combinan alto tiempo acumulado y muchas llamadas, especialmente si pertenecen
+  a `sqliteplus` o a utilidades auxiliares que no dependen de I/O.
