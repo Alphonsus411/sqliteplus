@@ -1,0 +1,694 @@
+{
+  "generated_at": "2025-11-25T09:54:20",
+  "include_io": false,
+  "top_n": 15,
+  "scenarios": [
+    "list_tables",
+    "db_info",
+    "api_crud"
+  ],
+  "io_hints": [
+    "sqlite3",
+    "selectors.py",
+    "socket.py",
+    "ssl.py",
+    "asyncio/streams.py",
+    "urllib",
+    "http",
+    "pathlib.py",
+    "os.py",
+    "io.py",
+    "tempfile.py",
+    "shutil.py"
+  ],
+  "by_scenario": [
+    {
+      "scenario": "list_tables",
+      "duration_seconds": 0.1473,
+      "functions_seen": 436,
+      "hotspots": [
+        {
+          "function": "scenario_cli_list_tables",
+          "file": "tools/profile_sqliteplus.py",
+          "line": 87,
+          "ncalls": 1,
+          "tottime": 4.6e-05,
+          "cumtime": 0.147268,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "create_db_with_sample_data",
+          "file": "tools/profile_sqliteplus.py",
+          "line": 58,
+          "ncalls": 1,
+          "tottime": 0.000225,
+          "cumtime": 0.12896,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "execute_query",
+          "file": "sqliteplus/utils/sqliteplus_sync.py",
+          "line": 112,
+          "ncalls": 21,
+          "tottime": 0.00038,
+          "cumtime": 0.12669,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "<method 'commit' of 'sqlite3.Connection' objects>",
+          "file": "~",
+          "line": 0,
+          "ncalls": 23,
+          "tottime": 0.105619,
+          "cumtime": 0.105619,
+          "is_python": false,
+          "is_io": false
+        },
+        {
+          "function": "get_connection",
+          "file": "sqliteplus/utils/sqliteplus_sync.py",
+          "line": 99,
+          "ncalls": 24,
+          "tottime": 0.00016,
+          "cumtime": 0.021157,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "invoke",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/click/testing.py",
+          "line": 433,
+          "ncalls": 1,
+          "tottime": 5.3e-05,
+          "cumtime": 0.018252,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "main",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/click/core.py",
+          "line": 1315,
+          "ncalls": 1,
+          "tottime": 3.4e-05,
+          "cumtime": 0.015253,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "invoke",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/click/core.py",
+          "line": 1816,
+          "ncalls": 1,
+          "tottime": 1.7e-05,
+          "cumtime": 0.013633,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "invoke",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/click/core.py",
+          "line": 1232,
+          "ncalls": 2,
+          "tottime": 1.3e-05,
+          "cumtime": 0.012931,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "invoke",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/click/core.py",
+          "line": 768,
+          "ncalls": 2,
+          "tottime": 4.2e-05,
+          "cumtime": 0.012918,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "new_func",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/click/decorators.py",
+          "line": 33,
+          "ncalls": 2,
+          "tottime": 2.9e-05,
+          "cumtime": 0.012844,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "list_tables",
+          "file": "sqliteplus/cli.py",
+          "line": 928,
+          "ncalls": 1,
+          "tottime": 0.000169,
+          "cumtime": 0.012505,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "<method 'execute' of 'sqlite3.Connection' objects>",
+          "file": "~",
+          "line": 0,
+          "ncalls": 26,
+          "tottime": 0.012296,
+          "cumtime": 0.012296,
+          "is_python": false,
+          "is_io": false
+        },
+        {
+          "function": "print",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/rich/console.py",
+          "line": 1629,
+          "ncalls": 2,
+          "tottime": 6.6e-05,
+          "cumtime": 0.010894,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "<method 'extend' of 'list' objects>",
+          "file": "~",
+          "line": 0,
+          "ncalls": 75,
+          "tottime": 0.000121,
+          "cumtime": 0.009222,
+          "is_python": false,
+          "is_io": false
+        }
+      ]
+    },
+    {
+      "scenario": "db_info",
+      "duration_seconds": 0.0833,
+      "functions_seen": 412,
+      "hotspots": [
+        {
+          "function": "scenario_cli_db_info",
+          "file": "tools/profile_sqliteplus.py",
+          "line": 101,
+          "ncalls": 1,
+          "tottime": 2.6e-05,
+          "cumtime": 0.083218,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "create_db_with_sample_data",
+          "file": "tools/profile_sqliteplus.py",
+          "line": 58,
+          "ncalls": 1,
+          "tottime": 0.000239,
+          "cumtime": 0.071614,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "execute_query",
+          "file": "sqliteplus/utils/sqliteplus_sync.py",
+          "line": 112,
+          "ncalls": 21,
+          "tottime": 0.000254,
+          "cumtime": 0.070587,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "<method 'commit' of 'sqlite3.Connection' objects>",
+          "file": "~",
+          "line": 0,
+          "ncalls": 23,
+          "tottime": 0.063747,
+          "cumtime": 0.063747,
+          "is_python": false,
+          "is_io": false
+        },
+        {
+          "function": "invoke",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/click/testing.py",
+          "line": 433,
+          "ncalls": 1,
+          "tottime": 4.3e-05,
+          "cumtime": 0.01157,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "main",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/click/core.py",
+          "line": 1315,
+          "ncalls": 1,
+          "tottime": 2.7e-05,
+          "cumtime": 0.011233,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "invoke",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/click/core.py",
+          "line": 1816,
+          "ncalls": 1,
+          "tottime": 1.6e-05,
+          "cumtime": 0.010548,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "invoke",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/click/core.py",
+          "line": 1232,
+          "ncalls": 2,
+          "tottime": 1e-05,
+          "cumtime": 0.010088,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "invoke",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/click/core.py",
+          "line": 768,
+          "ncalls": 2,
+          "tottime": 1.7e-05,
+          "cumtime": 0.010078,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "new_func",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/click/decorators.py",
+          "line": 33,
+          "ncalls": 2,
+          "tottime": 1.9e-05,
+          "cumtime": 0.01003,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "database_info",
+          "file": "sqliteplus/cli.py",
+          "line": 1134,
+          "ncalls": 1,
+          "tottime": 9e-05,
+          "cumtime": 0.009672,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "get_connection",
+          "file": "sqliteplus/utils/sqliteplus_sync.py",
+          "line": 99,
+          "ncalls": 24,
+          "tottime": 0.000123,
+          "cumtime": 0.007603,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "print",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/rich/console.py",
+          "line": 1629,
+          "ncalls": 1,
+          "tottime": 3e-05,
+          "cumtime": 0.00736,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "<method 'extend' of 'list' objects>",
+          "file": "~",
+          "line": 0,
+          "ncalls": 55,
+          "tottime": 7.7e-05,
+          "cumtime": 0.006526,
+          "is_python": false,
+          "is_io": false
+        },
+        {
+          "function": "render",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/rich/console.py",
+          "line": 1281,
+          "ncalls": 367,
+          "tottime": 0.00034,
+          "cumtime": 0.006491,
+          "is_python": true,
+          "is_io": false
+        }
+      ]
+    },
+    {
+      "scenario": "api_crud",
+      "duration_seconds": 0.5638,
+      "functions_seen": 1309,
+      "hotspots": [
+        {
+          "function": "call",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/anyio/from_thread.py",
+          "line": 275,
+          "ncalls": 24,
+          "tottime": 0.000498,
+          "cumtime": 0.577929,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "<built-in method builtins.next>",
+          "file": "~",
+          "line": 0,
+          "ncalls": 148,
+          "tottime": 0.000488,
+          "cumtime": 0.564801,
+          "is_python": false,
+          "is_io": false
+        },
+        {
+          "function": "request",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/starlette/testclient.py",
+          "line": 464,
+          "ncalls": 9,
+          "tottime": 7.9e-05,
+          "cumtime": 0.561534,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "_portal_factory",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/starlette/testclient.py",
+          "line": 440,
+          "ncalls": 16,
+          "tottime": 0.000256,
+          "cumtime": 0.554396,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "start_blocking_portal",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/anyio/from_thread.py",
+          "line": 455,
+          "ncalls": 16,
+          "tottime": 0.000369,
+          "cumtime": 0.549571,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "handle_request",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/starlette/testclient.py",
+          "line": 246,
+          "ncalls": 8,
+          "tottime": 0.000445,
+          "cumtime": 0.548541,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "post",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/starlette/testclient.py",
+          "line": 575,
+          "ncalls": 8,
+          "tottime": 8.3e-05,
+          "cumtime": 0.54762,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "__exit__",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/contextlib.py",
+          "line": 141,
+          "ncalls": 66,
+          "tottime": 0.000173,
+          "cumtime": 0.547382,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "<method 'acquire' of '_thread.lock' objects>",
+          "file": "~",
+          "line": 0,
+          "ncalls": 342,
+          "tottime": 0.00632,
+          "cumtime": 0.544769,
+          "is_python": false,
+          "is_io": false
+        },
+        {
+          "function": "run",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/threading.py",
+          "line": 1001,
+          "ncalls": 8,
+          "tottime": 0.000164,
+          "cumtime": 0.534478,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "run_blocking_portal",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/anyio/from_thread.py",
+          "line": 478,
+          "ncalls": 8,
+          "tottime": 5.3e-05,
+          "cumtime": 0.515141,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "_run_once",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/asyncio/base_events.py",
+          "line": 1922,
+          "ncalls": 242,
+          "tottime": 0.0022,
+          "cumtime": 0.512857,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "run",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/anyio/_core/_eventloop.py",
+          "line": 31,
+          "ncalls": 8,
+          "tottime": 0.000118,
+          "cumtime": 0.510826,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "__exit__",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/asyncio/runners.py",
+          "line": 61,
+          "ncalls": 8,
+          "tottime": 5.2e-05,
+          "cumtime": 0.508118,
+          "is_python": true,
+          "is_io": false
+        },
+        {
+          "function": "close",
+          "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/asyncio/runners.py",
+          "line": 64,
+          "ncalls": 8,
+          "tottime": 6.7e-05,
+          "cumtime": 0.503872,
+          "is_python": true,
+          "is_io": false
+        }
+      ]
+    }
+  ],
+  "overall_hotspots": [
+    {
+      "function": "call",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/anyio/from_thread.py",
+      "line": 275,
+      "ncalls": 24,
+      "tottime": 0.000498,
+      "cumtime": 0.577929,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "<built-in method builtins.next>",
+      "file": "~",
+      "line": 0,
+      "ncalls": 148,
+      "tottime": 0.000488,
+      "cumtime": 0.564801,
+      "is_python": false,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "request",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/starlette/testclient.py",
+      "line": 464,
+      "ncalls": 9,
+      "tottime": 7.9e-05,
+      "cumtime": 0.561534,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "_portal_factory",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/starlette/testclient.py",
+      "line": 440,
+      "ncalls": 16,
+      "tottime": 0.000256,
+      "cumtime": 0.554396,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "start_blocking_portal",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/anyio/from_thread.py",
+      "line": 455,
+      "ncalls": 16,
+      "tottime": 0.000369,
+      "cumtime": 0.549571,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "handle_request",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/starlette/testclient.py",
+      "line": 246,
+      "ncalls": 8,
+      "tottime": 0.000445,
+      "cumtime": 0.548541,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "post",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/starlette/testclient.py",
+      "line": 575,
+      "ncalls": 8,
+      "tottime": 8.3e-05,
+      "cumtime": 0.54762,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "__exit__",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/contextlib.py",
+      "line": 141,
+      "ncalls": 66,
+      "tottime": 0.000173,
+      "cumtime": 0.547382,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "<method 'acquire' of '_thread.lock' objects>",
+      "file": "~",
+      "line": 0,
+      "ncalls": 342,
+      "tottime": 0.00632,
+      "cumtime": 0.544769,
+      "is_python": false,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "run",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/threading.py",
+      "line": 1001,
+      "ncalls": 8,
+      "tottime": 0.000164,
+      "cumtime": 0.534478,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "run_blocking_portal",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/anyio/from_thread.py",
+      "line": 478,
+      "ncalls": 8,
+      "tottime": 5.3e-05,
+      "cumtime": 0.515141,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "_run_once",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/asyncio/base_events.py",
+      "line": 1922,
+      "ncalls": 242,
+      "tottime": 0.0022,
+      "cumtime": 0.512857,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "run",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/site-packages/anyio/_core/_eventloop.py",
+      "line": 31,
+      "ncalls": 8,
+      "tottime": 0.000118,
+      "cumtime": 0.510826,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "__exit__",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/asyncio/runners.py",
+      "line": 61,
+      "ncalls": 8,
+      "tottime": 5.2e-05,
+      "cumtime": 0.508118,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    },
+    {
+      "function": "close",
+      "file": "/root/.pyenv/versions/3.12.12/lib/python3.12/asyncio/runners.py",
+      "line": 64,
+      "ncalls": 8,
+      "tottime": 6.7e-05,
+      "cumtime": 0.503872,
+      "is_python": true,
+      "is_io": false,
+      "scenarios": [
+        "api_crud"
+      ]
+    }
+  ]
+}

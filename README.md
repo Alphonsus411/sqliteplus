@@ -153,6 +153,27 @@ El conjunto de pruebas incluye verificaciones que comparan los resultados del mo
 
 Cuando detecta pytest, `AsyncDatabaseManager` borra y recrea las bases ubicadas en `databases/` antes de abrirlas en lugar de moverlas a carpetas temporales. La detección es **perezosa**: en cada `get_connection()` vuelve a comprobar `PYTEST_CURRENT_TEST` y la nueva variable `SQLITEPLUS_FORCE_RESET`, por lo que puedes pedir un reinicio incluso si el gestor global ya se creó (por ejemplo, desde la app FastAPI). Si activas `SQLITEPLUS_FORCE_RESET` mientras una conexión sigue abierta en el mismo bucle de eventos, el gestor la cierra, elimina el archivo `.db` y lo vuelve a crear antes de devolverte la conexión limpia. Revisa la [reinicialización automática en pruebas](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/docs/uso_avanzado.md#reinicialización-automática-en-pruebas) o el código correspondiente en [`sqliteplus/core/db.py`](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/sqliteplus/core/db.py).
 
+### Perfilado de hotspots para priorizar Cython
+
+El script `tools/profile_hotspots.py` ejecuta los escenarios críticos (CLI y API) con datos realistas y guarda un ranking JSON en `reports/hotspots.json`. Úsalo para detectar cuellos de botella y decidir qué módulos portar a Cython.
+
+```bash
+# Ejecuta todos los escenarios y guarda los 25 símbolos más costosos
+make profile-hotspots PROFILE_TOP=25
+
+# Limita los escenarios y fuerza a incluir funciones de E/S en el ranking
+HOTSPOT_SCENARIOS="list_tables api_crud" HOTSPOT_INCLUDE_IO=1 make profile-hotspots
+```
+
+El archivo `reports/hotspots.json` incluye:
+
+- `by_scenario`: los `hotspots` principales de cada escenario con `ncalls`, `tottime` y `cumtime` (segundos acumulados) para cada función.
+- `overall_hotspots`: agregado de todos los escenarios ordenado por `cumtime` total; el campo `scenarios` indica dónde apareció cada símbolo.
+- `is_python`: se marca en `true` cuando la función proviene de un archivo `.py`, una buena pista para priorizar migraciones a Cython.
+- `is_io`: señala llamadas relacionadas con disco/red; suelen ser menos rentables para Cython y conviene filtrarlas salvo que bloqueen el throughput.
+
+Una estrategia rápida es fijarse primero en los elementos de `overall_hotspots` con `is_python=true` y alto `cumtime`, especialmente si aparecen en varios escenarios. Si el cuello de botella es puro Python y no está dominado por E/S, convertirlo en extensión Cython suele ofrecer mejoras inmediatas.
+
 ---
 
 ## 🛠️ Usar la CLI `sqliteplus`

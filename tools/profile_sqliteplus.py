@@ -118,7 +118,6 @@ def scenario_api_crud(context: ScenarioContext) -> None:
     os.environ.setdefault("SECRET_KEY", "sqliteplus-profiler-secret")
     users_file = context.ensure_user_file()
     os.environ["SQLITEPLUS_USERS_FILE"] = str(users_file)
-    os.environ.setdefault("SQLITEPLUS_FORCE_RESET", "1")
 
     client = TestClient(app)
 
