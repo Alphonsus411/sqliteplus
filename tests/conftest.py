@@ -1,6 +1,8 @@
+import importlib
 import json
 import os
 import secrets
+import sys
 import tempfile
 from pathlib import Path
 
@@ -18,6 +20,22 @@ from sqliteplus.main import app  # Importa desde la nueva estructura
 from sqliteplus.core.db import db_manager
 
 from sqliteplus.auth.users import reset_user_service_cache
+
+MODULES_TO_RELOAD = (
+    "sqliteplus.core.schemas",
+    "sqliteplus.utils.sqliteplus_sync",
+    "sqliteplus.utils.replication_sync",
+)
+
+
+def _reload_speedup_modules():
+    loaded_modules = []
+    for module_name in MODULES_TO_RELOAD:
+        if module_name in sys.modules:
+            loaded_modules.append(importlib.reload(sys.modules[module_name]))
+        else:
+            loaded_modules.append(importlib.import_module(module_name))
+    return tuple(loaded_modules)
 
 DB_NAME = "test_db_api"
 TABLE_NAME = "logs"
@@ -77,3 +95,30 @@ async def auth_headers(client):
 def close_db_manager_session():
     yield
     asyncio.run(db_manager.close_connections())
+
+
+@pytest.fixture()
+def speedup_variants(monkeypatch):
+    def loader(force_fallback: bool):
+        if force_fallback:
+            monkeypatch.setenv("SQLITEPLUS_DISABLE_CYTHON", "1")
+        else:
+            monkeypatch.delenv("SQLITEPLUS_DISABLE_CYTHON", raising=False)
+
+        for stub_module in (
+            "sqliteplus.core._schemas_fast",
+            "sqliteplus.core._schemas_columns",
+        ):
+            sys.modules.pop(stub_module, None)
+
+        return _reload_speedup_modules()
+
+    yield loader
+
+    monkeypatch.delenv("SQLITEPLUS_DISABLE_CYTHON", raising=False)
+    for stub_module in (
+        "sqliteplus.core._schemas_fast",
+        "sqliteplus.core._schemas_columns",
+    ):
+        sys.modules.pop(stub_module, None)
+    _reload_speedup_modules()

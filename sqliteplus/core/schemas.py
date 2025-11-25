@@ -1,3 +1,4 @@
+import os
 import re
 from typing import Any, ClassVar, Dict
 
@@ -49,6 +50,13 @@ DEFAULT_EXPR_DISALLOWED_KEYWORDS: tuple[str, ...] = (
     " CREATE ",
     " PRAGMA ",
 )
+
+
+DISABLE_CYTHON_SPEEDUPS = os.getenv("SQLITEPLUS_DISABLE_CYTHON", "").lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
 
 def _py_is_valid_sqlite_identifier(identifier: str) -> bool:
@@ -287,14 +295,18 @@ def _py_normalized_columns(columns: Dict[str, str]) -> Dict[str, str]:
     return sanitized_columns
 
 
-try:  # pragma: no cover - la rama rápida se valida aparte
-    from sqliteplus.core import _schemas_fast
-except ImportError:  # pragma: no cover - la ausencia también se comprueba
-    _schemas_fast = None
+if not DISABLE_CYTHON_SPEEDUPS:
+    try:  # pragma: no cover - la rama rápida se valida aparte
+        from sqliteplus.core import _schemas_fast
+    except ImportError:  # pragma: no cover - la ausencia también se comprueba
+        _schemas_fast = None
 
-try:  # pragma: no cover - la rama rápida se valida aparte
-    from sqliteplus.core import _schemas_columns
-except ImportError:  # pragma: no cover - la ausencia también se comprueba
+    try:  # pragma: no cover - la rama rápida se valida aparte
+        from sqliteplus.core import _schemas_columns
+    except ImportError:  # pragma: no cover - la ausencia también se comprueba
+        _schemas_columns = None
+else:  # pragma: no cover - se valida forzando la ruta lenta en pruebas
+    _schemas_fast = None
     _schemas_columns = None
 
 HAS_CYTHON_SPEEDUPS = _schemas_fast is not None and _schemas_columns is not None

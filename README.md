@@ -135,6 +135,22 @@ pip install -e '.[dev]'
 pytest -v
 ```
 
+### Aceleradores Cython y benchmarks
+
+Las validaciones de esquemas y el saneamiento de identificadores usan extensiones Cython opcionales ubicadas en `sqliteplus/core`. Se compilan automáticamente al instalar el paquete desde el código fuente (`pip install .` o `pip install -e .`).
+
+- **Forzar el modo puro Python:** define `SQLITEPLUS_DISABLE_CYTHON=1` antes de importar la librería para desactivar las extensiones y probar la ruta de *fallback*.
+- **Volver a activarlas:** elimina la variable (`unset SQLITEPLUS_DISABLE_CYTHON`) y vuelve a importar el módulo. Si las extensiones no están compiladas, la librería seguirá funcionando en modo puro Python.
+- **Ajustar el umbral de mejora:** los benchmarks exigen que la variante con Cython sea un `20%` más rápida por defecto. Puedes modificar el umbral con `SQLITEPLUS_MIN_SPEEDUP` (por ejemplo `0.1` para un 10%).
+
+Para ejecutar las pruebas de rendimiento con `pytest-benchmark`:
+
+```bash
+pytest tests/test_speedups_benchmarks.py --benchmark-only -q
+```
+
+El conjunto de pruebas incluye verificaciones que comparan los resultados del modo Cython y el modo *fallback* para garantizar que ambos caminos producen las mismas salidas en `schemas`, `sqliteplus_sync` y `replication_sync`.
+
 Cuando detecta pytest, `AsyncDatabaseManager` borra y recrea las bases ubicadas en `databases/` antes de abrirlas en lugar de moverlas a carpetas temporales. La detección es **perezosa**: en cada `get_connection()` vuelve a comprobar `PYTEST_CURRENT_TEST` y la nueva variable `SQLITEPLUS_FORCE_RESET`, por lo que puedes pedir un reinicio incluso si el gestor global ya se creó (por ejemplo, desde la app FastAPI). Si activas `SQLITEPLUS_FORCE_RESET` mientras una conexión sigue abierta en el mismo bucle de eventos, el gestor la cierra, elimina el archivo `.db` y lo vuelve a crear antes de devolverte la conexión limpia. Revisa la [reinicialización automática en pruebas](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/docs/uso_avanzado.md#reinicialización-automática-en-pruebas) o el código correspondiente en [`sqliteplus/core/db.py`](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/sqliteplus/core/db.py).
 
 ---
