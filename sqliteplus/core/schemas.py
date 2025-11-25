@@ -6,6 +6,49 @@ from pydantic import BaseModel, field_validator, model_validator
 
 SQLITE_IDENTIFIER_PATTERN = re.compile(r'^(?!\s)(?!.*\s$)[^"\x00-\x1F]+$')
 SQLITE_IDENTIFIER_DISALLOWED_TOKENS: tuple[str, ...] = (";", "--", "/*", "*/")
+ALLOWED_BASE_TYPES: set[str] = {"INTEGER", "TEXT", "REAL", "BLOB", "NUMERIC"}
+DEFAULT_EXPR_NUMERIC_PATTERN = re.compile(r"^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$")
+DEFAULT_EXPR_STRING_PATTERN = re.compile(r"^'(?:''|[^'])*'$")
+DEFAULT_EXPR_ALLOWED_LITERALS: set[str] = {"NULL", "TRUE", "FALSE"}
+DEFAULT_EXPR_ALLOWED_FUNCTIONS: set[str] = {
+    "CURRENT_TIMESTAMP",
+    "CURRENT_DATE",
+    "CURRENT_TIME",
+    "DATE",
+    "TIME",
+    "DATETIME",
+    "JULIANDAY",
+    "STRFTIME",
+    "STRIP",
+    "LOWER",
+    "UPPER",
+    "HEX",
+    "QUOTE",
+    "RAISE",
+    "ABS",
+    "RANDOM",
+    "ROUND",
+    "LENGTH",
+    "SUBSTR",
+    "TRIM",
+    "COALESCE",
+    "NULLIF",
+    "IFNULL",
+    "PRINTF",
+}
+DEFAULT_EXPR_DISALLOWED_TOKENS: tuple[str, ...] = (";", "--", "/*", "*/", " PRAGMA ")
+DEFAULT_EXPR_DISALLOWED_KEYWORDS: tuple[str, ...] = (
+    " ATTACH ",
+    " DETACH ",
+    " SELECT ",
+    " DROP ",
+    " DELETE ",
+    " INSERT ",
+    " UPDATE ",
+    " ALTER ",
+    " CREATE ",
+    " PRAGMA ",
+)
 
 
 def _py_is_valid_sqlite_identifier(identifier: str) -> bool:
@@ -70,14 +113,193 @@ def _py_parse_function_call(expr: str) -> tuple[str, str] | None:
     return None
 
 
+def _py_is_safe_default_expr(expr: str) -> bool:
+    sanitized = _py_strip_enclosing_parentheses(expr.strip())
+    upper = f" {sanitized.upper()} "
+
+    for token in DEFAULT_EXPR_DISALLOWED_TOKENS:
+        if token in sanitized:
+            return False
+
+    for keyword in DEFAULT_EXPR_DISALLOWED_KEYWORDS:
+        if keyword in upper:
+            return False
+
+    if DEFAULT_EXPR_NUMERIC_PATTERN.match(sanitized):
+        return True
+
+    if sanitized.upper() in DEFAULT_EXPR_ALLOWED_LITERALS:
+        return True
+
+    if DEFAULT_EXPR_STRING_PATTERN.match(sanitized):
+        return True
+
+    function_call = _py_parse_function_call(sanitized)
+    if function_call:
+        func_name, _ = function_call
+        if func_name.upper() in DEFAULT_EXPR_ALLOWED_FUNCTIONS:
+            return True
+
+    return False
+
+
+def _py_normalized_columns(columns: Dict[str, str]) -> Dict[str, str]:
+    if not columns:
+        raise ValueError("Se requiere al menos una columna para crear la tabla")
+
+    sanitized_columns: Dict[str, str] = {}
+    seen_names: set[str] = set()
+    for raw_name, raw_type in columns.items():
+        normalized_name = raw_name.strip()
+        if not normalized_name:
+            raise ValueError("Los nombres de columna no pueden estar vacíos")
+
+        if not SQLITE_IDENTIFIER_PATTERN.match(normalized_name):
+            raise ValueError(f"Nombre de columna inválido: {raw_name}")
+
+        if any(token in normalized_name for token in SQLITE_IDENTIFIER_DISALLOWED_TOKENS):
+            raise ValueError(f"Nombre de columna inválido: {raw_name}")
+
+        normalized_key = normalized_name.casefold()
+        if normalized_key in seen_names:
+            raise ValueError(
+                f"Nombre de columna duplicado tras normalización: {normalized_name}"
+            )
+        seen_names.add(normalized_key)
+
+        normalized_original = " ".join(raw_type.strip().split())
+        if not normalized_original:
+            raise ValueError(f"Tipo de columna vacío para '{raw_name}'")
+
+        base_original, *rest_original_tokens = normalized_original.split(" ")
+        base = base_original.upper()
+        if base not in ALLOWED_BASE_TYPES:
+            raise ValueError(f"Tipo de dato no permitido para '{raw_name}': {raw_type}")
+
+        rest_original = " ".join(rest_original_tokens)
+        rest_upper = rest_original.upper()
+
+        not_null = False
+        unique = False
+        primary_key = False
+        autoincrement = False
+        default_expr: str | None = None
+
+        idx = 0
+        length = len(rest_upper)
+        while idx < length:
+            if idx < length and rest_upper[idx] == " ":
+                idx += 1
+                continue
+
+            if rest_upper.startswith("NOT NULL", idx):
+                if not_null:
+                    raise ValueError(
+                        f"Restricción repetida para columna '{raw_name}': NOT NULL"
+                    )
+                not_null = True
+                idx += len("NOT NULL")
+                continue
+
+            if rest_upper.startswith("UNIQUE", idx):
+                if unique:
+                    raise ValueError(
+                        f"Restricción repetida para columna '{raw_name}': UNIQUE"
+                    )
+                unique = True
+                idx += len("UNIQUE")
+                continue
+
+            if rest_upper.startswith("PRIMARY KEY", idx):
+                if primary_key:
+                    raise ValueError(
+                        f"Restricción repetida para columna '{raw_name}': PRIMARY KEY"
+                    )
+                primary_key = True
+                idx += len("PRIMARY KEY")
+
+                if idx < length and rest_upper.startswith(" AUTOINCREMENT", idx):
+                    if autoincrement:
+                        raise ValueError(
+                            f"Restricción repetida para columna '{raw_name}': AUTOINCREMENT"
+                        )
+                    autoincrement = True
+                    idx += len(" AUTOINCREMENT")
+                continue
+
+            if rest_upper.startswith("DEFAULT", idx):
+                if default_expr is not None:
+                    raise ValueError(
+                        f"Restricción repetida para columna '{raw_name}': DEFAULT"
+                    )
+
+                expr_start = idx + len("DEFAULT")
+                while expr_start < length and rest_upper[expr_start] == " ":
+                    expr_start += 1
+
+                potential_ends = [length]
+                for keyword in (" NOT NULL", " UNIQUE", " PRIMARY KEY", " DEFAULT"):
+                    keyword_pos = rest_upper.find(keyword, expr_start)
+                    if keyword_pos != -1:
+                        potential_ends.append(keyword_pos)
+
+                expr_end = min(potential_ends)
+                default_expr = rest_original[expr_start:expr_end].strip()
+                if not default_expr:
+                    raise ValueError(
+                        f"Expresión DEFAULT inválida para columna '{raw_name}'"
+                    )
+                idx = expr_end
+                continue
+
+            raise ValueError(
+                f"Restricción no permitida para columna '{raw_name}': {raw_type}"
+            )
+
+        if autoincrement and base != "INTEGER":
+            raise ValueError(
+                f"AUTOINCREMENT solo es válido en columnas INTEGER: {raw_type}"
+            )
+
+        if autoincrement and not primary_key:
+            raise ValueError(
+                f"AUTOINCREMENT requiere PRIMARY KEY en la columna '{raw_name}'"
+            )
+
+        normalized_parts = [base]
+        if primary_key:
+            normalized_parts.append("PRIMARY KEY")
+            if autoincrement:
+                normalized_parts.append("AUTOINCREMENT")
+        if not_null:
+            normalized_parts.append("NOT NULL")
+        if unique:
+            normalized_parts.append("UNIQUE")
+        if default_expr is not None:
+            if not _py_is_safe_default_expr(default_expr):
+                raise ValueError(
+                    f"Expresión DEFAULT potencialmente insegura para columna '{raw_name}'"
+                )
+            normalized_parts.append(f"DEFAULT {default_expr}")
+
+        sanitized_columns[normalized_name] = " ".join(normalized_parts)
+
+    return sanitized_columns
+
+
 try:  # pragma: no cover - la rama rápida se valida aparte
     from sqliteplus.core import _schemas_fast
 except ImportError:  # pragma: no cover - la ausencia también se comprueba
     _schemas_fast = None
 
-HAS_CYTHON_SPEEDUPS = _schemas_fast is not None
+try:  # pragma: no cover - la rama rápida se valida aparte
+    from sqliteplus.core import _schemas_columns
+except ImportError:  # pragma: no cover - la ausencia también se comprueba
+    _schemas_columns = None
 
-if HAS_CYTHON_SPEEDUPS:
+HAS_CYTHON_SPEEDUPS = _schemas_fast is not None and _schemas_columns is not None
+
+if _schemas_fast is not None:
     is_valid_sqlite_identifier = _schemas_fast.is_valid_sqlite_identifier
     _has_balanced_parentheses_impl = _schemas_fast.has_balanced_parentheses
     _strip_enclosing_parentheses_impl = _schemas_fast.strip_enclosing_parentheses
@@ -87,6 +309,13 @@ else:
     _has_balanced_parentheses_impl = _py_has_balanced_parentheses
     _strip_enclosing_parentheses_impl = _py_strip_enclosing_parentheses
     _parse_function_call_impl = _py_parse_function_call
+
+if _schemas_columns is not None:
+    _normalize_columns_impl = _schemas_columns.normalized_columns
+    _is_safe_default_expr_impl = _schemas_columns.is_safe_default_expr
+else:
+    _normalize_columns_impl = _py_normalized_columns
+    _is_safe_default_expr_impl = _py_is_safe_default_expr
 
 
 class CreateTableSchema(BaseModel):
@@ -109,208 +338,21 @@ class CreateTableSchema(BaseModel):
     columns: Dict[str, str]
 
     _column_name_pattern: ClassVar[re.Pattern[str]] = SQLITE_IDENTIFIER_PATTERN
-    _allowed_base_types: ClassVar[set[str]] = {"INTEGER", "TEXT", "REAL", "BLOB", "NUMERIC"}
-    _default_expr_numeric_pattern: ClassVar[re.Pattern[str]] = re.compile(
-        r"^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$"
-    )
-    _default_expr_string_pattern: ClassVar[re.Pattern[str]] = re.compile(r"^'(?:''|[^'])*'$")
-    _default_expr_allowed_literals: ClassVar[set[str]] = {"NULL", "TRUE", "FALSE"}
-    _default_expr_allowed_functions: ClassVar[set[str]] = {
-        "CURRENT_TIMESTAMP",
-        "CURRENT_DATE",
-        "CURRENT_TIME",
-        "DATE",
-        "TIME",
-        "DATETIME",
-    }
-    _default_expr_disallowed_tokens: ClassVar[tuple[str, ...]] = (";", "--", "/*", "*/")
-    _default_expr_disallowed_keywords: ClassVar[tuple[str, ...]] = (
-        " ATTACH ",
-        " DETACH ",
-        " SELECT ",
-        " INSERT ",
-        " UPDATE ",
-        " DELETE ",
-        " DROP ",
-        " ALTER ",
-        " CREATE ",
-        " PRAGMA ",
-    )
+    _allowed_base_types: ClassVar[set[str]] = ALLOWED_BASE_TYPES
+    _default_expr_numeric_pattern: ClassVar[re.Pattern[str]] = DEFAULT_EXPR_NUMERIC_PATTERN
+    _default_expr_string_pattern: ClassVar[re.Pattern[str]] = DEFAULT_EXPR_STRING_PATTERN
+    _default_expr_allowed_literals: ClassVar[set[str]] = DEFAULT_EXPR_ALLOWED_LITERALS
+    _default_expr_allowed_functions: ClassVar[set[str]] = DEFAULT_EXPR_ALLOWED_FUNCTIONS
+    _default_expr_disallowed_tokens: ClassVar[tuple[str, ...]] = DEFAULT_EXPR_DISALLOWED_TOKENS
+    _default_expr_disallowed_keywords: ClassVar[tuple[str, ...]] = DEFAULT_EXPR_DISALLOWED_KEYWORDS
 
     def normalized_columns(self) -> Dict[str, str]:
         """Valida y normaliza los nombres y tipos de columna permitidos."""
-
-        if not self.columns:
-            raise ValueError("Se requiere al menos una columna para crear la tabla")
-
-        sanitized_columns: Dict[str, str] = {}
-        seen_names: set[str] = set()
-        for raw_name, raw_type in self.columns.items():
-            normalized_name = raw_name.strip()
-            if not normalized_name:
-                raise ValueError("Los nombres de columna no pueden estar vacíos")
-
-            if not self._column_name_pattern.match(normalized_name):
-                raise ValueError(f"Nombre de columna inválido: {raw_name}")
-
-            if any(token in normalized_name for token in SQLITE_IDENTIFIER_DISALLOWED_TOKENS):
-                raise ValueError(f"Nombre de columna inválido: {raw_name}")
-
-            normalized_key = normalized_name.casefold()
-            if normalized_key in seen_names:
-                raise ValueError(
-                    f"Nombre de columna duplicado tras normalización: {normalized_name}"
-                )
-            seen_names.add(normalized_key)
-
-            normalized_original = " ".join(raw_type.strip().split())
-            if not normalized_original:
-                raise ValueError(f"Tipo de columna vacío para '{raw_name}'")
-
-            base_original, *rest_original_tokens = normalized_original.split(" ")
-            base = base_original.upper()
-            if base not in self._allowed_base_types:
-                raise ValueError(f"Tipo de dato no permitido para '{raw_name}': {raw_type}")
-
-            rest_original = " ".join(rest_original_tokens)
-            rest_upper = rest_original.upper()
-
-            not_null = False
-            unique = False
-            primary_key = False
-            autoincrement = False
-            default_expr: str | None = None
-
-            idx = 0
-            length = len(rest_upper)
-            while idx < length:
-                if idx < length and rest_upper[idx] == " ":
-                    idx += 1
-                    continue
-
-                if rest_upper.startswith("NOT NULL", idx):
-                    if not_null:
-                        raise ValueError(
-                            f"Restricción repetida para columna '{raw_name}': NOT NULL"
-                        )
-                    not_null = True
-                    idx += len("NOT NULL")
-                    continue
-
-                if rest_upper.startswith("UNIQUE", idx):
-                    if unique:
-                        raise ValueError(
-                            f"Restricción repetida para columna '{raw_name}': UNIQUE"
-                        )
-                    unique = True
-                    idx += len("UNIQUE")
-                    continue
-
-                if rest_upper.startswith("PRIMARY KEY", idx):
-                    if primary_key:
-                        raise ValueError(
-                            f"Restricción repetida para columna '{raw_name}': PRIMARY KEY"
-                        )
-                    primary_key = True
-                    idx += len("PRIMARY KEY")
-
-                    if idx < length and rest_upper.startswith(" AUTOINCREMENT", idx):
-                        if autoincrement:
-                            raise ValueError(
-                                f"Restricción repetida para columna '{raw_name}': AUTOINCREMENT"
-                            )
-                        autoincrement = True
-                        idx += len(" AUTOINCREMENT")
-                    continue
-
-                if rest_upper.startswith("DEFAULT", idx):
-                    if default_expr is not None:
-                        raise ValueError(
-                            f"Restricción repetida para columna '{raw_name}': DEFAULT"
-                        )
-
-                    expr_start = idx + len("DEFAULT")
-                    while expr_start < length and rest_upper[expr_start] == " ":
-                        expr_start += 1
-
-                    potential_ends = [length]
-                    for keyword in (" NOT NULL", " UNIQUE", " PRIMARY KEY", " DEFAULT"):
-                        keyword_pos = rest_upper.find(keyword, expr_start)
-                        if keyword_pos != -1:
-                            potential_ends.append(keyword_pos)
-
-                    expr_end = min(potential_ends)
-                    default_expr = rest_original[expr_start:expr_end].strip()
-                    if not default_expr:
-                        raise ValueError(
-                            f"Expresión DEFAULT inválida para columna '{raw_name}'"
-                        )
-                    idx = expr_end
-                    continue
-
-                raise ValueError(
-                    f"Restricción no permitida para columna '{raw_name}': {raw_type}"
-                )
-
-            if autoincrement and base != "INTEGER":
-                raise ValueError(
-                    f"AUTOINCREMENT solo es válido en columnas INTEGER: {raw_type}"
-                )
-
-            if autoincrement and not primary_key:
-                raise ValueError(
-                    f"AUTOINCREMENT requiere PRIMARY KEY en la columna '{raw_name}'"
-                )
-
-            normalized_parts = [base]
-            if primary_key:
-                normalized_parts.append("PRIMARY KEY")
-                if autoincrement:
-                    normalized_parts.append("AUTOINCREMENT")
-            if not_null:
-                normalized_parts.append("NOT NULL")
-            if unique:
-                normalized_parts.append("UNIQUE")
-            if default_expr is not None:
-                if not self._is_safe_default_expr(default_expr):
-                    raise ValueError(
-                        f"Expresión DEFAULT potencialmente insegura para columna '{raw_name}'"
-                    )
-                normalized_parts.append(f"DEFAULT {default_expr}")
-
-            sanitized_columns[normalized_name] = " ".join(normalized_parts)
-
-        return sanitized_columns
+        return _normalize_columns_impl(self.columns)
 
     @classmethod
     def _is_safe_default_expr(cls, expr: str) -> bool:
-        sanitized = cls._strip_enclosing_parentheses(expr.strip())
-        upper = f" {sanitized.upper()} "
-
-        for token in cls._default_expr_disallowed_tokens:
-            if token in sanitized:
-                return False
-
-        for keyword in cls._default_expr_disallowed_keywords:
-            if keyword in upper:
-                return False
-
-        if cls._default_expr_numeric_pattern.match(sanitized):
-            return True
-
-        if sanitized.upper() in cls._default_expr_allowed_literals:
-            return True
-
-        if cls._default_expr_string_pattern.match(sanitized):
-            return True
-
-        function_call = cls._parse_function_call(sanitized)
-        if function_call:
-            func_name, _ = function_call
-            if func_name.upper() in cls._default_expr_allowed_functions:
-                return True
-
-        return False
+        return bool(_is_safe_default_expr_impl(expr))
 
     @staticmethod
     def _has_balanced_parentheses(expr: str) -> bool:
