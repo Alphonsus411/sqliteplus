@@ -9,7 +9,7 @@ from __future__ import annotations
 
 cimport cython
 
-SQLITE_IDENTIFIER_DISALLOWED_TOKENS = (";", "--", "/*", "*/")
+cdef tuple SQLITE_IDENTIFIER_DISALLOWED_TOKENS = (";", "--", "/*", "*/")
 
 @cython.cfunc
 @cython.inline
