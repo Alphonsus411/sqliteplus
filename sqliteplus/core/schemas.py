@@ -296,6 +296,22 @@ def _py_normalized_columns(columns: Dict[str, str]) -> Dict[str, str]:
 
 
 if not DISABLE_CYTHON_SPEEDUPS:
+    try:  # pragma: no cover - la ruta acelerada se valida aparte
+        from sqliteplus.core import schemas_cy as _schemas_api
+    except ImportError:  # pragma: no cover - ausencia comprobada en pruebas
+        _schemas_api = None
+else:  # pragma: no cover - se fuerza la ruta lenta
+    _schemas_api = None
+
+if _schemas_api is not None:
+    _py_is_valid_sqlite_identifier = _schemas_api._py_is_valid_sqlite_identifier
+    _py_has_balanced_parentheses = _schemas_api._py_has_balanced_parentheses
+    _py_parse_function_call = _schemas_api._py_parse_function_call
+    _py_is_safe_default_expr = _schemas_api._py_is_safe_default_expr
+    _py_normalized_columns = _schemas_api._py_normalized_columns
+
+
+if not DISABLE_CYTHON_SPEEDUPS:
     try:  # pragma: no cover - la rama rápida se valida aparte
         from sqliteplus.core import _schemas_fast
     except ImportError:  # pragma: no cover - la ausencia también se comprueba
@@ -309,7 +325,9 @@ else:  # pragma: no cover - se valida forzando la ruta lenta en pruebas
     _schemas_fast = None
     _schemas_columns = None
 
-HAS_CYTHON_SPEEDUPS = _schemas_fast is not None and _schemas_columns is not None
+HAS_CYTHON_SPEEDUPS = all(
+    module is not None for module in (_schemas_fast, _schemas_columns, _schemas_api)
+)
 
 if _schemas_fast is not None:
     is_valid_sqlite_identifier = _schemas_fast.is_valid_sqlite_identifier
