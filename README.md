@@ -35,6 +35,12 @@ Si solo quieres experimentar con la librería dentro del repositorio puedes mant
 pip install -e .
 ```
 
+### 🏗️ Construir desde el repositorio
+
+- **Instalación local con Cython:** `pip install .` detecta y compila automáticamente todas las extensiones Cython bajo `sqliteplus/`.
+- **Empaquetar para distribución:** ejecuta `python -m build` para generar las salidas `sdist` y `wheel` en `dist/` (incluyen los archivos `.pyx` y `.pxd` necesarios).
+- **Desactivar la compilación Cython:** define `SQLITEPLUS_DISABLE_CYTHON=1` antes del comando (`SQLITEPLUS_DISABLE_CYTHON=1 pip install .` o `SQLITEPLUS_DISABLE_CYTHON=1 python -m build`) para forzar el modo puro Python.
+
 ### ¿Qué pasa con `bcrypt`?
 
 El paquete incluye una implementación pura en Python que se activa automáticamente si el intérprete no puede importar el módulo oficial. Así, las funciones de autenticación siguen operativas aunque no tengas compiladores o binarios nativos disponibles.
@@ -139,7 +145,7 @@ pytest -v
 
 Las validaciones de esquemas y el saneamiento de identificadores usan extensiones Cython opcionales ubicadas en `sqliteplus/core`. Se compilan automáticamente al instalar el paquete desde el código fuente (`pip install .` o `pip install -e .`).
 
-- **Forzar el modo puro Python:** define `SQLITEPLUS_DISABLE_CYTHON=1` antes de importar la librería para desactivar las extensiones y probar la ruta de *fallback*.
+- **Forzar el modo puro Python:** define `SQLITEPLUS_DISABLE_CYTHON=1` antes de importar la librería o durante la instalación/compilación para desactivar las extensiones y probar la ruta de *fallback*.
 - **Volver a activarlas:** elimina la variable (`unset SQLITEPLUS_DISABLE_CYTHON`) y vuelve a importar el módulo. Si las extensiones no están compiladas, la librería seguirá funcionando en modo puro Python.
 - **Ajustar el umbral de mejora:** los benchmarks exigen que la variante con Cython sea un `20%` más rápida por defecto. Puedes modificar el umbral con `SQLITEPLUS_MIN_SPEEDUP` (por ejemplo `0.1` para un 10%).
 
