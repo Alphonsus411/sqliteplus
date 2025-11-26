@@ -156,6 +156,16 @@ Para ejecutar las pruebas de rendimiento con `pytest-benchmark`:
 pytest tests/test_speedups_benchmarks.py --benchmark-only -q
 ```
 
+Los validadores de esquemas cuentan con pruebas específicas que comparan la ruta Cython frente al *fallback* y miden que la versión compilada siga siendo sensiblemente más rápida. En entornos CI puedes ejecutar ambos modos con:
+
+```bash
+# Camino acelerado (espera mejoras de ~20 % o el valor definido en SQLITEPLUS_MIN_SPEEDUP)
+pytest tests/test_schema_validators_variants.py --benchmark-only -q
+
+# Camino puro Python forzado para validar que los resultados coinciden
+SQLITEPLUS_DISABLE_CYTHON=1 pytest tests/test_schema_validators_variants.py -q
+```
+
 Los casos específicos de `schemas` se pueden lanzar rápidamente para comparar el modo Cython y el *fallback* puro Python:
 
 ```bash
