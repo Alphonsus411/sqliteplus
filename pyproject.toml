@@ -53,6 +53,10 @@ security = [
     "bcrypt"
 ]
 
+speedups = [
+    "Cython>=3.0.0"
+]
+
 [project.scripts]
 sqliteplus = "sqliteplus.cli:cli"
 
@@ -66,7 +70,7 @@ include = ["sqliteplus*"]
 exclude = ["tests*", "site*", "backups*", "databases*"]
 
 [tool.setuptools.package-data]
-sqliteplus = ["**/*.pxd", "**/*.pyx"]
+sqliteplus = ["**/*.pxd", "**/*.pyx", "**/*.pxi"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
