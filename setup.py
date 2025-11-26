@@ -1,24 +1,30 @@
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
 from Cython.Build import cythonize
 from setuptools import Extension, setup
 
-extensions = [
-    Extension(
-        name="sqliteplus.core._schemas_fast",
-        sources=["sqliteplus/core/_schemas_fast.pyx"],
-    ),
-    Extension(
-        name="sqliteplus.core._schemas_columns",
-        sources=["sqliteplus/core/_schemas_columns.pyx"],
-    ),
-    Extension(
-        name="sqliteplus.core.schemas_cy",
-        sources=["sqliteplus/core/schemas.pyx"],
-    ),
-]
+
+def discover_extensions() -> list[Extension]:
+    if os.environ.get("SQLITEPLUS_DISABLE_CYTHON"):
+        return []
+
+    pyx_files = sorted(Path("sqliteplus").rglob("*.pyx"))
+    include_dirs = ["sqliteplus"]
+
+    extensions: list[Extension] = []
+    for pyx_path in pyx_files:
+        module_name = ".".join(pyx_path.with_suffix("").parts)
+        extensions.append(Extension(module_name, [str(pyx_path)], include_dirs=include_dirs))
+
+    return extensions
+
 
 setup(
     ext_modules=cythonize(
-        extensions,
+        discover_extensions(),
         language_level="3",
         annotate=False,
         compiler_directives={

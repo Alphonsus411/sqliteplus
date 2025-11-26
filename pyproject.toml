@@ -58,19 +58,15 @@ sqliteplus = "sqliteplus.cli:cli"
 
 [tool.setuptools]
 package-dir = {"" = "."}
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["sqliteplus*"]
 exclude = ["tests*", "site*", "backups*", "databases*"]
 
-[[tool.setuptools.ext_modules]]
-name = "sqliteplus.core._schemas_fast"
-sources = ["sqliteplus/core/_schemas_fast.pyx"]
-
-[[tool.setuptools.ext_modules]]
-name = "sqliteplus.core._schemas_columns"
-sources = ["sqliteplus/core/_schemas_columns.pyx"]
+[tool.setuptools.package-data]
+sqliteplus = ["**/*.pxd", "**/*.pyx"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
