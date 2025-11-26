@@ -1,51 +1,36 @@
-# cython: language_level=3
-# cython: boundscheck=False
-# cython: wraparound=False
-# cython: initializedcheck=False
-# cython: cdivision=True
-"""Adaptadores y helpers acelerados para ``schemas.py``."""
+"""Implementaciones puramente en Python para los helpers de ``schemas``."""
 
 from __future__ import annotations
 
-cimport cython
-from libc.stddef cimport Py_ssize_t
+from typing import Dict
 
-from sqliteplus.core cimport _schemas_constants
-
-
-# Caches locales para evitar búsquedas repetidas en objetos de módulo.
-cdef tuple _DISALLOWED_TOKENS = _schemas_constants.SQLITE_IDENTIFIER_DISALLOWED_TOKENS
-cdef object _IDENTIFIER_PATTERN = _schemas_constants.SQLITE_IDENTIFIER_PATTERN
-cdef object _FUNCTION_CALL_PATTERN = _schemas_constants.FUNCTION_CALL_PATTERN
-cdef tuple _DEFAULT_DISALLOWED_TOKENS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_TOKENS
-cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_KEYWORDS
-cdef object _DEFAULT_NUMERIC_PATTERN = _schemas_constants.DEFAULT_EXPR_NUMERIC_PATTERN
-cdef object _DEFAULT_STRING_PATTERN = _schemas_constants.DEFAULT_EXPR_STRING_PATTERN
-cdef object _DEFAULT_LITERALS = _schemas_constants.DEFAULT_EXPR_ALLOWED_LITERALS
-cdef object _DEFAULT_FUNCTIONS = _schemas_constants.DEFAULT_EXPR_ALLOWED_FUNCTIONS
-cdef object _ALLOWED_BASE_TYPES = _schemas_constants.ALLOWED_BASE_TYPES
+from sqliteplus.core._schemas_constants import (
+    ALLOWED_BASE_TYPES,
+    DEFAULT_EXPR_ALLOWED_FUNCTIONS,
+    DEFAULT_EXPR_ALLOWED_LITERALS,
+    DEFAULT_EXPR_DISALLOWED_KEYWORDS,
+    DEFAULT_EXPR_DISALLOWED_TOKENS,
+    DEFAULT_EXPR_NUMERIC_PATTERN,
+    DEFAULT_EXPR_STRING_PATTERN,
+    FUNCTION_CALL_PATTERN,
+    SQLITE_IDENTIFIER_DISALLOWED_TOKENS,
+    SQLITE_IDENTIFIER_PATTERN,
+)
 
 
-cpdef bint _py_is_valid_sqlite_identifier(object identifier):
+def _py_is_valid_sqlite_identifier(identifier: str) -> bool:
     if not isinstance(identifier, str):
         return False
 
-    cdef str ident = <str>identifier
-    if any(token in ident for token in _DISALLOWED_TOKENS):
+    if any(token in identifier for token in SQLITE_IDENTIFIER_DISALLOWED_TOKENS):
         return False
 
-    return bool(_IDENTIFIER_PATTERN.match(ident))
+    return bool(SQLITE_IDENTIFIER_PATTERN.match(identifier))
 
 
-@cython.cfunc
-def _has_balanced_parentheses_impl(str expr) -> cython.bint:
-    cdef Py_ssize_t depth = 0
-    cdef Py_ssize_t idx
-    cdef Py_ssize_t length = len(expr)
-    cdef str char
-
-    for idx in range(length):
-        char = expr[idx]
+def _py_has_balanced_parentheses(expr: str) -> bool:
+    depth = 0
+    for char in expr:
         if char == "(":
             depth += 1
         elif char == ")":
@@ -55,42 +40,36 @@ def _has_balanced_parentheses_impl(str expr) -> cython.bint:
     return depth == 0
 
 
-cpdef bint _py_has_balanced_parentheses(str expr):
-    return _has_balanced_parentheses_impl(expr)
-
-
-cpdef str _py_strip_enclosing_parentheses(str expr):
-    cdef str sanitized = expr
-    cdef str inner
-
-    while sanitized.startswith("(") and sanitized.endswith(")") and _has_balanced_parentheses_impl(sanitized):
-        inner = sanitized[1 : len(sanitized) - 1].strip()
+def _py_strip_enclosing_parentheses(expr: str) -> str:
+    sanitized = expr
+    while (
+        sanitized.startswith("(")
+        and sanitized.endswith(")")
+        and _py_has_balanced_parentheses(sanitized)
+    ):
+        inner = sanitized[1:-1].strip()
         if not inner:
             break
         sanitized = inner
     return sanitized
 
 
-cpdef _py_parse_function_call(str expr):
-    cdef object match = _FUNCTION_CALL_PATTERN.match(expr)
+def _py_parse_function_call(expr: str) -> tuple[str, str] | None:
+    match = FUNCTION_CALL_PATTERN.match(expr)
     if not match:
         return None
 
-    cdef str func_name = match.group(1)
-    cdef Py_ssize_t idx = match.end() - 1
-    cdef Py_ssize_t depth = 0
-    cdef Py_ssize_t pos
-    cdef Py_ssize_t length = len(expr)
-    cdef str char
-
-    for pos in range(idx, length):
+    func_name = match.group(1)
+    idx = match.end() - 1  # position of the opening parenthesis
+    depth = 0
+    for pos in range(idx, len(expr)):
         char = expr[pos]
         if char == "(":
             depth += 1
         elif char == ")":
             depth -= 1
             if depth == 0:
-                if pos != length - 1:
+                if pos != len(expr) - 1:
                     return None
                 args = expr[idx + 1 : pos].strip()
                 return func_name, args
@@ -99,76 +78,51 @@ cpdef _py_parse_function_call(str expr):
     return None
 
 
-cpdef bint _py_is_safe_default_expr(str expr):
-    cdef str sanitized = _py_strip_enclosing_parentheses(expr.strip())
-    cdef str upper = f" {sanitized.upper()} "
+def _py_is_safe_default_expr(expr: str) -> bool:
+    sanitized = _py_strip_enclosing_parentheses(expr.strip())
+    upper = f" {sanitized.upper()} "
 
-    cdef object token
-    for token in _DEFAULT_DISALLOWED_TOKENS:
+    for token in DEFAULT_EXPR_DISALLOWED_TOKENS:
         if token in sanitized:
             return False
 
-    for token in _DEFAULT_DISALLOWED_KEYWORDS:
-        if token in upper:
+    for keyword in DEFAULT_EXPR_DISALLOWED_KEYWORDS:
+        if keyword in upper:
             return False
 
-    if _DEFAULT_NUMERIC_PATTERN.match(sanitized):
+    if DEFAULT_EXPR_NUMERIC_PATTERN.match(sanitized):
         return True
 
-    if sanitized.upper() in _DEFAULT_LITERALS:
+    if sanitized.upper() in DEFAULT_EXPR_ALLOWED_LITERALS:
         return True
 
-    if _DEFAULT_STRING_PATTERN.match(sanitized):
+    if DEFAULT_EXPR_STRING_PATTERN.match(sanitized):
         return True
 
-    cdef object function_call = _py_parse_function_call(sanitized)
-    cdef str func_name
+    function_call = _py_parse_function_call(sanitized)
     if function_call:
-        func_name = function_call[0]
-        if func_name.upper() in _DEFAULT_FUNCTIONS:
+        func_name, _ = function_call
+        if func_name.upper() in DEFAULT_EXPR_ALLOWED_FUNCTIONS:
             return True
 
     return False
 
 
-cpdef dict _py_normalized_columns(dict columns):
+def _py_normalized_columns(columns: Dict[str, str]) -> Dict[str, str]:
     if not columns:
         raise ValueError("Se requiere al menos una columna para crear la tabla")
 
-    cdef dict sanitized_columns = {}
-    cdef set seen_names = set()
-    cdef object raw_name
-    cdef object raw_type
-    cdef str normalized_name
-    cdef str normalized_key
-    cdef str normalized_original
-    cdef str base_original
-    cdef list rest_original_tokens
-    cdef str base
-    cdef str rest_original
-    cdef str rest_upper
-    cdef bint not_null
-    cdef bint unique
-    cdef bint primary_key
-    cdef bint autoincrement
-    cdef object default_expr
-    cdef Py_ssize_t idx
-    cdef Py_ssize_t length
-    cdef Py_ssize_t expr_start
-    cdef Py_ssize_t expr_end
-    cdef list potential_ends
-    cdef Py_ssize_t keyword_pos
-    cdef list normalized_parts
-
+    sanitized_columns: Dict[str, str] = {}
+    seen_names: set[str] = set()
     for raw_name, raw_type in columns.items():
-        normalized_name = (<str>raw_name).strip()
+        normalized_name = raw_name.strip()
         if not normalized_name:
             raise ValueError("Los nombres de columna no pueden estar vacíos")
 
-        if not _IDENTIFIER_PATTERN.match(normalized_name):
+        if not SQLITE_IDENTIFIER_PATTERN.match(normalized_name):
             raise ValueError(f"Nombre de columna inválido: {raw_name}")
 
-        if any(token in normalized_name for token in _DISALLOWED_TOKENS):
+        if any(token in normalized_name for token in SQLITE_IDENTIFIER_DISALLOWED_TOKENS):
             raise ValueError(f"Nombre de columna inválido: {raw_name}")
 
         normalized_key = normalized_name.casefold()
@@ -178,15 +132,13 @@ cpdef dict _py_normalized_columns(dict columns):
             )
         seen_names.add(normalized_key)
 
-        normalized_original = " ".join((<str>raw_type).strip().split())
+        normalized_original = " ".join(raw_type.strip().split())
         if not normalized_original:
             raise ValueError(f"Tipo de columna vacío para '{raw_name}'")
 
-        rest_original_tokens = normalized_original.split(" ")
-        base_original = rest_original_tokens[0]
-        rest_original_tokens = rest_original_tokens[1:]
+        base_original, *rest_original_tokens = normalized_original.split(" ")
         base = base_original.upper()
-        if base not in _ALLOWED_BASE_TYPES:
+        if base not in ALLOWED_BASE_TYPES:
             raise ValueError(f"Tipo de dato no permitido para '{raw_name}': {raw_type}")
 
         rest_original = " ".join(rest_original_tokens)
@@ -196,12 +148,12 @@ cpdef dict _py_normalized_columns(dict columns):
         unique = False
         primary_key = False
         autoincrement = False
-        default_expr = None
+        default_expr: str | None = None
 
         idx = 0
         length = len(rest_upper)
         while idx < length:
-            if rest_upper[idx] == " ":
+            if idx < length and rest_upper[idx] == " ":
                 idx += 1
                 continue
 
@@ -251,8 +203,8 @@ cpdef dict _py_normalized_columns(dict columns):
                     expr_start += 1
 
                 potential_ends = [length]
-                for token in (" NOT NULL", " UNIQUE", " PRIMARY KEY", " DEFAULT"):
-                    keyword_pos = rest_upper.find(token, expr_start)
+                for keyword in (" NOT NULL", " UNIQUE", " PRIMARY KEY", " DEFAULT"):
+                    keyword_pos = rest_upper.find(keyword, expr_start)
                     if keyword_pos != -1:
                         potential_ends.append(keyword_pos)
 
@@ -289,7 +241,7 @@ cpdef dict _py_normalized_columns(dict columns):
         if unique:
             normalized_parts.append("UNIQUE")
         if default_expr is not None:
-            if not _py_is_safe_default_expr(<str>default_expr):
+            if not _py_is_safe_default_expr(default_expr):
                 raise ValueError(
                     f"Expresión DEFAULT potencialmente insegura para columna '{raw_name}'"
                 )
