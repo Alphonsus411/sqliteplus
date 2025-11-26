@@ -10,6 +10,10 @@ extensions = [
         name="sqliteplus.core._schemas_columns",
         sources=["sqliteplus/core/_schemas_columns.pyx"],
     ),
+    Extension(
+        name="sqliteplus.core.schemas_cy",
+        sources=["sqliteplus/core/schemas.pyx"],
+    ),
 ]
 
 setup(
