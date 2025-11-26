@@ -55,6 +55,12 @@ jobs:
           PYTHONPATH: "${{ github.workspace }}"
         run: pytest -v
 
+      - name: Ejecutar Pytest sin Cython (rutas de schemas)
+        env:
+          PYTHONPATH: "${{ github.workspace }}"
+          SQLITEPLUS_DISABLE_CYTHON: "1"
+        run: pytest -k schemas -v
+
   hotspots:
     name: Perfil de hotspots
     runs-on: ubuntu-latest
