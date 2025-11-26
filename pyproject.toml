@@ -58,7 +58,7 @@ speedups = [
 ]
 
 [project.scripts]
-sqliteplus = "sqliteplus.cli:cli"
+sqliteplus = "sqliteplus.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "."}

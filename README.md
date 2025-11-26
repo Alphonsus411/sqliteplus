@@ -149,6 +149,7 @@ Las validaciones de esquemas y el saneamiento de identificadores usan extensione
 - **Forzar el modo puro Python:** define `SQLITEPLUS_DISABLE_CYTHON=1` antes de importar la librería o durante la instalación/compilación para desactivar las extensiones y probar la ruta de *fallback*.
 - **Volver a activarlas:** elimina la variable (`unset SQLITEPLUS_DISABLE_CYTHON`) y vuelve a importar el módulo. Si las extensiones no están compiladas, la librería seguirá funcionando en modo puro Python.
 - **Ajustar el umbral de mejora:** los benchmarks exigen que la variante con Cython sea un `20%` más rápida por defecto. Puedes modificar el umbral con `SQLITEPLUS_MIN_SPEEDUP` (por ejemplo `0.1` para un 10%).
+- **Lista dinámica de módulos a compilar:** `setup.py` lee `reports/cython_candidates.json` (o la ruta definida en `SQLITEPLUS_CYTHON_TARGETS`) y solo cythoniza los módulos listados. Usa `SQLITEPLUS_FORCE_CYTHON=1` para compilar todos los `.pyx` disponibles u `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1` para ignorar la lista y dejar el comportamiento tradicional.
 
 Para ejecutar las pruebas de rendimiento con `pytest-benchmark`:
 
@@ -198,6 +199,18 @@ El archivo `reports/hotspots.json` incluye:
 - `overall_hotspots`: agregado de todos los escenarios ordenado por `cumtime` total; el campo `scenarios` indica dónde apareció cada símbolo.
 - `is_python`: se marca en `true` cuando la función proviene de un archivo `.py`, una buena pista para priorizar migraciones a Cython.
 - `is_io`: señala llamadas relacionadas con disco/red; suelen ser menos rentables para Cython y conviene filtrarlas salvo que bloqueen el throughput.
+
+#### Activar perfilado rápido en los entrypoints
+
+- **CLI:** exporta `SQLITEPLUS_PROFILE_ENTRYPOINT=cprofile` (o `pyinstrument`) y luego ejecuta `sqliteplus ...`. Los perfiles se guardan en `reports/profile/entrypoints` por defecto; cambia la carpeta con `SQLITEPLUS_PROFILE_OUTPUT`.
+- **API FastAPI:** define `SQLITEPLUS_PROFILE_API=pyinstrument` para añadir un *middleware* que vuelca un HTML y un TXT por petición en `reports/profile/api` (o en la ruta indicada por `SQLITEPLUS_PROFILE_API_OUTPUT`).
+
+#### Generar gemelos `.pyx` desde el perfil
+
+El comando `python tools/generate_cython_twins.py` lee `reports/hotspots.json`, selecciona los módulos Python con más tiempo de CPU y genera:
+
+- Un JSON con la lista final en `reports/cython_candidates.json` (personalizable con `--output`).
+- Archivos `.pyx` que replican la API y delegan en el `.py` original como *fallback* si falta Cython. Usa `--limit` para acotar el número de módulos y `--overwrite` para regenerar los gemelos.
 
 Una estrategia rápida es fijarse primero en los elementos de `overall_hotspots` con `is_python=true` y alto `cumtime`, especialmente si aparecen en varios escenarios. Si el cuello de botella es puro Python y no está dominado por E/S, convertirlo en extensión Cython suele ofrecer mejoras inmediatas.
 

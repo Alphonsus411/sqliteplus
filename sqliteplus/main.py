@@ -18,6 +18,7 @@ if __name__ == "__main__" and __package__ in {None, ""}:
 from sqliteplus import __version__
 from sqliteplus.api.endpoints import router
 from sqliteplus.core.db import db_manager
+from sqliteplus.utils.profiling import install_api_profiler
 
 
 @asynccontextmanager
@@ -35,3 +36,4 @@ app = FastAPI(
 
 # Registrar endpoints
 app.include_router(router)
+install_api_profiler(app)
