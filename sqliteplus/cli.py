@@ -38,6 +38,7 @@ from sqliteplus.utils.sqliteplus_sync import (
     SQLitePlusQueryError,
 )
 from sqliteplus.utils.replication_sync import SQLiteReplication
+from sqliteplus.utils.profiling import run_with_optional_profiling
 
 
 _VISUAL_EXTRA_INSTALL_COMMAND = 'pip install "sqliteplus-enhanced[visual]"'
@@ -1896,5 +1897,20 @@ cli.add_command(describe_table)
 cli.add_command(database_info)
 cli.add_command(visual_dashboard)
 
+
+def main(argv: list[str] | None = None) -> int | None:
+    def _invoke_cli() -> int | None:
+        try:
+            return cli.main(args=argv, standalone_mode=True)
+        except SystemExit as exc:  # pragma: no cover - comportamiento estándar de Click
+            return exc.code
+
+    return run_with_optional_profiling(
+        "cli",
+        _invoke_cli,
+        default_output=Path(__file__).resolve().parents[1] / "reports" / "profile" / "entrypoints",
+    )
+
+
 if __name__ == "__main__":
-    cli()
+    raise SystemExit(main())

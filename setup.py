@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -29,17 +30,44 @@ def collect_define_macros() -> list[tuple[str, str]]:
     return macros
 
 
+def load_profiled_targets() -> set[str] | None:
+    if strtobool_env("SQLITEPLUS_IGNORE_CYTHON_TARGETS"):
+        return None
+
+    targets_path = os.environ.get(
+        "SQLITEPLUS_CYTHON_TARGETS",
+        str(Path("reports") / "cython_candidates.json"),
+    )
+    path = Path(targets_path)
+    if not path.exists():
+        return None
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+    modules = payload.get("modules")
+    if not isinstance(modules, list):
+        return None
+
+    return {str(module) for module in modules}
+
+
 def discover_extensions() -> list[Extension]:
     if strtobool_env("SQLITEPLUS_DISABLE_CYTHON"):
         return []
 
     pyx_files = sorted(Path("sqliteplus").rglob("*.pyx"))
+    profiled_targets = None if strtobool_env("SQLITEPLUS_FORCE_CYTHON") else load_profiled_targets()
     include_dirs = collect_include_dirs()
     define_macros = collect_define_macros()
 
     extensions: list[Extension] = []
     for pyx_path in pyx_files:
         module_name = ".".join(pyx_path.with_suffix("").parts)
+        if profiled_targets is not None and module_name not in profiled_targets:
+            continue
         extensions.append(
             Extension(
                 module_name,
