@@ -1,5 +1,16 @@
 from __future__ import annotations
 
+if __name__ == "__main__" and __package__ in {None, ""}:
+    import sys
+    from pathlib import Path
+    from runpy import run_module
+
+    package_root = Path(__file__).resolve().parents[2]
+    if str(package_root) not in sys.path:
+        sys.path.insert(0, str(package_root))
+    run_module("sqliteplus.utils.replication_sync", run_name="__main__")
+    raise SystemExit()
+
 import importlib.machinery
 import importlib.util
 import sys
@@ -35,3 +46,20 @@ if _cython_module is not None:
     globals().update(_cython_module.__dict__)
 else:
     from sqliteplus.utils._replication_sync_py import *
+
+
+if __name__ == "__main__":
+    # Crear la base de datos por defecto si aún no existe antes de iniciar las
+    # tareas de replicación.  Cuando el script se ejecuta fuera del árbol del
+    # proyecto (por ejemplo, desde un directorio temporal) el archivo de base
+    # de datos aún no ha sido creado y las operaciones de copia fallan con un
+    # FileNotFoundError.  Inicializamos SQLitePlus para generar la estructura
+    # necesaria y así garantizar que los comandos posteriores funcionen.
+    from sqliteplus.utils.sqliteplus_sync import SQLitePlus
+
+    database = SQLitePlus()
+    database.log_action("Inicialización de replicación desde script")
+
+    replicator = SQLiteReplication(db_path=database.db_path)
+    replicator.backup_database()
+    replicator.export_to_csv("logs", "logs_export.csv")
