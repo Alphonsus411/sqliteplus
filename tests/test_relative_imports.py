@@ -3,6 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+# `os` is required for environment handling inside helper functions below.
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
