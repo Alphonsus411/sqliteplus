@@ -2,7 +2,9 @@
 Utilidades de seguridad que requieren SQLCipher para proteger la base de datos.
 
 Si el motor SQLite utilizado no soporta SQLCipher, el script debe abortar para evitar
-continuar con una base de datos sin cifrar.
+continuar con una base de datos sin cifrar. La verificación se realiza mediante
+`PRAGMA cipher_version` y lanza un `RuntimeError` claro antes de manipular la base
+de datos.
 """
 
 import datetime
@@ -73,6 +75,28 @@ def ensure_required_environment() -> None:
             raise EnvironmentError(
                 f"Falta la variable de entorno '{name}'. {description}"
             )
+
+
+def ensure_sqlcipher_support() -> None:
+    """Comprueba que la librería SQLite enlazada incluya soporte SQLCipher."""
+
+    try:
+        conn = sqlite3.connect(":memory:")
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA cipher_version;")
+        version = cursor.fetchone()
+    except sqlite3.OperationalError as error:
+        raise RuntimeError(
+            "SQLCipher no está disponible en esta compilación de SQLite."
+        ) from error
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+    if not version or not any(version):
+        raise RuntimeError("SQLCipher no está disponible en esta compilación de SQLite.")
 
 
 def hash_password(password: str) -> str:
@@ -165,6 +189,7 @@ def create_users_table(db_path="database.db"):
 if __name__ == "__main__":
     try:
         ensure_required_environment()
+        ensure_sqlcipher_support()
         create_users_table()
     except (EnvironmentError, RuntimeError) as error:
         sys.exit(
