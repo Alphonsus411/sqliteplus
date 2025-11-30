@@ -156,6 +156,7 @@ Para ejecutar las pruebas de rendimiento con `pytest-benchmark`:
 
 ```bash
 pytest tests/test_speedups_benchmarks.py --benchmark-only -q
+pytest tests/test_high_use_api_benchmarks.py --benchmark-only -q
 ```
 
 Los caminos de mayor uso (`SQLitePlus.execute_query`, `SQLitePlus.fetch_query` y `SQLiteReplication.export_to_csv`) cuentan con pruebas de equivalencia entre el modo compilado y el modo puro Python. Lanza ambos caminos así:
@@ -163,10 +164,14 @@ Los caminos de mayor uso (`SQLitePlus.execute_query`, `SQLitePlus.fetch_query` y
 ```bash
 # Camino acelerado por defecto
 pytest tests/test_speedups_equivalence.py -k "execute_and_fetch or replication_exports" -q
+pytest tests/test_high_use_api_equivalence.py -q
 
 # Camino puro Python forzado con SQLITEPLUS_DISABLE_CYTHON=1
 SQLITEPLUS_DISABLE_CYTHON=1 pytest tests/test_speedups_equivalence.py -k "execute_and_fetch or replication_exports" -q
+SQLITEPLUS_DISABLE_CYTHON=1 pytest tests/test_high_use_api_equivalence.py -q
 ```
+
+`tests/test_high_use_api_equivalence.py` crea bases pequeñas y compara salidas de `execute_query`/`fetch_query` y `export_to_csv` entre ambos modos en el mismo proceso, forzando el *fallback* con `SQLITEPLUS_DISABLE_CYTHON=1`. `tests/test_high_use_api_benchmarks.py` repite los mismos escenarios con `pytest-benchmark` para detectar regresiones: si el tiempo con Cython no mejora al menos el umbral `SQLITEPLUS_DML_MIN_SPEEDUP` (5 % por defecto), la prueba falla.
 
 Para interpretar los benchmarks:
 
