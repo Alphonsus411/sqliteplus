@@ -6,6 +6,16 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     import sys
     from pathlib import Path
     from runpy import run_module
+    import importlib.util
+
+    module = sys.modules[__name__]
+    spec = importlib.util.spec_from_file_location(
+        "sqliteplus.utils.replication_sync", Path(__file__).resolve()
+    )
+    module.__spec__ = spec
+    module.__loader__ = spec.loader
+    module.__package__ = "sqliteplus.utils"
+    sys.modules["sqliteplus.utils.replication_sync"] = module
 
     package_root = Path(__file__).resolve().parents[2]
     if str(package_root) not in sys.path:
