@@ -1,4 +1,5 @@
-"""Utilidades de seguridad que requieren SQLCipher para proteger la base de datos.
+"""
+Utilidades de seguridad que requieren SQLCipher para proteger la base de datos.
 
 Si el motor SQLite utilizado no soporta SQLCipher, el script debe abortar para evitar
 continuar con una base de datos sin cifrar.
