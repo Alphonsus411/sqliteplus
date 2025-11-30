@@ -42,13 +42,40 @@ compilada instalada, `ensure_bcrypt()` activará automáticamente el módulo
 `sqliteplus._compat.bcrypt`. Si prefieres trabajar siempre con el backend
 oficial instala el extra `security` (`pip install "sqliteplus-enhanced[security]"`).
 
-## 2. Arranca la API
+## 2. Ejecuta los entry points instalados
+
+Después de instalar el paquete tienes disponibles tres comandos en tu `PATH` sin necesidad de llamar a los módulos directamente:
+
+- `sqliteplus`: CLI principal. Usa `--db-path` y `--cipher-key` (o la variable `SQLITE_DB_KEY`) para seleccionar la base y abrirla con SQLCipher si procede. Un flujo mínimo podría ser:
+
+  ```bash
+  sqliteplus --db-path ./databases/demo.db init-db
+  sqliteplus --db-path ./databases/demo.db execute "INSERT INTO logs (action) VALUES ('Hola desde CLI')"
+  sqliteplus --db-path ./databases/demo.db fetch "SELECT * FROM logs"
+  ```
+
+- `sqliteplus-sync`: demo síncrona que inicializa la base predeterminada y confirma que las importaciones funcionan desde cualquier carpeta. Si la base está cifrada, exporta `SQLITE_DB_KEY` antes de ejecutarlo.
+
+  ```bash
+  sqliteplus-sync
+  ```
+
+- `sqliteplus-replication`: prepara una base de demostración, genera un respaldo en `backups/` y exporta `logs_export.csv` en el directorio actual.
+
+  ```bash
+  sqliteplus-replication
+  ls backups
+  ```
+
+> Nota rápida: los entry points resuelven las importaciones de forma aislada; ya no hace falta llamar a los archivos del paquete con `python -m ...` para que funcionen los ejemplos.
+
+## 3. Arranca la API
 
 ```bash
 uvicorn sqliteplus.main:app --reload
 ```
 
-## 3. Obtén un token JWT
+## 4. Obtén un token JWT
 
 ```bash
 BASE_URL=${BASE_URL:-http://127.0.0.1:8000}
@@ -62,7 +89,7 @@ curl -X POST "${BASE_URL%/}/token" \
 
 La respuesta incluye `access_token` y `token_type`.
 
-## 4. Crea una tabla en la base `demo`
+## 5. Crea una tabla en la base `demo`
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/databases/demo/create_table?table_name=logs" \
@@ -71,7 +98,7 @@ curl -X POST "http://127.0.0.1:8000/databases/demo/create_table?table_name=logs"
      -d '{"columns": {"id": "INTEGER PRIMARY KEY", "msg": "TEXT", "created_at": "TEXT"}}'
 ```
 
-## 5. Inserta datos
+## 6. Inserta datos
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/databases/demo/insert?table_name=logs" \
@@ -80,7 +107,7 @@ curl -X POST "http://127.0.0.1:8000/databases/demo/insert?table_name=logs" \
      -d '{"values": {"msg": "Hola desde SQLitePlus"}}'
 ```
 
-## 6. Consulta los registros
+## 7. Consulta los registros
 
 ```bash
 curl -X GET "http://127.0.0.1:8000/databases/demo/fetch?table_name=logs" \
