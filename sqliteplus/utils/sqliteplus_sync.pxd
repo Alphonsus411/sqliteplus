@@ -1,6 +1,14 @@
 # cython: language_level=3
 from cpython.size_t cimport Py_ssize_t
 
+cdef public tuple SQLITEPLUS_PUBLIC_API
+
+cdef class SQLitePlusCipherError(RuntimeError):
+    pass
+
+cdef class SQLitePlusQueryError(RuntimeError):
+    pass
+
 cdef class SQLitePlus:
     cdef public str db_path
     cdef public object cipher_key
