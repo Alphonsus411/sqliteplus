@@ -318,6 +318,17 @@ python sqliteplus/utils/replication_sync.py
 
 El módulo creará una base mínima en `./sqliteplus/databases/database.db` (sin modificar los datos distribuidos con el paquete), generará una copia en `./backups/` y exportará la tabla `logs` a `./logs_export.csv` usando las rutas relativas al directorio actual. Esto facilita comprobar que las dependencias internas funcionan aunque ejecutes el script fuera del repositorio o de un entorno virtual.
 
+Para un caso manual rápido puedes probarlo desde un directorio temporal completamente vacío, apuntando al script del repositorio:
+
+```bash
+tmpdir=$(mktemp -d)
+cd "$tmpdir"
+python /ruta/a/tu/checkout/sqliteplus/utils/replication_sync.py
+ls -1
+```
+
+Tras la ejecución deberías ver las carpetas `backups/` y `sqliteplus/` junto con el archivo `logs_export.csv`, demostrando que la exportación y la replicación funcionan desde rutas arbitrarias.
+
 ### Activar el visor visual (extra opcional)
 
 El paquete base evita instalar dependencias gráficas para mantener una huella ligera. Si deseas abrir el visor accesible de los subcomandos `fetch` o `list-tables` (`--viewer`) o aprovechar `sqliteplus visual-dashboard`, instala el extra opcional `visual`:
