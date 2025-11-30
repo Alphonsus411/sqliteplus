@@ -149,6 +149,7 @@ Las validaciones de esquemas y el saneamiento de identificadores usan extensione
 - **Forzar el modo puro Python:** define `SQLITEPLUS_DISABLE_CYTHON=1` antes de importar la librería o durante la instalación/compilación para desactivar las extensiones y probar la ruta de *fallback*.
 - **Volver a activarlas:** elimina la variable (`unset SQLITEPLUS_DISABLE_CYTHON`) y vuelve a importar el módulo. Si las extensiones no están compiladas, la librería seguirá funcionando en modo puro Python.
 - **Ajustar el umbral de mejora:** los benchmarks exigen que la variante con Cython sea un `20%` más rápida por defecto. Puedes modificar el umbral con `SQLITEPLUS_MIN_SPEEDUP` (por ejemplo `0.1` para un 10%).
+- **Benchmarks de DML:** las rutas críticas `SQLitePlus.execute_query`/`fetch_query` y `SQLiteReplication.export_to_csv` se validan con `pytest-benchmark`. Para las operaciones DML, el umbral se ajusta con `SQLITEPLUS_DML_MIN_SPEEDUP` (por defecto `0.05`, es decir, 5 % de mejora esperada). Si el entorno CI es inestable, sube ese valor o usa `--benchmark-disable` para omitirlos.
 - **Lista dinámica de módulos a compilar:** `setup.py` lee `reports/cython_candidates.json` (o la ruta definida en `SQLITEPLUS_CYTHON_TARGETS`) y solo cythoniza los módulos listados. Usa `SQLITEPLUS_FORCE_CYTHON=1` para compilar todos los `.pyx` disponibles u `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1` para ignorar la lista y dejar el comportamiento tradicional.
 
 Para ejecutar las pruebas de rendimiento con `pytest-benchmark`:
@@ -156,6 +157,22 @@ Para ejecutar las pruebas de rendimiento con `pytest-benchmark`:
 ```bash
 pytest tests/test_speedups_benchmarks.py --benchmark-only -q
 ```
+
+Los caminos de mayor uso (`SQLitePlus.execute_query`, `SQLitePlus.fetch_query` y `SQLiteReplication.export_to_csv`) cuentan con pruebas de equivalencia entre el modo compilado y el modo puro Python. Lanza ambos caminos así:
+
+```bash
+# Camino acelerado por defecto
+pytest tests/test_speedups_equivalence.py -k "execute_and_fetch or replication_exports" -q
+
+# Camino puro Python forzado con SQLITEPLUS_DISABLE_CYTHON=1
+SQLITEPLUS_DISABLE_CYTHON=1 pytest tests/test_speedups_equivalence.py -k "execute_and_fetch or replication_exports" -q
+```
+
+Para interpretar los benchmarks:
+
+- Usa `pytest --benchmark-only` para omitir los asserts funcionales y centrarte en el rendimiento.
+- Los umbrales (`SQLITEPLUS_MIN_SPEEDUP` y `SQLITEPLUS_DML_MIN_SPEEDUP`) comparan los tiempos medio/total de la ruta *fallback* frente a la ruta Cython. Si el tiempo con Cython no baja al menos el porcentaje indicado, la prueba falla.
+- En CI puedes fijar umbrales más conservadores si la carga de la máquina es variable, por ejemplo `SQLITEPLUS_MIN_SPEEDUP=0.1 SQLITEPLUS_DML_MIN_SPEEDUP=0.02`.
 
 Los validadores de esquemas cuentan con pruebas específicas que comparan la ruta Cython frente al *fallback* y miden que la versión compilada siga siendo sensiblemente más rápida. En entornos CI puedes ejecutar ambos modos con:
 

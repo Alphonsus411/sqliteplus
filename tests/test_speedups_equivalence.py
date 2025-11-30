@@ -68,6 +68,27 @@ def test_sqliteplus_sync_consistency_across_variants(speedup_variants, tmp_path)
         fallback_client._escape_identifier("tabla;invalida")
 
 
+def test_sqliteplus_execute_and_fetch_equivalence(speedup_variants, tmp_path):
+    _, cython_sync, _ = speedup_variants(force_fallback=False)
+    _, fallback_sync, _ = speedup_variants(force_fallback=True)
+
+    def run_workflow(sync_module, db_path):
+        client = sync_module.SQLitePlus(db_path=db_path)
+        inserted_ids = [
+            client.execute_query("INSERT INTO logs (action) VALUES (?)", ("alpha",)),
+            client.execute_query("INSERT INTO logs (action) VALUES (?)", ("beta",)),
+            client.execute_query("INSERT INTO logs (action) VALUES (?)", ("gamma",)),
+        ]
+        rows = client.fetch_query("SELECT id, action FROM logs ORDER BY id")
+        return inserted_ids, rows
+
+    cython_ids, cython_rows = run_workflow(cython_sync, tmp_path / "cython.sqlite")
+    fallback_ids, fallback_rows = run_workflow(fallback_sync, tmp_path / "fallback.sqlite")
+
+    assert cython_rows == fallback_rows
+    assert cython_ids == fallback_ids
+
+
 def test_replication_exports_identical_results(speedup_variants, tmp_path):
     _, cython_sync, cython_replication = speedup_variants(force_fallback=False)
     _, fallback_sync, fallback_replication = speedup_variants(force_fallback=True)
