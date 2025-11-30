@@ -24,7 +24,7 @@ from sqliteplus.utils.constants import (
     PACKAGE_DB_PATH,
     resolve_default_db_path,
 )
-from sqliteplus.utils.sqliteplus_sync import apply_cipher_key, SQLitePlusCipherError
+from sqliteplus.utils.sqliteplus_sync cimport apply_cipher_key, SQLitePlusCipherError
 
 logger = logging.getLogger(__name__)
 

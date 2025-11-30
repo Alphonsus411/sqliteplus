@@ -12,21 +12,29 @@ from cpython.size_t cimport Py_ssize_t
 from sqliteplus.core.schemas import is_valid_sqlite_identifier
 from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
 
+cdef public tuple SQLITEPLUS_PUBLIC_API = (
+    "SQLitePlus",
+    "SQLitePlusCipherError",
+    "SQLitePlusQueryError",
+    "apply_cipher_key",
+)
+__all__ = SQLITEPLUS_PUBLIC_API
 
-class SQLitePlusQueryError(RuntimeError):
+
+cdef class SQLitePlusQueryError(RuntimeError):
     """Excepción personalizada para errores en consultas SQL."""
 
-    def __init__(self, query: str, original_exception: sqlite3.Error):
+    def __init__(self, str query, sqlite3.Error original_exception):
         self.query = query
         self.original_exception = original_exception
         message = f"Error al ejecutar la consulta SQL '{query}': {original_exception}"
         super().__init__(message)
 
 
-class SQLitePlusCipherError(RuntimeError):
+cdef class SQLitePlusCipherError(RuntimeError):
     """Excepción para errores al aplicar la clave SQLCipher."""
 
-    def __init__(self, original_exception: sqlite3.Error):
+    def __init__(self, sqlite3.Error original_exception):
         self.original_exception = original_exception
         message = (
             "No se pudo aplicar la clave SQLCipher. Asegúrate de que tu intérprete "
@@ -44,7 +52,7 @@ cpdef void apply_cipher_key(object connection, object cipher_key):
     cdef bytes encoded_key = escaped_key.encode("utf-8")
     cdef const char* encoded_key_ptr = encoded_key
     cdef Py_ssize_t encoded_length = len(encoded_key)
-    if encoded_length == 0:
+    if encoded_length == 0 or encoded_key_ptr is NULL:
         return
 
     try:

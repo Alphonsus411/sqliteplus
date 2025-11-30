@@ -25,12 +25,13 @@ from typing import Any
 from sqliteplus.core.schemas import is_valid_sqlite_identifier
 from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
 
-__all__ = [
+SQLITEPLUS_PUBLIC_API = (
     "SQLitePlus",
     "SQLitePlusCipherError",
     "SQLitePlusQueryError",
     "apply_cipher_key",
-]
+)
+__all__ = SQLITEPLUS_PUBLIC_API
 
 
 def _load_cython_variant() -> ModuleType | None:
