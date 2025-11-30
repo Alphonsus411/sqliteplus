@@ -69,3 +69,37 @@ make profile PROFILE_SCENARIO=api_crud PROFILE_FLAGS="--include-io"
   en módulos `.py`, ideales para valorar migraciones a Cython o refactors: céntrate en
   las que combinan alto tiempo acumulado y muchas llamadas, especialmente si pertenecen
   a `sqliteplus` o a utilidades auxiliares que no dependen de I/O.
+
+## Descubrimiento Cython y gemelos `.pyx`
+
+El pipeline de Cython se alimenta de la lista dinámica `reports/cython_candidates.json`.
+`setup.py` recorre `sqliteplus/**/*.pyx` y, salvo que definas `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1`,
+filtra los módulos con esa lista. El flujo recomendado es:
+
+1. Genera un reporte de hotspots (por ejemplo `reports/hotspots.json`).
+2. Ejecuta `tools/generate_cython_twins.py` para crear los gemelos `.pyx` y rellenar el JSON de candidatos:
+
+   ```bash
+   python tools/generate_cython_twins.py reports/hotspots.json --limit 3
+   ```
+
+   El script crea los `.pyx` junto a cada `.py` (p. ej. `sqliteplus/core/validators.pyx`) y guarda la lista final en `reports/cython_candidates.json`.
+   Usa `--overwrite` si necesitas regenerar archivos existentes.
+3. Lanza la instalación o el build usando la lista generada:
+
+   ```bash
+   SQLITEPLUS_CYTHON_TARGETS=reports/cython_candidates.json python -m build
+   ```
+
+Variables útiles para ajustar el comportamiento:
+
+- `SQLITEPLUS_DISABLE_CYTHON=1` apaga la compilación (modo puro Python).
+- `SQLITEPLUS_FORCE_CYTHON=1` ignora las listas y compila todos los `.pyx` detectados.
+- `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1` recorre todos los `.pyx` pero sigue respetando `SQLITEPLUS_DISABLE_CYTHON`.
+- `SQLITEPLUS_CYTHON_TARGETS=/otra/lista.json` apunta a un JSON alternativo con los módulos permitidos.
+- `SQLITEPLUS_CYTHON_ANNOTATE=1` y `SQLITEPLUS_CYTHON_TRACE=1` generan HTML de anotación y macros de trazado en los binarios.
+
+Para añadir un módulo a mano, conserva el `.py` original y añade un gemelo `.pyx` en la misma ruta que importe el `.py` como *fallback*.
+Si necesitas exponer tipos para `cimport`, acompáñalo de un `.pxd`. Incluye el nuevo módulo en el JSON de candidatos o ejecuta con
+`SQLITEPLUS_FORCE_CYTHON=1` para compilarlo en un build concreto. Los `sdist` incluyen los `.py`, `.pyx` y `.pxd`, y los `wheel`
+publican los binarios compilados manteniendo los envoltorios `.py` para preservar la API.
