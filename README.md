@@ -122,6 +122,20 @@ forma transparente. Cuando quieras forzar el backend nativo instala el extra
 
 ## 🚀 Levantar la API
 
+Antes de arrancar el servidor asegúrate de definir dos variables de entorno clave:
+
+- `SECRET_KEY`: se usa para firmar los tokens JWT emitidos por la API.
+- `SQLITEPLUS_USERS_FILE`: ruta al archivo JSON con usuarios y contraseñas hasheadas con `bcrypt`.
+
+Ejemplo rápido desde el mismo directorio del repositorio:
+
+```bash
+export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+export SQLITEPLUS_USERS_FILE="$(pwd)/users.json"
+```
+
+Sin `SECRET_KEY` la API no podrá firmar ni validar sesiones, y sin `SQLITEPLUS_USERS_FILE` no habrá usuarios válidos para iniciarse.
+
 ```bash
 uvicorn sqliteplus.main:app --reload
 ```
