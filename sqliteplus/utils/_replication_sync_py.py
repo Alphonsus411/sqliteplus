@@ -80,15 +80,19 @@ class SQLiteReplication:
                 apply_cipher_key(conn, self.cipher_key)
                 cursor = conn.cursor()
                 cursor.execute(query)
-                rows = cursor.fetchall()
                 column_names = [desc[0] for desc in cursor.description]
 
-            output_path.parent.mkdir(parents=True, exist_ok=True)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
 
-            with output_path.open("w", encoding="utf-8", newline="") as f:
-                writer = csv.writer(f)
-                writer.writerow(column_names)
-                writer.writerows(rows)
+                with output_path.open("w", encoding="utf-8", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerow(column_names)
+
+                    while True:
+                        rows = cursor.fetchmany(1024)
+                        if not rows:
+                            break
+                        writer.writerows(rows)
 
             logger.info("Datos exportados correctamente a %s", output_path)
             return str(output_path)
@@ -183,6 +187,9 @@ class SQLiteReplication:
         base_target = Path(target_path)
         copied_files: list[str] = []
 
+        buf = bytearray(1024 * 1024)
+        mv = memoryview(buf)
+
         for suffix in ("-wal", "-shm"):
             src_file = base_source.with_name(base_source.name + suffix)
             if src_file.exists():
@@ -190,7 +197,13 @@ class SQLiteReplication:
                 if dest_file.exists():
                     dest_file.unlink()
                 dest_file.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(src_file, dest_file)
+                with src_file.open("rb") as src, dest_file.open("wb") as dest:
+                    while True:
+                        read_bytes = src.readinto(buf)
+                        if read_bytes == 0:
+                            break
+                        dest.write(mv[:read_bytes])
+                shutil.copystat(src_file, dest_file, follow_symlinks=True)
                 copied_files.append(str(dest_file))
 
         return copied_files

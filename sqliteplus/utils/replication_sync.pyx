@@ -91,21 +91,30 @@ cdef class SQLiteReplication:
                 apply_cipher_key(conn, self.cipher_key)
                 cursor = conn.cursor()
                 cursor.execute(query)
-                rows = cursor.fetchall()
                 description = cursor.description
 
-            output_path.parent.mkdir(parents=True, exist_ok=True)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
 
-            with output_path.open("w", encoding="utf-8", newline="") as f:
-                writer = csv.writer(f)
-                cdef Py_ssize_t col_count = len(description)
-                cdef list column_names = [description[idx][0] for idx in range(col_count)]
-                writer.writerow(column_names)
+                with output_path.open("w", encoding="utf-8", newline="") as f:
+                    writer = csv.writer(f)
 
-                cdef Py_ssize_t row_count = len(rows)
-                cdef Py_ssize_t row_idx
-                for row_idx in range(row_count):
-                    writer.writerow(rows[row_idx])
+                    cdef Py_ssize_t col_count = len(description)
+                    cdef list column_names = [None] * col_count
+                    cdef Py_ssize_t col_idx
+                    for col_idx in range(col_count):
+                        column_names[col_idx] = description[col_idx][0]
+
+                    writer.writerow(column_names)
+
+                    cdef Py_ssize_t chunk_len
+                    cdef Py_ssize_t row_idx
+                    while True:
+                        rows = cursor.fetchmany(1024)
+                        chunk_len = len(rows)
+                        if chunk_len == 0:
+                            break
+                        for row_idx in range(chunk_len):
+                            writer.writerow(rows[row_idx])
 
             logger.info("Datos exportados correctamente a %s", output_path)
             return str(output_path)

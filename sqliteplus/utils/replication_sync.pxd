@@ -7,9 +7,9 @@ cdef class SQLiteReplication:
     cdef public object backup_dir
     cdef public object cipher_key
 
-    cpdef object export_to_csv(self, str table_name, str output_file, bint overwrite=*)
-    cpdef object backup_database(self)
-    cpdef object replicate_database(self, str target_db_path)
+    cpdef str export_to_csv(self, str table_name, str output_file, bint overwrite=*)
+    cpdef str backup_database(self)
+    cpdef str replicate_database(self, str target_db_path)
     cpdef object _get_timestamp(self)
     cpdef cython.bint _is_valid_table_name(self, object table_name)
     cpdef str _escape_identifier(str identifier)
