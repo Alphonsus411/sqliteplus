@@ -1,28 +1,5 @@
 from __future__ import annotations
 
-if __name__ == "__main__" and __package__ in {None, ""}:
-    # Ejecuta el módulo como paquete para mantener las importaciones relativas
-    # funcionales incluso si se llama directamente desde otro directorio.
-    import sys
-    from pathlib import Path
-    from runpy import run_module
-    import importlib.util
-
-    module = sys.modules[__name__]
-    spec = importlib.util.spec_from_file_location(
-        "sqliteplus.utils.replication_sync", Path(__file__).resolve()
-    )
-    module.__spec__ = spec
-    module.__loader__ = spec.loader
-    module.__package__ = "sqliteplus.utils"
-    sys.modules["sqliteplus.utils.replication_sync"] = module
-
-    package_root = Path(__file__).resolve().parents[2]
-    if str(package_root) not in sys.path:
-        sys.path.insert(0, str(package_root))
-    run_module("sqliteplus.utils.replication_sync", run_name="__main__")
-    raise SystemExit()
-
 import importlib.machinery
 import importlib.util
 import os
@@ -87,7 +64,7 @@ def _ensure_demo_database(db_path: Path, cipher_key: str | None) -> None:
             )
 
 
-def main() -> None:
+def main() -> int:
     """Ejecuta una replicación de demostración desde cualquier ruta."""
 
     cipher_key = os.getenv("SQLITE_DB_KEY")
@@ -104,7 +81,8 @@ def main() -> None:
     print(f"Base de datos de demostración disponible en {db_path}")
     print(f"Copia de seguridad creada en: {backup_path}")
     print(f"Exportación CSV generada en: {export_target}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

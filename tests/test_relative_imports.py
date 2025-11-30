@@ -4,15 +4,29 @@ import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-CLI_SCRIPT = PROJECT_ROOT / "sqliteplus" / "cli.py"
-SQLITEPLUS_SYNC_SCRIPT = PROJECT_ROOT / "sqliteplus" / "utils" / "sqliteplus_sync.py"
-REPLICATION_SCRIPT = PROJECT_ROOT / "sqliteplus" / "utils" / "replication_sync.py"
 
 
-def _run_script(script: Path, *args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
-    command = [sys.executable, str(script), *args]
+def _ensure_package_installed() -> None:
+    if getattr(_ensure_package_installed, "_installed", False):
+        return
+
+    env = os.environ.copy()
+    env["SQLITEPLUS_DISABLE_CYTHON"] = "1"
+
+    subprocess.run(
+        [sys.executable, "-m", "pip", "install", "-e", str(PROJECT_ROOT)],
+        capture_output=True,
+        text=True,
+        check=True,
+        env=env,
+    )
+    _ensure_package_installed._installed = True
+
+
+def _run_entrypoint(command: str, *args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
+    _ensure_package_installed()
     return subprocess.run(
-        command,
+        [command, *args],
         capture_output=True,
         text=True,
         cwd=cwd,
@@ -22,19 +36,19 @@ def _run_script(script: Path, *args: str, cwd: Path) -> subprocess.CompletedProc
 
 
 def test_cli_script_runs_from_outside_project(tmp_path: Path) -> None:
-    result = _run_script(CLI_SCRIPT, "--help", cwd=tmp_path)
+    result = _run_entrypoint("sqliteplus", "--help", cwd=tmp_path)
     assert result.returncode == 0, result.stderr
     assert "SQLitePlus" in result.stdout
 
 
 def test_sqliteplus_sync_demo_runs_from_outside_project(tmp_path: Path) -> None:
-    result = _run_script(SQLITEPLUS_SYNC_SCRIPT, cwd=tmp_path)
+    result = _run_entrypoint("sqliteplus-sync", cwd=tmp_path)
     assert result.returncode == 0, result.stderr
     assert "SQLitePlus está listo para usar." in result.stdout
 
 
 def test_replication_script_creates_artifacts(tmp_path: Path) -> None:
-    result = _run_script(REPLICATION_SCRIPT, cwd=tmp_path)
+    result = _run_entrypoint("sqliteplus-replication", cwd=tmp_path)
     assert result.returncode == 0, result.stderr
 
     backups_dir = tmp_path / "backups"
