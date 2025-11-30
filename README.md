@@ -152,6 +152,44 @@ Las validaciones de esquemas y el saneamiento de identificadores usan extensione
 - **Benchmarks de DML:** las rutas críticas `SQLitePlus.execute_query`/`fetch_query` y `SQLiteReplication.export_to_csv` se validan con `pytest-benchmark`. Para las operaciones DML, el umbral se ajusta con `SQLITEPLUS_DML_MIN_SPEEDUP` (por defecto `0.05`, es decir, 5 % de mejora esperada). Si el entorno CI es inestable, sube ese valor o usa `--benchmark-disable` para omitirlos.
 - **Lista dinámica de módulos a compilar:** `setup.py` lee `reports/cython_candidates.json` (o la ruta definida en `SQLITEPLUS_CYTHON_TARGETS`) y solo cythoniza los módulos listados. Usa `SQLITEPLUS_FORCE_CYTHON=1` para compilar todos los `.pyx` disponibles u `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1` para ignorar la lista y dejar el comportamiento tradicional.
 
+### Descubrimiento automático y pipeline Cython
+
+`setup.py` detecta automáticamente las extensiones a compilar recorriendo `sqliteplus/**/*.pyx` y, salvo que definas `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1`, cruza el resultado con la lista generada en `reports/cython_candidates.json`. El flujo básico es:
+
+1. Ejecuta `tools/generate_cython_twins.py` con un reporte de hotspots para descubrir los módulos Python con más peso.
+2. El script guarda el inventario en `reports/cython_candidates.json` (o la ruta indicada en `--output`) y crea un gemelo `.pyx` por cada módulo detectado.
+3. Durante `pip install .` o `python -m build`, `setup.py` solo cythoniza los módulos presentes en ese JSON, salvo que fuerces lo contrario con `SQLITEPLUS_FORCE_CYTHON=1`.
+
+Variables relevantes para controlar el pipeline:
+
+- `SQLITEPLUS_DISABLE_CYTHON=1`: desactiva por completo la compilación (modo puro Python).
+- `SQLITEPLUS_FORCE_CYTHON=1`: cythoniza todos los `.pyx` encontrados, ignorando la lista generada.
+- `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1`: omite el filtro por `reports/cython_candidates.json` pero sigue respetando `SQLITEPLUS_DISABLE_CYTHON`.
+- `SQLITEPLUS_CYTHON_TARGETS=/ruta/a/lista.json`: indica un archivo alternativo con los módulos permitidos.
+- `SQLITEPLUS_CYTHON_ANNOTATE=1` y `SQLITEPLUS_CYTHON_TRACE=1`: generan reportes HTML y macros de trazado en los binarios.
+
+Para lanzar el descubrimiento sobre el reporte por defecto (`reports/hotspots.json`) y limitarlo a tres módulos:
+
+```bash
+python tools/generate_cython_twins.py reports/hotspots.json --limit 3
+```
+
+El comando crea los gemelos `.pyx` junto al `.py` original (por ejemplo `sqliteplus/core/validators.py` → `sqliteplus/core/validators.pyx`) y rellena `reports/cython_candidates.json` con los módulos aceptados. Si los `.pyx` ya existen y quieres regenerarlos, añade `--overwrite`. Para usar un reporte personalizado y escribir la lista en otra ruta:
+
+```bash
+python tools/generate_cython_twins.py /tmp/perfil_hotspots.json --output reports/mis_candidatos.json --limit 5
+SQLITEPLUS_CYTHON_TARGETS=reports/mis_candidatos.json python -m build
+```
+
+### Añadir manualmente un módulo al pipeline
+
+1. Crea o mantén el módulo original en Python puro (por ejemplo `sqliteplus/core/nuevo_modulo.py`).
+2. Añade un gemelo `nuevo_modulo.pyx` en la misma carpeta que importe el `.py` como *fallback*. Los gemelos generados por `tools/generate_cython_twins.py` sirven de plantilla porque reexportan funciones y clases para conservar la API binaria y los envoltorios `.py`.
+3. Si el módulo expone tipos o constantes para `cimport`, declara un `nuevo_modulo.pxd` en el mismo paquete con las firmas que deban ser compartidas.
+4. Incluye el módulo en `reports/cython_candidates.json` (o en la ruta fijada por `SQLITEPLUS_CYTHON_TARGETS`) si quieres que se cythonice automáticamente; si prefieres un único build manual, ejecuta con `SQLITEPLUS_FORCE_CYTHON=1`.
+
+Los artefactos generados siguen siendo distribuidos en ambos formatos: `python -m build` empaqueta los `.py`, `.pyx` y `.pxd` en el `sdist`, y el `wheel` incluye los binarios compilados cuando Cython está activo. Así, los consumidores pueden seguir importando los envoltorios `.py` sin romper compatibilidad binaria y otros paquetes pueden hacer `cimport` desde las cabeceras publicadas.
+
 Para ejecutar las pruebas de rendimiento con `pytest-benchmark`:
 
 ```bash
