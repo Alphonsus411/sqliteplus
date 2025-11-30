@@ -59,6 +59,8 @@ speedups = [
 
 [project.scripts]
 sqliteplus = "sqliteplus.cli:main"
+sqliteplus-sync = "sqliteplus.utils.sqliteplus_sync:main"
+sqliteplus-replication = "sqliteplus.utils.replication_sync:main"
 
 [tool.setuptools]
 package-dir = {"" = "."}

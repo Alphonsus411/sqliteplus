@@ -1,16 +1,5 @@
 from __future__ import annotations
 
-if __name__ == "__main__" and __package__ in {None, ""}:
-    import sys
-    from pathlib import Path
-    from runpy import run_module
-
-    package_root = Path(__file__).resolve().parents[2]
-    if str(package_root) not in sys.path:
-        sys.path.insert(0, str(package_root))
-    run_module("sqliteplus.utils.database_manager_sync", run_name="__main__")
-    raise SystemExit()
-
 import logging
 import sqlite3
 import threading
@@ -117,8 +106,16 @@ class DatabaseManager:
         self.locks.clear()
 
 
-if __name__ == "__main__":
+def main() -> int:
+    """Punto de entrada de demostración para DatabaseManager."""
+
     manager = DatabaseManager()
     manager.execute_query("test_db", "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)")
     manager.execute_query("test_db", "INSERT INTO logs (action) VALUES (?)", ("Test de SQLitePlus",))
-    manager.fetch_query("test_db", "SELECT * FROM logs")
+    rows = manager.fetch_query("test_db", "SELECT * FROM logs")
+    print(f"Entradas registradas: {len(rows)}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
