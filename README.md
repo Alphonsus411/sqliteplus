@@ -306,6 +306,18 @@ Todos los subcomandos y sus opciones se documentan en [`docs/cli.md`](docs/cli.m
 
 Los subcomandos `export-csv` y `backup` muestran los resultados de forma visual con Rich, mientras que las utilidades internas solo devuelven la ruta generada. Así puedes reutilizar la API desde scripts externos sin producir mensajes duplicados: toda la salida visible procede de la CLI.
 
+### Script standalone de replicación
+
+Si prefieres evitar la CLI y solo necesitas verificar las importaciones relativas del paquete, puedes ejecutar directamente el script de replicación desde cualquier directorio:
+
+```bash
+python -m sqliteplus.utils.replication_sync
+# o
+python sqliteplus/utils/replication_sync.py
+```
+
+El módulo creará una base mínima en `./sqliteplus/databases/database.db` (sin modificar los datos distribuidos con el paquete), generará una copia en `./backups/` y exportará la tabla `logs` a `./logs_export.csv` usando las rutas relativas al directorio actual. Esto facilita comprobar que las dependencias internas funcionan aunque ejecutes el script fuera del repositorio o de un entorno virtual.
+
 ### Activar el visor visual (extra opcional)
 
 El paquete base evita instalar dependencias gráficas para mantener una huella ligera. Si deseas abrir el visor accesible de los subcomandos `fetch` o `list-tables` (`--viewer`) o aprovechar `sqliteplus visual-dashboard`, instala el extra opcional `visual`:
