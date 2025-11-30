@@ -100,10 +100,13 @@ def close_db_manager_session():
 @pytest.fixture()
 def speedup_variants(monkeypatch):
     def loader(force_fallback: bool):
+        original_suffixes = tuple(importlib.machinery.EXTENSION_SUFFIXES)
         if force_fallback:
             monkeypatch.setenv("SQLITEPLUS_DISABLE_CYTHON", "1")
+            importlib.machinery.EXTENSION_SUFFIXES = ()
         else:
             monkeypatch.delenv("SQLITEPLUS_DISABLE_CYTHON", raising=False)
+            importlib.machinery.EXTENSION_SUFFIXES = original_suffixes
 
         for stub_module in (
             "sqliteplus.core._schemas_fast",
@@ -111,7 +114,10 @@ def speedup_variants(monkeypatch):
         ):
             sys.modules.pop(stub_module, None)
 
-        return _reload_speedup_modules()
+        try:
+            return _reload_speedup_modules()
+        finally:
+            importlib.machinery.EXTENSION_SUFFIXES = original_suffixes
 
     yield loader
 
