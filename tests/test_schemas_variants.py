@@ -32,7 +32,6 @@ def _collect_schema_results(module):
         "strip": module.CreateTableSchema._strip_enclosing_parentheses("( (valor) )"),
         "safe": module.CreateTableSchema._is_safe_default_expr("strftime('%s','now')"),
         "identifier": module.is_valid_sqlite_identifier("Tabla_Valida"),
-        "disable_flag": module.DISABLE_CYTHON_SPEEDUPS,
     }
 
 
