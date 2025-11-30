@@ -35,6 +35,36 @@ Si solo quieres experimentar con la librería dentro del repositorio puedes mant
 pip install -e .
 ```
 
+### ▶️ Ejecutar los entry points
+
+Tras la instalación se publican tres comandos en tu `PATH`:
+
+- `sqliteplus`: CLI principal. Usa las opciones `--db-path` y `--cipher-key` (o la variable `SQLITE_DB_KEY`) para elegir la base activa y aplicar claves SQLCipher. Ejemplo rápido para crear la base embebida y consultar su contenido:
+
+  ```bash
+  sqliteplus --db-path ./databases/demo.db --cipher-key "$SQLITE_DB_KEY" init-db
+  sqliteplus --db-path ./databases/demo.db execute "INSERT INTO logs (action) VALUES ('Hola desde CLI')"
+  sqliteplus --db-path ./databases/demo.db fetch "SELECT * FROM logs"
+  ```
+
+- `sqliteplus-sync`: versión mínima de demostración basada en la implementación síncrona. Basta con ejecutarlo para verificar que las importaciones se resuelven desde cualquier ruta y registrar un mensaje inicial en la base predeterminada:
+
+  ```bash
+  sqliteplus-sync
+  ```
+
+  Si la base está cifrada, define `SQLITE_DB_KEY` antes de lanzar el comando.
+
+- `sqliteplus-replication`: genera una copia de seguridad y exporta la tabla `logs` a CSV en tu directorio de trabajo.
+
+  ```bash
+  sqliteplus-replication
+  ls backups  # encontrarás la copia creada
+  cat logs_export.csv
+  ```
+
+> Nota: ya no es necesario invocar directamente los módulos del paquete (por ejemplo `python -m sqliteplus.utils.replication_sync`). Los entry points anteriores resuelven las importaciones correctamente y funcionan desde cualquier carpeta.
+
 ### 🏗️ Construir desde el repositorio
 
 - **Instalación local con Cython:** `pip install .` detecta y compila automáticamente todas las extensiones Cython bajo `sqliteplus/`. Si necesitas asegurar que `Cython` está presente cuando trabajas desde el código fuente, puedes instalar el extra `speedups`: `pip install -e '.[dev,speedups]'`.
