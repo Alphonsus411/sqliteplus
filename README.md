@@ -37,7 +37,7 @@ pip install -e .
 
 ### ▶️ Ejecutar los entry points
 
-Tras la instalación se publican tres comandos en tu `PATH`:
+Tras la instalación se publican tres comandos en tu `PATH`. El recomendado para el uso diario es `sqliteplus`:
 
 - `sqliteplus`: CLI principal. Usa las opciones `--db-path` y `--cipher-key` (o la variable `SQLITE_DB_KEY`) para elegir la base activa y aplicar claves SQLCipher. Ejemplo rápido para crear la base embebida y consultar su contenido:
 
@@ -63,7 +63,7 @@ Tras la instalación se publican tres comandos en tu `PATH`:
   cat logs_export.csv
   ```
 
-> Nota: ya no es necesario invocar directamente los módulos del paquete (por ejemplo `python -m sqliteplus.utils.replication_sync`). Los entry points anteriores resuelven las importaciones correctamente y funcionan desde cualquier carpeta.
+> Nota: tras la corrección de importaciones puedes ejecutar la CLI directamente desde el repositorio (`python -m sqliteplus.cli` o `python sqliteplus/cli.py`). Aun así, la ruta preferida es instalar el paquete y usar el comando `sqliteplus` desde cualquier carpeta.
 
 ### 🏗️ Construir desde el repositorio
 
