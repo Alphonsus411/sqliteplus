@@ -96,7 +96,7 @@ Guarda tus claves como variables de entorno para evitar dejarlas en el código.
 
 | Variable | Para qué sirve |
 | --- | --- |
-| `SECRET_KEY` | Firmar los tokens JWT expuestos por la API. |
+| `SECRET_KEY` | Firmar y validar los tokens JWT expuestos por la API. Sin ella no se podrán generar sesiones ni verificar las peticiones entrantes. |
 | `SQLITEPLUS_USERS_FILE` | Ubicación del JSON con usuarios y contraseñas hasheadas con `bcrypt`. Es obligatoria **solo** cuando levantas la API o usas la autenticación integrada. |
 
 ### Variables opcionales (API y CLI)
@@ -154,10 +154,10 @@ forma transparente. Cuando quieras forzar el backend nativo instala el extra
 
 Antes de arrancar el servidor asegúrate de definir dos variables de entorno clave:
 
-- `SECRET_KEY`: se usa para firmar los tokens JWT emitidos por la API.
+- `SECRET_KEY`: se usa para firmar los tokens JWT emitidos por la API **y** para validar los tokens recibidos en cada petición. Sin esta clave no se podrán generar sesiones ni verificar su autenticidad.
 - `SQLITEPLUS_USERS_FILE`: ruta al archivo JSON con usuarios y contraseñas hasheadas con `bcrypt`.
 
-Ejemplo rápido desde el mismo directorio del repositorio:
+Ejemplo rápido desde el mismo directorio del repositorio. La primera línea genera una clave aleatoria segura lista para la firma y la validación de JWT:
 
 ```bash
 export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
