@@ -8,7 +8,7 @@ export SQLITE_DB_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
 export SQLITEPLUS_USERS_FILE="$(pwd)/users.json"
 ```
 
-> `SQLITEPLUS_USERS_FILE` solo es obligatorio para la API protegida con JWT. La CLI local puede trabajar sin ese archivo.
+`SECRET_KEY` se utiliza para firmar los tokens JWT que emite la API y para validar los tokens recibidos en cada petición. Sin ella el servidor no podrá generar sesiones ni verificar su autenticidad. `SQLITEPLUS_USERS_FILE` solo es obligatorio para la API protegida con JWT; la CLI local puede trabajar sin ese archivo.
 
 Crea el archivo `users.json` con hashes `bcrypt`:
 
