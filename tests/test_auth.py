@@ -54,10 +54,7 @@ async def test_jwt_token_reports_missing_secret_key(monkeypatch):
         res = await ac.post(TOKEN_PATH, data={"username": "admin", "password": "admin"})
 
     assert res.status_code == 500
-    assert (
-        res.json()["detail"]
-        == "SECRET_KEY debe definirse en el entorno antes de iniciar la aplicación"
-    )
+    assert res.json()["detail"] == "No se pudo generar el token de autenticación"
 
 
 @pytest.mark.asyncio
@@ -73,8 +70,26 @@ async def test_jwt_token_reports_invalid_users_file_when_directory(tmp_path, mon
         res = await ac.post(TOKEN_PATH, data={"username": "admin", "password": "admin"})
 
     assert res.status_code == 500
-    expected_message = f"El archivo de usuarios '{users_directory.resolve()}' debe ser un archivo regular"
-    assert res.json()["detail"] == expected_message
+    assert res.json()["detail"] == "No se pudo inicializar el servicio de autenticación"
+    assert str(users_directory.resolve()) not in res.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_login_hides_users_backend_error_details(monkeypatch):
+    def _broken_service():
+        raise UserSourceError("backend caído en /srv/private/users.json")
+
+    monkeypatch.setattr("sqliteplus.api.endpoints.get_user_service", _broken_service)
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        res = await ac.post(TOKEN_PATH, data={"username": "admin", "password": "admin"})
+
+    assert res.status_code == 500
+    detail = res.json()["detail"]
+    assert detail == "No se pudo inicializar el servicio de autenticación"
+    assert "/srv/private" not in detail
+    assert "backend" not in detail.lower()
 
 
 @pytest.mark.asyncio

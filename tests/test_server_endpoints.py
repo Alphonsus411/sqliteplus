@@ -1,4 +1,6 @@
 import pytest
+from sqlite3 import OperationalError
+
 
 DB_NAME = "test_db_api"
 TABLE_NAME = "logs"
@@ -207,3 +209,27 @@ async def test_create_table_accepts_multiple_constraints(client, auth_headers):
             f"/databases/{db_name}/drop_table?table_name={table}",
             headers=auth_headers,
         )
+
+
+@pytest.mark.asyncio
+async def test_create_table_error_detail_hides_sql_and_paths(client, auth_headers, monkeypatch):
+    async def _failing_execute_query(_db_name, _query, _params=None):
+        raise OperationalError(
+            "syntax error near SELECT * FROM /abs/private/data.db\nTraceback (most recent call last): ..."
+        )
+
+    monkeypatch.setattr("sqliteplus.api.endpoints.db_manager.execute_query", _failing_execute_query)
+
+    response = await client.post(
+        "/databases/test_db_api/create_table",
+        params={"table_name": "logs"},
+        json={"columns": {"id": "INTEGER PRIMARY KEY", "msg": "TEXT"}},
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 400
+    detail = response.json()["detail"]
+    assert detail == "La operación no pudo completarse por una sintaxis SQL inválida"
+    assert "/abs/private" not in detail
+    assert "select *" not in detail.lower()
+    assert "traceback" not in detail.lower()

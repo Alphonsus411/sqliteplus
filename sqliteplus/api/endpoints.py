@@ -33,6 +33,23 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+def build_safe_http_error(
+    *,
+    status_code: int,
+    public_detail: str,
+    log_message: str,
+    exc: Exception | None = None,
+    **context: object,
+) -> HTTPException:
+    """Construye un HTTPException seguro para cliente y deja detalles en logs."""
+
+    if exc is not None:
+        logger.exception(log_message, extra={"context": context})
+    else:
+        logger.error(log_message, extra={"context": context})
+    return HTTPException(status_code=status_code, detail=public_detail)
+
+
 def _escape_identifier(identifier: str) -> str:
     """Escapa identificadores siguiendo las reglas de SQLite."""
 
@@ -80,41 +97,50 @@ def _map_sql_error(exc: Exception, table_name: str) -> HTTPException:
         return HTTPException(status_code=404, detail=f"Tabla '{table_name}' no encontrada")
 
     if "no such column" in normalized or "has no column named" in normalized:
-        return HTTPException(
+        return build_safe_http_error(
             status_code=400,
-            detail=f"Columna inválida para la tabla '{table_name}': {message}",
+            public_detail=f"La operación hace referencia a una columna inválida en la tabla '{table_name}'",
+            log_message="Error SQL por columna inválida en tabla '%s': %s" % (table_name, message),
+            exc=exc,
+            table_name=table_name,
         )
 
     if "may not be dropped" in normalized:
-        return HTTPException(
+        return build_safe_http_error(
             status_code=400,
-            detail=(
-                f"No se puede eliminar la tabla '{table_name}': {message}"
-            ),
+            public_detail=f"No se puede eliminar la tabla '{table_name}'",
+            log_message="Error SQL al eliminar tabla protegida '%s': %s" % (table_name, message),
+            exc=exc,
+            table_name=table_name,
         )
 
     if "syntax error" in normalized:
-        return HTTPException(
+        return build_safe_http_error(
             status_code=400,
-            detail=f"Error de sintaxis en la instrucción SQL: {message}",
+            public_detail="La operación no pudo completarse por una sintaxis SQL inválida",
+            log_message="Error de sintaxis SQL en tabla '%s': %s" % (table_name, message),
+            exc=exc,
+            table_name=table_name,
         )
 
     if "more than one primary key" in normalized:
-        return HTTPException(
+        return build_safe_http_error(
             status_code=400,
-            detail=(
-                f"Definición inválida de clave primaria para la tabla '{table_name}': {message}"
-            ),
+            public_detail=f"Definición inválida de clave primaria para la tabla '{table_name}'",
+            log_message="Error SQL de clave primaria duplicada en tabla '%s': %s" % (table_name, message),
+            exc=exc,
+            table_name=table_name,
         )
 
-    logger.exception(
-        "Error operacional inesperado durante operación SQL en la tabla %s: %s",
-        table_name,
-        message,
-    )
-    return HTTPException(
+    return build_safe_http_error(
         status_code=500,
-        detail="Error interno al ejecutar la operación en la base de datos",
+        public_detail="Error interno al ejecutar la operación en la base de datos",
+        log_message=(
+            "Error operacional inesperado durante operación SQL en la tabla "
+            f"'{table_name}': {message}"
+        ),
+        exc=exc,
+        table_name=table_name,
     )
 
 @router.post("/token", tags=["Autenticación"], summary="Obtener un token de autenticación", description="Genera un token JWT válido por 1 hora.")
@@ -122,17 +148,35 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     try:
         user_service = get_user_service()
     except UserSourceError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+        raise build_safe_http_error(
+            status_code=500,
+            public_detail="No se pudo inicializar el servicio de autenticación",
+            log_message="Fallo al obtener el servicio de usuarios para login",
+            exc=exc,
+            username=form_data.username,
+        ) from exc
 
     try:
         if user_service.verify_credentials(form_data.username, form_data.password):
             try:
                 token = generate_jwt(form_data.username)
             except RuntimeError as exc:
-                raise HTTPException(status_code=500, detail=str(exc)) from exc
+                raise build_safe_http_error(
+                    status_code=500,
+                    public_detail="No se pudo generar el token de autenticación",
+                    log_message="Fallo al generar JWT para el usuario '%s'" % form_data.username,
+                    exc=exc,
+                    username=form_data.username,
+                ) from exc
             return {"access_token": token, "token_type": "bearer"}
     except UserSourceError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+        raise build_safe_http_error(
+            status_code=500,
+            public_detail="No se pudieron verificar las credenciales en este momento",
+            log_message="Fallo verificando credenciales del usuario '%s'" % form_data.username,
+            exc=exc,
+            username=form_data.username,
+        ) from exc
 
     raise HTTPException(status_code=400, detail="Credenciales incorrectas")
 
