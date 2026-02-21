@@ -10,6 +10,10 @@ import weakref
 import aiosqlite
 
 from fastapi import HTTPException
+from sqliteplus.utils.crypto_sqlite import (
+    GENERIC_SECURITY_ERROR_MESSAGE,
+    verify_cipher_support,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -181,16 +185,33 @@ class AsyncDatabaseManager:
                         escaped_key = raw_encryption_key.replace("'", "''")
                         try:
                             await connection.execute(f"PRAGMA key = '{escaped_key}';")
+                            cipher_version_cursor = await connection.execute("PRAGMA cipher_version;")
+                            cipher_version_row = await cipher_version_cursor.fetchone()
+                            verify_cipher_support(
+                                cipher_key=raw_encryption_key,
+                                cipher_version_row=cipher_version_row,
+                                exception_factory=lambda message: HTTPException(
+                                    status_code=503,
+                                    detail=message,
+                                ),
+                                security_message=GENERIC_SECURITY_ERROR_MESSAGE,
+                            )
                         except (aiosqlite.OperationalError, sqlite3.DatabaseError) as exc:
                             logger.error(
-                                "Error al aplicar PRAGMA key para la base '%s': %s.",
+                                "Fallo al validar soporte de cifrado para la base '%s': %s.",
                                 canonical_name,
                                 exc,
                             )
                             raise HTTPException(
                                 status_code=503,
-                                detail="Base de datos no disponible: fallo al aplicar la clave de cifrado",
+                                detail=GENERIC_SECURITY_ERROR_MESSAGE,
                             ) from exc
+                        except HTTPException:
+                            logger.error(
+                                "Soporte de cifrado no disponible para la base '%s'.",
+                                canonical_name,
+                            )
+                            raise
                     await connection.execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
                     await connection.commit()
                 except Exception:

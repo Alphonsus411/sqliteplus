@@ -57,13 +57,25 @@ class _DummyCursor:
         return []
 
 
+class _DummyPragmaCursor:
+    def __init__(self, row):
+        self._row = row
+
+    def fetchone(self):
+        return self._row
+
+
 class _DummyConnection:
-    def __init__(self, executed):
+    def __init__(self, executed, cipher_version_row=("4.5.0",)):
         self.executed = executed
         self.closed = False
+        self.cipher_version_row = cipher_version_row
 
     def execute(self, query):
         self.executed.append(("conn", query))
+        if query == "PRAGMA cipher_version;":
+            return _DummyPragmaCursor(self.cipher_version_row)
+        return _DummyPragmaCursor(None)
 
     def cursor(self):
         return _DummyCursor(self.executed)
@@ -101,6 +113,27 @@ def test_sqliteplus_applies_cipher_key(monkeypatch, tmp_path):
     assert ("conn", "PRAGMA key = 'mi''clave';") in executed
     connection.close()
 
+
+
+
+def test_sqliteplus_rejects_cipher_without_support(monkeypatch, tmp_path):
+    def fake_connect(path, check_same_thread=False):
+        return _DummyConnection([], cipher_version_row=("",))
+
+    monkeypatch.setattr(sqliteplus_sync.sqlite3, "connect", fake_connect)
+
+    with pytest.raises(SQLitePlusCipherError, match="políticas de seguridad"):
+        SQLitePlus(db_path=tmp_path / "unsupported.db", cipher_key="secret")
+
+
+def test_apply_cipher_key_rejects_empty_or_malformed_key(monkeypatch):
+    conn = _DummyConnection([])
+
+    with pytest.raises(SQLitePlusCipherError):
+        sqliteplus_sync.apply_cipher_key(conn, "   ")
+
+    with pytest.raises(SQLitePlusCipherError):
+        sqliteplus_sync.apply_cipher_key(conn, 123)  # type: ignore[arg-type]
 
 def test_replication_expands_user_paths(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
@@ -164,7 +197,9 @@ def test_replication_falls_back_when_using_package_path(tmp_path, monkeypatch):
 def test_sqliteplus_raises_cipher_error_when_key_fails(monkeypatch, tmp_path):
     class FailingConnection(_DummyConnection):
         def execute(self, query):
-            raise sqliteplus_sync.sqlite3.DatabaseError("no such pragma: key")
+            if query.startswith("PRAGMA key"):
+                raise sqliteplus_sync.sqlite3.DatabaseError("no such pragma: key")
+            return super().execute(query)
 
     def fake_connect(path, check_same_thread=False):
         return FailingConnection([])
