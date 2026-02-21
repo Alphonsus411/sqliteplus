@@ -20,6 +20,7 @@ from sqliteplus.main import app  # Importa desde la nueva estructura
 from sqliteplus.core.db import db_manager
 
 from sqliteplus.auth.users import reset_user_service_cache
+from sqliteplus.auth.rate_limit import reset_login_rate_limiter
 
 MODULES_TO_RELOAD = (
     "sqliteplus.core.schemas",
@@ -60,6 +61,23 @@ def configure_user_store():
     reset_user_service_cache()
     yield
     reset_user_service_cache()
+
+
+@pytest.fixture(autouse=True, scope="function")
+def reset_auth_rate_limit_state():
+    reset_login_rate_limiter(
+        max_attempts=5,
+        window_seconds=60,
+        base_block_seconds=30,
+        max_block_seconds=900,
+    )
+    yield
+    reset_login_rate_limiter(
+        max_attempts=5,
+        window_seconds=60,
+        base_block_seconds=30,
+        max_block_seconds=900,
+    )
 
 
 @pytest_asyncio.fixture(scope="function")

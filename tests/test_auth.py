@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import json
 import os
@@ -15,6 +16,10 @@ import bcrypt
 
 from sqliteplus.main import app
 from sqliteplus.auth.jwt import ALGORITHM, get_secret_key
+from sqliteplus.auth.rate_limit import (
+    get_login_rate_limit_metrics,
+    reset_login_rate_limiter,
+)
 from sqliteplus.auth.users import (
     get_user_service,
     reload_user_service,
@@ -41,8 +46,9 @@ async def test_jwt_token_failure():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         res = await ac.post(TOKEN_PATH, data={"username": "invalid", "password": "wrong"})
-        assert res.status_code == 400
-        assert res.json()["detail"] == "Credenciales incorrectas"
+        assert res.status_code == 401
+        assert res.headers["WWW-Authenticate"] == "Bearer"
+        assert res.json()["detail"] == "No se pudo completar la autenticación"
 
 
 @pytest.mark.asyncio
@@ -251,3 +257,52 @@ def test_verify_credentials_accepts_compat_hash_with_native_backend(tmp_path, mo
             sys.modules["bcrypt"] = original_bcrypt
         importlib.reload(users_module)
         users_module.reset_user_service_cache()
+
+
+@pytest.mark.asyncio
+async def test_jwt_token_applies_rate_limit_and_recovers_after_window():
+    reset_login_rate_limiter(
+        max_attempts=3,
+        window_seconds=1,
+        base_block_seconds=1,
+        max_block_seconds=2,
+    )
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        for _ in range(3):
+            res = await ac.post(TOKEN_PATH, data={"username": "admin", "password": "incorrecta"})
+            assert res.status_code == 401
+
+        blocked = await ac.post(TOKEN_PATH, data={"username": "admin", "password": "incorrecta"})
+        assert blocked.status_code == 401
+        assert blocked.headers["WWW-Authenticate"] == "Bearer"
+        assert blocked.json()["detail"] == "No se pudo completar la autenticación"
+
+        await asyncio.sleep(1.2)
+
+        recovered = await ac.post(TOKEN_PATH, data={"username": "admin", "password": "admin"})
+        assert recovered.status_code == 200
+
+
+def test_failed_login_updates_rate_limit_metrics():
+    reset_login_rate_limiter(
+        max_attempts=2,
+        window_seconds=60,
+        base_block_seconds=1,
+        max_block_seconds=2,
+    )
+
+    limiter_module = importlib.import_module("sqliteplus.auth.rate_limit")
+    limiter = limiter_module.login_rate_limiter
+
+    limiter.register_failure(ip="127.0.0.1", username="admin", now=10.0)
+    limiter.register_failure(ip="127.0.0.1", username="admin", now=11.0)
+    limiter.is_blocked(ip="127.0.0.1", username="admin", now=11.1)
+
+    metrics = get_login_rate_limit_metrics()
+    assert metrics["failed_attempts_total"] == 2
+    assert metrics["rate_limit_triggered_total"] == 1
+    assert metrics["blocked_requests_total"] == 1
+    assert metrics["failed_by_ip"]["127.0.0.1"] == 2
+    assert metrics["failed_by_user"]["admin"] == 2
