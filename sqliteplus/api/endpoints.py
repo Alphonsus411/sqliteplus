@@ -16,7 +16,7 @@ from typing import Sequence
 
 import aiosqlite
 from sqlite3 import OperationalError
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 
 from sqliteplus.core.db import db_manager
@@ -27,6 +27,7 @@ from sqliteplus.core.schemas import (
 )
 from sqliteplus.auth.jwt import generate_jwt, verify_jwt
 from sqliteplus.auth.users import get_user_service, UserSourceError
+from sqliteplus.auth.rate_limit import login_rate_limiter
 from sqliteplus.utils.json_serialization import normalize_json_value
 
 router = APIRouter()
@@ -144,7 +145,20 @@ def _map_sql_error(exc: Exception, table_name: str) -> HTTPException:
     )
 
 @router.post("/token", tags=["Autenticación"], summary="Obtener un token de autenticación", description="Genera un token JWT válido por 1 hora.")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
+    client_ip = request.client.host if request.client else "unknown"
+    username = form_data.username or None
+
+    if login_rate_limiter.is_blocked(ip=client_ip, username=username):
+        logger.warning(
+            "Intento de autenticación bloqueado por rate limit",
+            extra={"context": {"username": username, "client_ip": client_ip}},
+        )
+        raise HTTPException(
+            status_code=401,
+            detail="No se pudo completar la autenticación",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     try:
         user_service = get_user_service()
     except UserSourceError as exc:
@@ -168,6 +182,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
                     exc=exc,
                     username=form_data.username,
                 ) from exc
+            login_rate_limiter.register_success(ip=client_ip, username=username)
             return {"access_token": token, "token_type": "bearer"}
     except UserSourceError as exc:
         raise build_safe_http_error(
@@ -178,7 +193,16 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             username=form_data.username,
         ) from exc
 
-    raise HTTPException(status_code=400, detail="Credenciales incorrectas")
+    login_rate_limiter.register_failure(ip=client_ip, username=username)
+    logger.warning(
+        "Intento de autenticación fallido",
+        extra={"context": {"username": username, "client_ip": client_ip}},
+    )
+    raise HTTPException(
+        status_code=401,
+        detail="No se pudo completar la autenticación",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
 
 
 @router.post("/databases/{db_name:path}/create_table", tags=["Gestión de Base de Datos"], summary="Crear una tabla", description="Crea una tabla en la base de datos especificada.")
