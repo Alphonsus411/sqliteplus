@@ -24,6 +24,10 @@ from typing import Any
 
 from sqliteplus.core.schemas import is_valid_sqlite_identifier
 from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
+from sqliteplus.utils.crypto_sqlite import (
+    GENERIC_SECURITY_ERROR_MESSAGE,
+    verify_cipher_support,
+)
 
 SQLITEPLUS_PUBLIC_API = (
     "SQLitePlus",
@@ -69,23 +73,30 @@ else:
     class SQLitePlusCipherError(RuntimeError):
         """Excepción para errores al aplicar la clave SQLCipher."""
 
-        def __init__(self, original_exception: sqlite3.Error):
+        def __init__(self, original_exception: Exception | None = None, message: str | None = None):
             self.original_exception = original_exception
-            message = (
-                "No se pudo aplicar la clave SQLCipher. Asegúrate de que tu intérprete "
-                "de SQLite tiene soporte para SQLCipher antes de continuar."
-            )
-            super().__init__(message)
+            detail = message or GENERIC_SECURITY_ERROR_MESSAGE
+            super().__init__(detail)
 
     def apply_cipher_key(connection: sqlite3.Connection, cipher_key: str | None) -> None:
-        """Aplica la clave de cifrado a una conexión abierta."""
+        """Aplica la clave de cifrado a una conexión abierta y valida soporte SQLCipher."""
 
-        if not cipher_key:
+        if cipher_key is None:
             return
+
+        if not isinstance(cipher_key, str):
+            raise SQLitePlusCipherError(message=GENERIC_SECURITY_ERROR_MESSAGE)
 
         escaped_key = cipher_key.replace("'", "''")
         try:
             connection.execute(f"PRAGMA key = '{escaped_key}';")
+            cipher_version_row = connection.execute("PRAGMA cipher_version;").fetchone()
+            verify_cipher_support(
+                cipher_key=cipher_key,
+                cipher_version_row=cipher_version_row,
+                exception_factory=lambda message: SQLitePlusCipherError(message=message),
+                security_message=GENERIC_SECURITY_ERROR_MESSAGE,
+            )
         except sqlite3.DatabaseError as exc:  # pragma: no cover - depende de SQLCipher
             raise SQLitePlusCipherError(exc) from exc
 
