@@ -242,7 +242,7 @@ cdef class SQLiteReplication:
     def _default_local_db(self) -> Path:
         return (Path.cwd() / Path(DEFAULT_DB_PATH)).resolve()
 
-    def _select_writable_path(self, Path candidate):
+    def _select_writable_path(self, candidate):
         cdef object local_default = self._default_local_db()
 
         requires_local_copy = self._is_inside_package(candidate) or not self._can_write_to(
@@ -263,7 +263,7 @@ cdef class SQLiteReplication:
 
         return candidate
 
-    def _copy_database_to_local(self, Path source, Path destination) -> None:
+    def _copy_database_to_local(self, source, destination) -> None:
         """Replica la base de datos origen y sus archivos asociados al directorio local."""
 
         if not source.exists():
@@ -275,7 +275,7 @@ cdef class SQLiteReplication:
         shutil.copy2(source, destination)
         self._copy_wal_and_shm(source, destination)
 
-    def _is_inside_package(self, Path path) -> cython.bint:
+    def _is_inside_package(self, path) -> cython.bint:
         package_root = _package_db_path().parent.parent
         try:
             path.relative_to(package_root)
@@ -283,7 +283,7 @@ cdef class SQLiteReplication:
             return False
         return True
 
-    def _can_write_to(self, Path directory) -> cython.bint:
+    def _can_write_to(self, directory) -> cython.bint:
         probe = directory
         while probe and not probe.exists():
             parent = probe.parent
@@ -293,7 +293,7 @@ cdef class SQLiteReplication:
 
         return os.access(probe, os.W_OK)
 
-    def _ensure_local_database(self, Path target) -> None:
+    def _ensure_local_database(self, target) -> None:
         target.parent.mkdir(parents=True, exist_ok=True)
         if not target.exists():
             target.touch()
