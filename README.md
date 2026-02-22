@@ -223,6 +223,17 @@ Build/instalación útiles:
 - Instalar el wheel local:
   - pip install --force-reinstall --no-deps dist\\sqliteplus_enhanced-<VERSION>-cp311-cp311-win_amd64.whl
 
+### CI de humo en Windows
+
+El repositorio incluye un workflow de GitHub Actions que compila el wheel con Cython en `windows-latest` e inspecciona que
+los módulos acelerados se importen correctamente. Luego ejecuta pruebas de humo:
+
+- .trae\\verify_imports.py
+- .trae\\verify_replication.py
+- .trae\\verify_pure_mode.py
+
+Archivo del workflow: [.github/workflows/smoke-windows.yml](.github/workflows/smoke-windows.yml).
+
 `setup.py` detecta automáticamente las extensiones a compilar recorriendo `sqliteplus/**/*.pyx` y, salvo que definas `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1`, cruza el resultado con la lista generada en `reports/cython_candidates.json`. El flujo básico es:
 
 1. Ejecuta `tools/generate_cython_twins.py` con un reporte de hotspots para descubrir los módulos Python con más peso.
