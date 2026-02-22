@@ -12,7 +12,7 @@ presente). Si se intenta activar fuera de ese contexto, el gestor **no borra arc
 warning explícito en logs para evitar pérdidas de datos en producción.
 
 Si la variable se activa en entorno seguro cuando ya existe una conexión viva en el mismo bucle, el
-gestor la cierra, elimina los ficheros `*.db`, `*.db-wal` y `*.db-shm` y vuelve a levantar una base
+gestor la cierra, elimina los archivos `*.db`, `*.db-wal` y `*.db-shm` y vuelve a levantar una base
 limpia.
 
 Para forzar una limpieza manual existe el parámetro `reset_on_init=True`, pensado únicamente para
@@ -33,7 +33,7 @@ Si `SQLITE_DB_KEY` está vacío, la API trabaja sin cifrado. Al definir la varia
 
 El módulo `sqliteplus.utils.replication_sync.SQLiteReplication` permite:
 
-- `backup_database()` – genera copias fechadas y duplica ficheros WAL/SHM si existen.
+- `backup_database()` – genera copias fechadas y duplica archivos WAL/SHM si existen.
 - `replicate_database(<ruta>)` – clona la base en otra ruta aplicando la misma clave SQLCipher.
 - `export_to_csv(<tabla>, <archivo>)` – exporta columnas y filas preservando el nombre de campos.
 

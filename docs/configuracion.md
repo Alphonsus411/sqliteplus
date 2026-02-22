@@ -16,7 +16,7 @@
 
 - Las bases asincrónicas se almacenan en la carpeta `databases/` por defecto.
 - Las copias de seguridad generadas por la CLI residen en `backups/`.
-- `SQLiteReplication` copia los ficheros `-wal` y `-shm` asociados para mantener la integridad.
+- `SQLiteReplication` copia los archivos `-wal` y `-shm` asociados para mantener la integridad.
 
 ## Opciones de la CLI
 

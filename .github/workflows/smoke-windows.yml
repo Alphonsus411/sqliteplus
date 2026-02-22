@@ -23,7 +23,7 @@ jobs:
         run: python -m pip install --upgrade pip
         shell: pwsh
       - name: Install build deps
-        run: pip install build cython wheel
+        run: pip install build cython==0.29.36 wheel
         shell: pwsh
       - name: Build wheel with Cython
         run: |
