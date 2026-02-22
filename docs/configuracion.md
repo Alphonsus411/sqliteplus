@@ -7,7 +7,7 @@
 | `HOME` | Utilizada al expandir rutas con `~` en `SQLITEPLUS_USERS_FILE`. |
 | `PYTEST_CURRENT_TEST` | Detectada automáticamente por pytest para reiniciar bases temporales. |
 | `SECRET_KEY` | Clave obligatoria para firmar y validar los JWT emitidos por la API. Se comprueba en tiempo de ejecución. |
-| `SQLITEPLUS_FORCE_RESET` | Fuerza la reinicialización de las bases sin depender de `PYTEST_CURRENT_TEST`. Admite `1`, `true` o `on`. La sección "Reinicialización automática en pruebas" de `docs/uso_avanzado.md` detalla el flujo. |
+| `SQLITEPLUS_FORCE_RESET` | Solicita la reinicialización de las bases (valores `1`, `true` o `on`) **solo** cuando el entorno es seguro (`SQLITEPLUS_ENV=test` o `PYTEST_CURRENT_TEST`). Fuera de ese contexto se ignora y se emite un warning en logs. |
 | `SQLITEPLUS_USERS_FILE` | Ruta (admite `~`) del archivo JSON con usuarios y hashes `bcrypt`. Solo es obligatorio al exponer la API/autenticación. |
 | `SQLITE_DB_KEY` | Clave SQLCipher opcional. Si no existe, se omite el cifrado. |
 

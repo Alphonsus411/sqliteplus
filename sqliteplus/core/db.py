@@ -46,11 +46,12 @@ class AsyncDatabaseManager:
         conexiones. Si es ``None`` se detecta automáticamente.
     reset_on_init:
         Cuando es ``True`` se elimina la base de datos existente antes de
-        inicializarla de nuevo. Además del valor pasado explícitamente, el
+        inicializarla de nuevo. Este override manual se recomienda únicamente
+        para pruebas o migraciones controladas. Además del valor pasado explícitamente, el
         gestor vuelve a comprobar en cada creación de conexión las variables
-        ``PYTEST_CURRENT_TEST`` y ``SQLITEPLUS_FORCE_RESET`` para decidir si debe
-        borrar el archivo, evitando residuos incluso si el gestor global ya está
-        instanciado.
+        ``PYTEST_CURRENT_TEST``, ``SQLITEPLUS_ENV`` y ``SQLITEPLUS_FORCE_RESET``
+        para decidir si debe borrar el archivo, evitando residuos incluso si el
+        gestor global ya está instanciado.
     """
 
     def __init__(
@@ -84,7 +85,21 @@ class AsyncDatabaseManager:
             return True
         if self._auto_reset_detection and os.getenv("PYTEST_CURRENT_TEST"):
             return True
-        return _is_truthy(os.getenv("SQLITEPLUS_FORCE_RESET"))
+
+        force_reset_enabled = _is_truthy(os.getenv("SQLITEPLUS_FORCE_RESET"))
+        if not force_reset_enabled:
+            return False
+
+        sqliteplus_env = os.getenv("SQLITEPLUS_ENV", "").strip().lower()
+        in_safe_environment = bool(os.getenv("PYTEST_CURRENT_TEST")) or sqliteplus_env == "test"
+        if in_safe_environment:
+            return True
+
+        logger.warning(
+            "Se ignoró SQLITEPLUS_FORCE_RESET fuera de un entorno permitido. "
+            "Define SQLITEPLUS_ENV=test o ejecuta bajo pytest para habilitar el borrado automático."
+        )
+        return False
 
     def _normalize_db_name(self, raw_name: str) -> tuple[str, Path]:
         sanitized = raw_name.strip()

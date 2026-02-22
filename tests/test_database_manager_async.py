@@ -23,7 +23,7 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
         """ Configuración inicial antes de cada prueba """
         self.key_patch = mock.patch.dict(os.environ, {"SQLITE_DB_KEY": "clave-de-prueba"}, clear=False)
         self.key_patch.start()
-        self.manager = AsyncDatabaseManager()
+        self.manager = AsyncDatabaseManager(require_encryption=False)
         self.db_name = "test_db_async"
         await self.manager.execute_query(self.db_name,
                                          "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)")
@@ -131,58 +131,6 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(header, b"SQLite")
 
             await manager.close_connections()
-
-    async def test_force_reset_recreates_active_connection_in_same_loop(self):
-        """`SQLITEPLUS_FORCE_RESET` debe cerrar y recrear la conexión activa."""
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            base_dir = Path(tmpdir)
-
-            with mock.patch.dict(os.environ, {}, clear=False):
-                os.environ.pop("SQLITEPLUS_FORCE_RESET", None)
-                manager = AsyncDatabaseManager(
-                    base_dir=base_dir,
-                    require_encryption=False,
-                    reset_on_init=False,
-                )
-
-                try:
-                    db_name = "force_reset_same_loop"
-                    db_path = (base_dir / f"{db_name}.db").resolve()
-                    conn = await manager.get_connection(db_name)
-                    await conn.execute(
-                        "CREATE TABLE data (value TEXT)"
-                    )
-                    await conn.execute(
-                        "INSERT INTO data (value) VALUES ('persistente')"
-                    )
-                    await conn.commit()
-
-                    initial_inode = db_path.stat().st_ino
-                    cursor = await conn.execute(
-                        "SELECT COUNT(*) FROM sqlite_master WHERE name = 'data'"
-                    )
-                    existing_rows = await cursor.fetchall()
-                    self.assertEqual(existing_rows[0][0], 1)
-
-                    os.environ["SQLITEPLUS_FORCE_RESET"] = "1"
-                    new_conn = await manager.get_connection(db_name)
-
-                    cursor = await new_conn.execute(
-                        "SELECT COUNT(*) FROM sqlite_master WHERE name = 'data'"
-                    )
-                    rows = await cursor.fetchall()
-                    self.assertEqual(rows[0][0], 0)
-
-                    new_inode = db_path.stat().st_ino
-                    self.assertNotEqual(
-                        initial_inode,
-                        new_inode,
-                        "La base debe eliminarse y recrearse tras forzar el reset.",
-                    )
-                finally:
-                    os.environ.pop("SQLITEPLUS_FORCE_RESET", None)
-                    await manager.close_connections()
 
     async def asyncTearDown(self):
         """ Limpieza después de cada prueba """
@@ -485,6 +433,136 @@ class TestGlobalDBManagerEmptyKey(unittest.IsolatedAsyncioTestCase):
             finally:
                 await manager_one.close_connections()
                 await manager_two.close_connections()
+
+
+class TestAsyncDatabaseManagerResetSafety(unittest.IsolatedAsyncioTestCase):
+    """No-regresión para controles de reset en entornos seguros."""
+
+    async def test_force_reset_ignored_outside_safe_environment(self):
+        """`SQLITEPLUS_FORCE_RESET` no debe borrar fuera de entornos permitidos."""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_dir = Path(tmpdir)
+
+            with mock.patch.dict(os.environ, {}, clear=False):
+                os.environ.pop("SQLITEPLUS_FORCE_RESET", None)
+                os.environ.pop("PYTEST_CURRENT_TEST", None)
+                os.environ.pop("SQLITEPLUS_ENV", None)
+                os.environ.pop("SQLITE_DB_KEY", None)
+
+                manager = AsyncDatabaseManager(
+                    base_dir=base_dir,
+                    require_encryption=False,
+                    reset_on_init=False,
+                )
+
+                try:
+                    db_name = "force_reset_blocked"
+                    db_path = (base_dir / f"{db_name}.db").resolve()
+                    conn = await manager.get_connection(db_name)
+                    await conn.execute("CREATE TABLE data (value TEXT)")
+                    await conn.execute("INSERT INTO data (value) VALUES ('persistente')")
+                    await conn.commit()
+
+                    initial_inode = db_path.stat().st_ino
+
+                    os.environ["SQLITEPLUS_FORCE_RESET"] = "1"
+                    with self.assertLogs("sqliteplus.core.db", level="WARNING") as logs:
+                        same_conn = await manager.get_connection(db_name)
+
+                    cursor = await same_conn.execute("SELECT COUNT(*) FROM data")
+                    rows = await cursor.fetchall()
+                    self.assertEqual(rows[0][0], 1)
+                    self.assertEqual(initial_inode, db_path.stat().st_ino)
+                    self.assertTrue(
+                        any("Se ignoró SQLITEPLUS_FORCE_RESET" in message for message in logs.output)
+                    )
+                finally:
+                    os.environ.pop("SQLITEPLUS_FORCE_RESET", None)
+                    await manager.close_connections()
+
+    async def test_force_reset_recreates_connection_in_test_mode(self):
+        """`SQLITEPLUS_FORCE_RESET` debe reinicializar la base en modo seguro de pruebas."""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_dir = Path(tmpdir)
+
+            with mock.patch.dict(os.environ, {}, clear=False):
+                os.environ.pop("SQLITEPLUS_FORCE_RESET", None)
+                os.environ.pop("SQLITE_DB_KEY", None)
+                os.environ["SQLITEPLUS_ENV"] = "test"
+                manager = AsyncDatabaseManager(
+                    base_dir=base_dir,
+                    require_encryption=False,
+                    reset_on_init=False,
+                )
+
+                try:
+                    db_name = "force_reset_same_loop"
+                    db_path = (base_dir / f"{db_name}.db").resolve()
+                    conn = await manager.get_connection(db_name)
+                    await conn.execute(
+                        "CREATE TABLE data (value TEXT)"
+                    )
+                    await conn.execute(
+                        "INSERT INTO data (value) VALUES ('persistente')"
+                    )
+                    await conn.commit()
+
+                    cursor = await conn.execute(
+                        "SELECT COUNT(*) FROM sqlite_master WHERE name = 'data'"
+                    )
+                    existing_rows = await cursor.fetchall()
+                    self.assertEqual(existing_rows[0][0], 1)
+
+                    os.environ["SQLITEPLUS_FORCE_RESET"] = "1"
+                    new_conn = await manager.get_connection(db_name)
+
+                    cursor = await new_conn.execute(
+                        "SELECT COUNT(*) FROM sqlite_master WHERE name = 'data'"
+                    )
+                    rows = await cursor.fetchall()
+                    self.assertEqual(rows[0][0], 0)
+
+                finally:
+                    os.environ.pop("SQLITEPLUS_FORCE_RESET", None)
+                    os.environ.pop("SQLITEPLUS_ENV", None)
+                    await manager.close_connections()
+
+    async def test_reset_on_init_true_overrides_safe_environment_check(self):
+        """`reset_on_init=True` debe resetear incluso sin variables de entorno de test."""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_dir = Path(tmpdir)
+            db_name = "manual_reset_override"
+            db_path = (base_dir / f"{db_name}.db").resolve()
+
+            with mock.patch.dict(os.environ, {}, clear=False):
+                os.environ.pop("PYTEST_CURRENT_TEST", None)
+                os.environ.pop("SQLITEPLUS_ENV", None)
+                os.environ.pop("SQLITEPLUS_FORCE_RESET", None)
+                os.environ.pop("SQLITE_DB_KEY", None)
+
+                db_path.write_text("residuo", encoding="utf-8")
+
+                manager = AsyncDatabaseManager(
+                    base_dir=base_dir,
+                    require_encryption=False,
+                    reset_on_init=True,
+                )
+
+                try:
+                    await manager.execute_query(
+                        db_name,
+                        "CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, action TEXT)",
+                    )
+
+                    with db_path.open("rb") as handler:
+                        header = handler.read(6)
+
+                    self.assertEqual(header, b"SQLite")
+                finally:
+                    await manager.close_connections()
 
 
 class TestAsyncDatabaseManagerLoopReuse(unittest.TestCase):

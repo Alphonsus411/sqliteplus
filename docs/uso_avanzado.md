@@ -4,14 +4,19 @@
 
 `AsyncDatabaseManager` detecta la variable `PYTEST_CURRENT_TEST` y elimina automáticamente la
 base temporal antes de cada suite, evitando datos residuales entre ejecuciones. A partir de esta
-versión la comprobación es perezosa: el gestor vuelve a leer `PYTEST_CURRENT_TEST` (y la variable
-`SQLITEPLUS_FORCE_RESET`) cada vez que necesita crear una conexión. De este modo puedes activar el
-modo limpieza incluso si el objeto global ya estaba instanciado o si quieres forzar el borrado desde
-la app FastAPI (por ejemplo, antes de lanzar un lote de pruebas de integración). Si la variable se
-activa cuando ya existe una conexión viva en el mismo bucle, el gestor la cierra, elimina los ficheros
-`*.db`, `*.db-wal` y `*.db-shm` y vuelve a levantar una base limpia. Usa valores como `1`, `true` o `on`
-para activar `SQLITEPLUS_FORCE_RESET` y elimina la variable cuando dejes de necesitar el borrado
-automático.
+versión la comprobación es perezosa: el gestor vuelve a leer `PYTEST_CURRENT_TEST`, `SQLITEPLUS_ENV`
+y `SQLITEPLUS_FORCE_RESET` cada vez que necesita crear una conexión.
+
+`SQLITEPLUS_FORCE_RESET` solo se honra en entorno seguro (`SQLITEPLUS_ENV=test` o `PYTEST_CURRENT_TEST`
+presente). Si se intenta activar fuera de ese contexto, el gestor **no borra archivos** y deja un
+warning explícito en logs para evitar pérdidas de datos en producción.
+
+Si la variable se activa en entorno seguro cuando ya existe una conexión viva en el mismo bucle, el
+gestor la cierra, elimina los ficheros `*.db`, `*.db-wal` y `*.db-shm` y vuelve a levantar una base
+limpia.
+
+Para forzar una limpieza manual existe el parámetro `reset_on_init=True`, pensado únicamente para
+pruebas y migraciones controladas. Evita usarlo en flujos de producción.
 
 ## Conexiones por bucle de eventos
 
