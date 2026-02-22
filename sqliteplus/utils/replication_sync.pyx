@@ -5,7 +5,6 @@
 # cython: cdivision=True
 """Implementación acelerada de replicación y exportación SQLite."""
 
-from __future__ import annotations
 
 cimport cython
 from cpython.size_t cimport Py_ssize_t
@@ -67,19 +66,34 @@ cdef class SQLiteReplication:
         self.cipher_key = cipher_key if cipher_key is not None else os.getenv("SQLITE_DB_KEY")
         (<Path>self.backup_dir).mkdir(parents=True, exist_ok=True)
 
+
     def export_to_csv(self, str table_name, str output_file, bint overwrite=False):
         """Exporta los datos de una tabla a un archivo CSV."""
+
+        # 🔹 Todas las declaraciones cdef deben ir al inicio
+        cdef Path db_path
+        cdef str query
+        cdef Path output_path
+        cdef int col_count
+        cdef list column_names
+        cdef int col_idx
+        cdef int chunk_len
+        cdef int row_idx
+        cdef object rows
+        cdef object description
+        cdef object cursor
+
         if not self._is_valid_table_name(table_name):
             raise ValueError(f"Nombre de tabla inválido: {table_name}")
 
-        cdef Path db_path = Path(self.db_path)
+        db_path = Path(self.db_path)
         if not db_path.exists():
             raise FileNotFoundError(
                 f"No se encontró la base de datos origen: {self.db_path}"
             )
 
-        cdef str query = f"SELECT * FROM {self._escape_identifier(table_name)}"
-        cdef Path output_path = Path(output_file).expanduser().resolve()
+        query = f"SELECT * FROM {self._escape_identifier(table_name)}"
+        output_path = Path(output_file).expanduser().resolve()
 
         if output_path.exists() and not overwrite:
             raise FileExistsError(
@@ -98,32 +112,29 @@ cdef class SQLiteReplication:
                 with output_path.open("w", encoding="utf-8", newline="") as f:
                     writer = csv.writer(f)
 
-                    cdef Py_ssize_t col_count = len(description)
-                    cdef list column_names = [None] * col_count
-                    cdef Py_ssize_t col_idx
+                    col_count = len(description)
+                    column_names = [None] * col_count
+
                     for col_idx in range(col_count):
                         column_names[col_idx] = description[col_idx][0]
 
                     writer.writerow(column_names)
 
-                    cdef Py_ssize_t chunk_len
-                    cdef Py_ssize_t row_idx
                     while True:
                         rows = cursor.fetchmany(1024)
                         chunk_len = len(rows)
+
                         if chunk_len == 0:
                             break
+
                         for row_idx in range(chunk_len):
                             writer.writerow(rows[row_idx])
 
-            logger.info("Datos exportados correctamente a %s", output_path)
-            return str(output_path)
-        except SQLitePlusCipherError as exc:
-            raise RuntimeError(str(exc)) from exc
-        except FileNotFoundError:
-            raise
-        except sqlite3.Error as e:
-            raise sqlite3.Error(f"Error al exportar datos: {e}") from e
+        logger.info("Datos exportados correctamente a %s", output_path)
+        return str(output_path)
+
+    except SQLitePlusCipherError as exc:
+        raise RuntimeError(str(exc)) from exc
 
     def backup_database(self):
         """Crea una copia de seguridad de la base de datos."""

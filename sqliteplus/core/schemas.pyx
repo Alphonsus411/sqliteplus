@@ -5,10 +5,7 @@
 # cython: cdivision=True
 """Adaptadores y helpers acelerados para ``schemas.py``."""
 
-from __future__ import annotations
-
 cimport cython
-from libc.stddef cimport Py_ssize_t
 
 from sqliteplus.core cimport _schemas_constants
 
@@ -26,13 +23,16 @@ cdef object _DEFAULT_FUNCTIONS = _schemas_constants.DEFAULT_EXPR_ALLOWED_FUNCTIO
 cdef object _ALLOWED_BASE_TYPES = _schemas_constants.ALLOWED_BASE_TYPES
 
 
-cpdef bint _py_is_valid_sqlite_identifier(object identifier):
+def _py_is_valid_sqlite_identifier(identifier):
     if not isinstance(identifier, str):
         return False
 
-    cdef str ident = <str>identifier
-    if any(token in ident for token in _DISALLOWED_TOKENS):
-        return False
+    cdef str ident = identifier
+    cdef object token
+
+    for token in _DISALLOWED_TOKENS:
+        if token in ident:
+            return False
 
     return bool(_IDENTIFIER_PATTERN.match(ident))
 
@@ -131,7 +131,7 @@ cpdef bint _py_is_safe_default_expr(str expr):
     return False
 
 
-cpdef dict _py_normalized_columns(dict columns):
+def _py_normalized_columns(columns):
     if not columns:
         raise ValueError("Se requiere al menos una columna para crear la tabla")
 
