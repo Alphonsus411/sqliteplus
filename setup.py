@@ -63,6 +63,8 @@ def discover_extensions() -> list[Extension]:
 
     extensions: list[Extension] = []
     for pyx_path in pyx_files:
+        if pyx_path.name == "schemas.pyx":
+            continue
         module_name = ".".join(pyx_path.with_suffix("").parts)
         if profiled_targets is not None and module_name not in profiled_targets:
             continue
