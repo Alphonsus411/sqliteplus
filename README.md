@@ -234,6 +234,22 @@ los módulos acelerados se importen correctamente. Luego ejecuta pruebas de humo
 
 Archivo del workflow: [.github/workflows/smoke-windows.yml](.github/workflows/smoke-windows.yml).
 
+### CI de humo en Linux/macOS
+
+También se incluye un workflow matricial para `ubuntu-latest` y `macos-latest` que realiza los mismos pasos (build del wheel con Cython, instalación y ejecución de los scripts de verificación):
+
+- .trae/verify_imports.py
+- .trae/verify_replication.py
+- .trae/verify_pure_mode.py
+
+Archivo del workflow: [.github/workflows/smoke-unix.yml](.github/workflows/smoke-unix.yml).
+
+Comandos locales equivalentes:
+- Linux/macOS:
+  - python .trae/verify_imports.py
+  - python .trae/verify_replication.py
+  - python .trae/verify_pure_mode.py
+
 `setup.py` detecta automáticamente las extensiones a compilar recorriendo `sqliteplus/**/*.pyx` y, salvo que definas `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1`, cruza el resultado con la lista generada en `reports/cython_candidates.json`. El flujo básico es:
 
 1. Ejecuta `tools/generate_cython_twins.py` con un reporte de hotspots para descubrir los módulos Python con más peso.

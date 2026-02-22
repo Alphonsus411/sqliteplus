@@ -1,0 +1,39 @@
+name: smoke-unix
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  smoke:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.11']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install build deps
+        run: pip install build cython wheel
+      - name: Build wheel with Cython
+        run: |
+          export SQLITEPLUS_FORCE_CYTHON=1
+          python -m build -w
+      - name: Install built wheel
+        run: |
+          pip install --no-deps dist/*.whl
+      - name: Run verify_imports
+        run: python .trae/verify_imports.py
+      - name: Run verify_replication
+        run: python .trae/verify_replication.py
+      - name: Run verify_pure_mode
+        run: python .trae/verify_pure_mode.py
