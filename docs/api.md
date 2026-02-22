@@ -104,9 +104,9 @@ curl -X POST "http://127.0.0.1:8000/databases/demo/insert?table_name=logs" \
 
 ### `GET /databases/{db_name}/fetch`
 
-Devuelve todas las filas de la tabla e incluye el nombre de cada columna en la
-respuesta para facilitar el consumo desde clientes genéricos. La clave ``data``
-es un alias de ``rows`` para mantener compatibilidad con integraciones previas.
+107→Devuelve todas las filas de la tabla e incluye el nombre de cada columna en la
+108→respuesta para facilitar el consumo desde clientes genéricos. La clave `data`
+109→es un alias de `rows` para mantener compatibilidad con integraciones previas.
 
 - **Query**: `table_name` (obligatorio)
 
