@@ -198,6 +198,30 @@ Las validaciones de esquemas y el saneamiento de identificadores usan extensione
 
 ### Descubrimiento automático y pipeline Cython
 
+---
+
+## 🧪 Scripts de verificación rápida
+
+Para comprobaciones locales sin depender de la suite completa de tests:
+
+- Importes y acelerados instalados:
+  - Windows PowerShell:
+    - python .trae\\verify_pure_mode.py
+    - python .trae\\verify_replication.py
+
+Descripción breve:
+- verify_pure_mode.py
+  - Fuerza SQLITEPLUS_DISABLE_CYTHON=1 y valida la equivalencia entre el fallback puro y la API pública de schemas.
+- verify_replication.py
+  - Crea una base temporal, inserta filas, hace backup y replica a otra ruta comprobando el resultado.
+
+Build/instalación útiles:
+- Fuente C + Wheel con Cython:
+  - $env:SQLITEPLUS_FORCE_CYTHON=1; python -m build -s
+  - $env:SQLITEPLUS_FORCE_CYTHON=1; python -m build -w
+- Instalar el wheel local:
+  - pip install --force-reinstall --no-deps dist\\sqliteplus_enhanced-<VERSION>-cp311-cp311-win_amd64.whl
+
 `setup.py` detecta automáticamente las extensiones a compilar recorriendo `sqliteplus/**/*.pyx` y, salvo que definas `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1`, cruza el resultado con la lista generada en `reports/cython_candidates.json`. El flujo básico es:
 
 1. Ejecuta `tools/generate_cython_twins.py` con un reporte de hotspots para descubrir los módulos Python con más peso.
