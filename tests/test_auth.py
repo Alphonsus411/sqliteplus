@@ -2,6 +2,7 @@ import asyncio
 import importlib
 import json
 import os
+import stat
 import secrets
 import sys
 import time
@@ -145,6 +146,8 @@ def test_jwt_requires_secret_key(monkeypatch):
 def _write_users_file(path, password: str, *, timestamp_offset: float = 0.0) -> None:
     hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
     path.write_text(json.dumps({"admin": hashed_password}), encoding="utf-8")
+    if os.name == "posix":
+        path.chmod(stat.S_IRUSR | stat.S_IWUSR)
     new_time = time.time() + timestamp_offset
     os.utime(path, (new_time, new_time))
 
@@ -202,9 +205,43 @@ def test_reload_user_service_force_refresh(tmp_path, monkeypatch):
     assert reloaded_service.verify_credentials("admin", "changed-pass")
 
 
+@pytest.mark.skipif(os.name != "posix", reason="La verificación de permisos aplica solo en POSIX")
+def test_user_service_accepts_secure_users_file_permissions(tmp_path, monkeypatch):
+    users_file = tmp_path / "users.json"
+    _write_users_file(users_file, "safe-pass", timestamp_offset=1)
+    users_file.chmod(stat.S_IRUSR | stat.S_IWUSR)
+
+    monkeypatch.setenv("SQLITEPLUS_USERS_FILE", str(users_file))
+    monkeypatch.delenv("SQLITEPLUS_ALLOW_WEAK_USERS_FILE_PERMS", raising=False)
+    reset_user_service_cache()
+
+    service = get_user_service()
+    assert service.verify_credentials("admin", "safe-pass")
+
+
+@pytest.mark.skipif(os.name != "posix", reason="La verificación de permisos aplica solo en POSIX")
+def test_user_service_rejects_weak_users_file_permissions(tmp_path, monkeypatch):
+    users_file = tmp_path / "users.json"
+    _write_users_file(users_file, "weak-pass", timestamp_offset=1)
+    users_file.chmod(0o644)
+
+    monkeypatch.setenv("SQLITEPLUS_USERS_FILE", str(users_file))
+    monkeypatch.delenv("SQLITEPLUS_ALLOW_WEAK_USERS_FILE_PERMS", raising=False)
+    reset_user_service_cache()
+
+    with pytest.raises(UserSourceError) as excinfo:
+        get_user_service()
+
+    message = str(excinfo.value)
+    assert "Permisos inseguros" in message
+    assert "chmod 600" in message
+
+
 def test_verify_credentials_reports_incompatible_hash(tmp_path, monkeypatch):
     users_file = tmp_path / "users.json"
     users_file.write_text(json.dumps({"admin": "legacy"}), encoding="utf-8")
+    if os.name == "posix":
+        users_file.chmod(stat.S_IRUSR | stat.S_IWUSR)
 
     monkeypatch.setenv("SQLITEPLUS_USERS_FILE", str(users_file))
     reset_user_service_cache()
@@ -227,6 +264,8 @@ def test_verify_credentials_accepts_compat_hash_with_native_backend(tmp_path, mo
 
     users_file = tmp_path / "users.json"
     users_file.write_text(json.dumps({"admin": compat_hash}), encoding="utf-8")
+    if os.name == "posix":
+        users_file.chmod(stat.S_IRUSR | stat.S_IWUSR)
 
     monkeypatch.setenv("SQLITEPLUS_USERS_FILE", str(users_file))
 

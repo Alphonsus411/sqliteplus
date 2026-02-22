@@ -17,6 +17,7 @@ import argparse
 import getpass
 import importlib
 import json
+import logging
 import os
 import sys
 from dataclasses import dataclass
@@ -69,6 +70,7 @@ def _try_decode_ascii(value) -> str | None:
 
 
 bcrypt = _build_bcrypt_adapter()
+logger = logging.getLogger(__name__)
 
 
 class UserSourceError(RuntimeError):
@@ -150,6 +152,29 @@ def _resolve_users_file_path() -> Path:
         raise UserSourceError(
             f"El archivo de usuarios '{path}' debe ser un archivo regular"
         )
+
+    if os.name == "posix":
+        try:
+            mode = path.stat().st_mode & 0o777
+        except OSError as exc:
+            raise UserSourceError(
+                f"No se puede leer el modo de permisos del archivo de usuarios '{path}': {exc}"
+            ) from exc
+
+        weak_mask = 0o077
+        weak_bits = mode & weak_mask
+        if weak_bits:
+            allow_weak_perms = os.getenv("SQLITEPLUS_ALLOW_WEAK_USERS_FILE_PERMS") == "1"
+            message = (
+                "Permisos inseguros en el archivo de usuarios: "
+                f"{path} tiene modo {mode:03o}; usa chmod 600 para restringir acceso. "
+                "Si necesitas compatibilidad legacy, define "
+                "SQLITEPLUS_ALLOW_WEAK_USERS_FILE_PERMS=1 explícitamente."
+            )
+            if allow_weak_perms:
+                logger.warning("%s", message)
+            else:
+                raise UserSourceError(message)
 
     return path
 

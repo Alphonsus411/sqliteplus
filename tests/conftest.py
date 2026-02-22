@@ -49,6 +49,8 @@ def _prepare_users_file() -> Path:
     tmp_dir.mkdir(parents=True, exist_ok=True)
     file_path = tmp_dir / "users.json"
     file_path.write_text(json.dumps({"admin": hashed_password}), encoding="utf-8")
+    if os.name == "posix":
+        file_path.chmod(0o600)
     os.environ["SQLITEPLUS_USERS_FILE"] = str(file_path)
     return file_path
 
