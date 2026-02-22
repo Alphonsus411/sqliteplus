@@ -980,7 +980,7 @@ static const char *__pyx_f[] = {
 struct __pyx_obj_10sqliteplus_4core_10schemas_cy___pyx_scope_struct___py_normalized_columns;
 struct __pyx_obj_10sqliteplus_4core_10schemas_cy___pyx_scope_struct_1_genexpr;
 
-/* "sqliteplus/core/schemas_cy.pyx":133
+/* "sqliteplus/core/schemas_cy.pyx":132
  * 
  * 
  * def _py_normalized_columns(columns):             # <<<<<<<<<<<<<<
@@ -993,7 +993,7 @@ struct __pyx_obj_10sqliteplus_4core_10schemas_cy___pyx_scope_struct___py_normali
 };
 
 
-/* "sqliteplus/core/schemas_cy.pyx":170
+/* "sqliteplus/core/schemas_cy.pyx":169
  *             raise ValueError(f"Nombre de columna invlido: {raw_name}")
  * 
  *         if any(token in normalized_name for token in _DISALLOWED_TOKENS):             # <<<<<<<<<<<<<<
@@ -1403,6 +1403,12 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_GenericGetAttrNoDict(PyObject* obj
 #define __Pyx_PyObject_GenericGetAttrNoDict PyObject_GenericGetAttr
 #endif
 
+/* Import.proto */
+static PyObject *__Pyx_Import(PyObject *name, PyObject *from_list, int level);
+
+/* ImportFrom.proto */
+static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name);
+
 /* PyDictVersioning.proto */
 #if CYTHON_USE_DICT_VERSIONS && CYTHON_USE_TYPE_SLOTS
 #define __PYX_DICT_VERSION_INIT  ((PY_UINT64_T) -1)
@@ -1427,6 +1433,27 @@ static CYTHON_INLINE int __Pyx_object_dict_version_matches(PyObject* obj, PY_UIN
 #define __PYX_GET_DICT_VERSION(dict)  (0)
 #define __PYX_UPDATE_DICT_CACHE(dict, value, cache_var, version_var)
 #define __PYX_PY_DICT_LOOKUP_IF_MODIFIED(VAR, DICT, LOOKUP)  (VAR) = (LOOKUP);
+#endif
+
+/* GetModuleGlobalName.proto */
+#if CYTHON_USE_DICT_VERSIONS
+#define __Pyx_GetModuleGlobalName(var, name)  do {\
+    static PY_UINT64_T __pyx_dict_version = 0;\
+    static PyObject *__pyx_dict_cached_value = NULL;\
+    (var) = (likely(__pyx_dict_version == __PYX_GET_DICT_VERSION(__pyx_d))) ?\
+        (likely(__pyx_dict_cached_value) ? __Pyx_NewRef(__pyx_dict_cached_value) : __Pyx_GetBuiltinName(name)) :\
+        __Pyx__GetModuleGlobalName(name, &__pyx_dict_version, &__pyx_dict_cached_value);\
+} while(0)
+#define __Pyx_GetModuleGlobalNameUncached(var, name)  do {\
+    PY_UINT64_T __pyx_dict_version;\
+    PyObject *__pyx_dict_cached_value;\
+    (var) = __Pyx__GetModuleGlobalName(name, &__pyx_dict_version, &__pyx_dict_cached_value);\
+} while(0)
+static PyObject *__Pyx__GetModuleGlobalName(PyObject *name, PY_UINT64_T *dict_version, PyObject **dict_cached_value);
+#else
+#define __Pyx_GetModuleGlobalName(var, name)  (var) = __Pyx__GetModuleGlobalName(name)
+#define __Pyx_GetModuleGlobalNameUncached(var, name)  (var) = __Pyx__GetModuleGlobalName(name)
+static CYTHON_INLINE PyObject *__Pyx__GetModuleGlobalName(PyObject *name);
 #endif
 
 /* CLineInTraceback.proto */
@@ -1591,38 +1618,11 @@ static int __pyx_Generator_init(void);
 /* CheckBinaryVersion.proto */
 static int __Pyx_check_binary_version(void);
 
-/* VoidPtrImport.proto */
-static int __Pyx_ImportVoidPtr_0_29_36(PyObject *module, const char *name, void **p, const char *sig);
-
 /* InitStrings.proto */
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
 
 /* Module declarations from 'cython' */
-
-/* Module declarations from 'sqliteplus.core' */
-
-/* Module declarations from 'sqliteplus.core._schemas_constants' */
-static PyObject **__pyx_vp_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_PATTERN = 0;
-#define __pyx_v_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_PATTERN (*__pyx_vp_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_PATTERN)
-static PyObject **__pyx_vp_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_DISALLOWED_TOKENS = 0;
-#define __pyx_v_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_DISALLOWED_TOKENS (*__pyx_vp_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_DISALLOWED_TOKENS)
-static PyObject **__pyx_vp_10sqliteplus_4core_18_schemas_constants_ALLOWED_BASE_TYPES = 0;
-#define __pyx_v_10sqliteplus_4core_18_schemas_constants_ALLOWED_BASE_TYPES (*__pyx_vp_10sqliteplus_4core_18_schemas_constants_ALLOWED_BASE_TYPES)
-static PyObject **__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_NUMERIC_PATTERN = 0;
-#define __pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_NUMERIC_PATTERN (*__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_NUMERIC_PATTERN)
-static PyObject **__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_STRING_PATTERN = 0;
-#define __pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_STRING_PATTERN (*__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_STRING_PATTERN)
-static PyObject **__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_LITERALS = 0;
-#define __pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_LITERALS (*__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_LITERALS)
-static PyObject **__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_FUNCTIONS = 0;
-#define __pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_FUNCTIONS (*__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_FUNCTIONS)
-static PyObject **__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_TOKENS = 0;
-#define __pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_TOKENS (*__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_TOKENS)
-static PyObject **__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_KEYWORDS = 0;
-#define __pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_KEYWORDS (*__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_KEYWORDS)
-static PyObject **__pyx_vp_10sqliteplus_4core_18_schemas_constants_FUNCTION_CALL_PATTERN = 0;
-#define __pyx_v_10sqliteplus_4core_18_schemas_constants_FUNCTION_CALL_PATTERN (*__pyx_vp_10sqliteplus_4core_18_schemas_constants_FUNCTION_CALL_PATTERN)
 
 /* Module declarations from 'sqliteplus.core.schemas_cy' */
 static PyTypeObject *__pyx_ptype_10sqliteplus_4core_10schemas_cy___pyx_scope_struct___py_normalized_columns = 0;
@@ -1666,6 +1666,7 @@ static const char __pyx_k_name[] = "__name__";
 static const char __pyx_k_send[] = "send";
 static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_close[] = "close";
+static const char __pyx_k_const[] = "_const";
 static const char __pyx_k_group[] = "group";
 static const char __pyx_k_ident[] = "ident";
 static const char __pyx_k_items[] = "items";
@@ -1677,6 +1678,7 @@ static const char __pyx_k_throw[] = "throw";
 static const char __pyx_k_token[] = "token";
 static const char __pyx_k_upper[] = "upper";
 static const char __pyx_k_UNIQUE[] = "UNIQUE";
+static const char __pyx_k_import[] = "__import__";
 static const char __pyx_k_length[] = "length";
 static const char __pyx_k_unique[] = "unique";
 static const char __pyx_k_DEFAULT[] = "DEFAULT";
@@ -1716,16 +1718,26 @@ static const char __pyx_k_potential_ends[] = "potential_ends";
 static const char __pyx_k_AUTOINCREMENT_2[] = "': AUTOINCREMENT";
 static const char __pyx_k_AUTOINCREMENT_3[] = "AUTOINCREMENT";
 static const char __pyx_k_normalized_name[] = "normalized_name";
+static const char __pyx_k_sqliteplus_core[] = "sqliteplus.core";
 static const char __pyx_k_normalized_parts[] = "normalized_parts";
 static const char __pyx_k_sanitized_columns[] = "sanitized_columns";
+static const char __pyx_k_schemas_constants[] = "_schemas_constants";
+static const char __pyx_k_ALLOWED_BASE_TYPES[] = "ALLOWED_BASE_TYPES";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
 static const char __pyx_k_normalized_original[] = "normalized_original";
 static const char __pyx_k_rest_original_tokens[] = "rest_original_tokens";
+static const char __pyx_k_FUNCTION_CALL_PATTERN[] = "FUNCTION_CALL_PATTERN";
 static const char __pyx_k_py_normalized_columns[] = "_py_normalized_columns";
 static const char __pyx_k_Nombre_de_columna_invlido[] = "Nombre de columna inv\303\241lido: ";
+static const char __pyx_k_SQLITE_IDENTIFIER_PATTERN[] = "SQLITE_IDENTIFIER_PATTERN";
 static const char __pyx_k_Tipo_de_columna_vaco_para[] = "Tipo de columna vac\303\255o para '";
 static const char __pyx_k_sqliteplus_core_schemas_cy[] = "sqliteplus.core.schemas_cy";
+static const char __pyx_k_DEFAULT_EXPR_STRING_PATTERN[] = "DEFAULT_EXPR_STRING_PATTERN";
+static const char __pyx_k_DEFAULT_EXPR_NUMERIC_PATTERN[] = "DEFAULT_EXPR_NUMERIC_PATTERN";
+static const char __pyx_k_DEFAULT_EXPR_ALLOWED_LITERALS[] = "DEFAULT_EXPR_ALLOWED_LITERALS";
 static const char __pyx_k_py_is_valid_sqlite_identifier[] = "_py_is_valid_sqlite_identifier";
+static const char __pyx_k_DEFAULT_EXPR_ALLOWED_FUNCTIONS[] = "DEFAULT_EXPR_ALLOWED_FUNCTIONS";
+static const char __pyx_k_DEFAULT_EXPR_DISALLOWED_TOKENS[] = "DEFAULT_EXPR_DISALLOWED_TOKENS";
 static const char __pyx_k_Tipo_de_dato_no_permitido_para[] = "Tipo de dato no permitido para '";
 static const char __pyx_k_sqliteplus_core_schemas_cy_pyx[] = "sqliteplus\\core\\schemas_cy.pyx";
 static const char __pyx_k_Expresin_DEFAULT_potencialmente[] = "Expresi\303\263n DEFAULT potencialmente insegura para columna '";
@@ -1733,13 +1745,16 @@ static const char __pyx_k_py_normalized_columns_locals_ge[] = "_py_normalized_co
 static const char __pyx_k_AUTOINCREMENT_requiere_PRIMARY_K[] = "AUTOINCREMENT requiere PRIMARY KEY en la columna '";
 static const char __pyx_k_AUTOINCREMENT_solo_es_vlido_en_c[] = "AUTOINCREMENT solo es v\303\241lido en columnas INTEGER: ";
 static const char __pyx_k_Adaptadores_y_helpers_acelerados[] = "Adaptadores y helpers acelerados para ``schemas.py``.";
+static const char __pyx_k_DEFAULT_EXPR_DISALLOWED_KEYWORDS[] = "DEFAULT_EXPR_DISALLOWED_KEYWORDS";
 static const char __pyx_k_Expresin_DEFAULT_invlida_para_co[] = "Expresi\303\263n DEFAULT inv\303\241lida para columna '";
 static const char __pyx_k_Los_nombres_de_columna_no_pueden[] = "Los nombres de columna no pueden estar vac\303\255os";
 static const char __pyx_k_Nombre_de_columna_duplicado_tras[] = "Nombre de columna duplicado tras normalizaci\303\263n: ";
 static const char __pyx_k_Restriccin_no_permitida_para_col[] = "Restricci\303\263n no permitida para columna '";
 static const char __pyx_k_Restriccin_repetida_para_columna[] = "Restricci\303\263n repetida para columna '";
+static const char __pyx_k_SQLITE_IDENTIFIER_DISALLOWED_TOK[] = "SQLITE_IDENTIFIER_DISALLOWED_TOKENS";
 static const char __pyx_k_Se_requiere_al_menos_una_columna[] = "Se requiere al menos una columna para crear la tabla";
 static PyObject *__pyx_kp_u_;
+static PyObject *__pyx_n_s_ALLOWED_BASE_TYPES;
 static PyObject *__pyx_kp_u_AUTOINCREMENT;
 static PyObject *__pyx_kp_u_AUTOINCREMENT_2;
 static PyObject *__pyx_n_u_AUTOINCREMENT_3;
@@ -1749,8 +1764,15 @@ static PyObject *__pyx_n_u_DEFAULT;
 static PyObject *__pyx_kp_u_DEFAULT_2;
 static PyObject *__pyx_kp_u_DEFAULT_3;
 static PyObject *__pyx_kp_u_DEFAULT_4;
+static PyObject *__pyx_n_s_DEFAULT_EXPR_ALLOWED_FUNCTIONS;
+static PyObject *__pyx_n_s_DEFAULT_EXPR_ALLOWED_LITERALS;
+static PyObject *__pyx_n_s_DEFAULT_EXPR_DISALLOWED_KEYWORDS;
+static PyObject *__pyx_n_s_DEFAULT_EXPR_DISALLOWED_TOKENS;
+static PyObject *__pyx_n_s_DEFAULT_EXPR_NUMERIC_PATTERN;
+static PyObject *__pyx_n_s_DEFAULT_EXPR_STRING_PATTERN;
 static PyObject *__pyx_kp_u_Expresin_DEFAULT_invlida_para_co;
 static PyObject *__pyx_kp_u_Expresin_DEFAULT_potencialmente;
+static PyObject *__pyx_n_s_FUNCTION_CALL_PATTERN;
 static PyObject *__pyx_n_u_INTEGER;
 static PyObject *__pyx_kp_u_Los_nombres_de_columna_no_pueden;
 static PyObject *__pyx_kp_u_NOT_NULL;
@@ -1764,6 +1786,8 @@ static PyObject *__pyx_kp_u_PRIMARY_KEY_2;
 static PyObject *__pyx_kp_u_PRIMARY_KEY_3;
 static PyObject *__pyx_kp_u_Restriccin_no_permitida_para_col;
 static PyObject *__pyx_kp_u_Restriccin_repetida_para_columna;
+static PyObject *__pyx_n_s_SQLITE_IDENTIFIER_DISALLOWED_TOK;
+static PyObject *__pyx_n_s_SQLITE_IDENTIFIER_PATTERN;
 static PyObject *__pyx_kp_u_Se_requiere_al_menos_una_columna;
 static PyObject *__pyx_kp_u_Tipo_de_columna_vaco_para;
 static PyObject *__pyx_kp_u_Tipo_de_dato_no_permitido_para;
@@ -1783,6 +1807,7 @@ static PyObject *__pyx_n_s_casefold;
 static PyObject *__pyx_n_s_cline_in_traceback;
 static PyObject *__pyx_n_s_close;
 static PyObject *__pyx_n_s_columns;
+static PyObject *__pyx_n_s_const;
 static PyObject *__pyx_n_s_default_expr;
 static PyObject *__pyx_n_s_end;
 static PyObject *__pyx_n_s_expr_end;
@@ -1792,6 +1817,7 @@ static PyObject *__pyx_n_s_group;
 static PyObject *__pyx_n_s_ident;
 static PyObject *__pyx_n_s_identifier;
 static PyObject *__pyx_n_s_idx;
+static PyObject *__pyx_n_s_import;
 static PyObject *__pyx_n_s_items;
 static PyObject *__pyx_n_s_keyword_pos;
 static PyObject *__pyx_n_s_length;
@@ -1816,9 +1842,11 @@ static PyObject *__pyx_n_s_rest_original;
 static PyObject *__pyx_n_s_rest_original_tokens;
 static PyObject *__pyx_n_s_rest_upper;
 static PyObject *__pyx_n_s_sanitized_columns;
+static PyObject *__pyx_n_s_schemas_constants;
 static PyObject *__pyx_n_s_seen_names;
 static PyObject *__pyx_n_s_send;
 static PyObject *__pyx_n_s_split;
+static PyObject *__pyx_n_s_sqliteplus_core;
 static PyObject *__pyx_n_s_sqliteplus_core_schemas_cy;
 static PyObject *__pyx_kp_s_sqliteplus_core_schemas_cy_pyx;
 static PyObject *__pyx_n_s_strip;
@@ -1848,7 +1876,7 @@ static PyObject *__pyx_codeobj__10;
 static PyObject *__pyx_codeobj__12;
 /* Late includes */
 
-/* "sqliteplus/core/schemas_cy.pyx":25
+/* "sqliteplus/core/schemas_cy.pyx":24
  * 
  * 
  * def _py_is_valid_sqlite_identifier(identifier):             # <<<<<<<<<<<<<<
@@ -1886,7 +1914,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy__py_is_valid_sqlite_id
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_py_is_valid_sqlite_identifier", 0);
 
-  /* "sqliteplus/core/schemas_cy.pyx":26
+  /* "sqliteplus/core/schemas_cy.pyx":25
  * 
  * def _py_is_valid_sqlite_identifier(identifier):
  *     if not isinstance(identifier, str):             # <<<<<<<<<<<<<<
@@ -1897,7 +1925,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy__py_is_valid_sqlite_id
   __pyx_t_2 = ((!(__pyx_t_1 != 0)) != 0);
   if (__pyx_t_2) {
 
-    /* "sqliteplus/core/schemas_cy.pyx":27
+    /* "sqliteplus/core/schemas_cy.pyx":26
  * def _py_is_valid_sqlite_identifier(identifier):
  *     if not isinstance(identifier, str):
  *         return False             # <<<<<<<<<<<<<<
@@ -1909,7 +1937,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy__py_is_valid_sqlite_id
     __pyx_r = Py_False;
     goto __pyx_L0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":26
+    /* "sqliteplus/core/schemas_cy.pyx":25
  * 
  * def _py_is_valid_sqlite_identifier(identifier):
  *     if not isinstance(identifier, str):             # <<<<<<<<<<<<<<
@@ -1918,20 +1946,20 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy__py_is_valid_sqlite_id
  */
   }
 
-  /* "sqliteplus/core/schemas_cy.pyx":29
+  /* "sqliteplus/core/schemas_cy.pyx":28
  *         return False
  * 
  *     cdef str ident = identifier             # <<<<<<<<<<<<<<
  *     cdef object token
  * 
  */
-  if (!(likely(PyUnicode_CheckExact(__pyx_v_identifier))||((__pyx_v_identifier) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_v_identifier)->tp_name), 0))) __PYX_ERR(0, 29, __pyx_L1_error)
+  if (!(likely(PyUnicode_CheckExact(__pyx_v_identifier))||((__pyx_v_identifier) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_v_identifier)->tp_name), 0))) __PYX_ERR(0, 28, __pyx_L1_error)
   __pyx_t_3 = __pyx_v_identifier;
   __Pyx_INCREF(__pyx_t_3);
   __pyx_v_ident = ((PyObject*)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":32
+  /* "sqliteplus/core/schemas_cy.pyx":31
  *     cdef object token
  * 
  *     for token in _DISALLOWED_TOKENS:             # <<<<<<<<<<<<<<
@@ -1940,21 +1968,21 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy__py_is_valid_sqlite_id
  */
   if (unlikely(__pyx_v_10sqliteplus_4core_10schemas_cy__DISALLOWED_TOKENS == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    __PYX_ERR(0, 32, __pyx_L1_error)
+    __PYX_ERR(0, 31, __pyx_L1_error)
   }
   __pyx_t_3 = __pyx_v_10sqliteplus_4core_10schemas_cy__DISALLOWED_TOKENS; __Pyx_INCREF(__pyx_t_3); __pyx_t_4 = 0;
   for (;;) {
     if (__pyx_t_4 >= PyTuple_GET_SIZE(__pyx_t_3)) break;
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-    __pyx_t_5 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_4); __Pyx_INCREF(__pyx_t_5); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 32, __pyx_L1_error)
+    __pyx_t_5 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_4); __Pyx_INCREF(__pyx_t_5); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 31, __pyx_L1_error)
     #else
-    __pyx_t_5 = PySequence_ITEM(__pyx_t_3, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 32, __pyx_L1_error)
+    __pyx_t_5 = PySequence_ITEM(__pyx_t_3, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 31, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     #endif
     __Pyx_XDECREF_SET(__pyx_v_token, __pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":33
+    /* "sqliteplus/core/schemas_cy.pyx":32
  * 
  *     for token in _DISALLOWED_TOKENS:
  *         if token in ident:             # <<<<<<<<<<<<<<
@@ -1963,13 +1991,13 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy__py_is_valid_sqlite_id
  */
     if (unlikely(__pyx_v_ident == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-      __PYX_ERR(0, 33, __pyx_L1_error)
+      __PYX_ERR(0, 32, __pyx_L1_error)
     }
-    __pyx_t_2 = (__Pyx_PyUnicode_ContainsTF(__pyx_v_token, __pyx_v_ident, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 33, __pyx_L1_error)
+    __pyx_t_2 = (__Pyx_PyUnicode_ContainsTF(__pyx_v_token, __pyx_v_ident, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 32, __pyx_L1_error)
     __pyx_t_1 = (__pyx_t_2 != 0);
     if (__pyx_t_1) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":34
+      /* "sqliteplus/core/schemas_cy.pyx":33
  *     for token in _DISALLOWED_TOKENS:
  *         if token in ident:
  *             return False             # <<<<<<<<<<<<<<
@@ -1982,7 +2010,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy__py_is_valid_sqlite_id
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       goto __pyx_L0;
 
-      /* "sqliteplus/core/schemas_cy.pyx":33
+      /* "sqliteplus/core/schemas_cy.pyx":32
  * 
  *     for token in _DISALLOWED_TOKENS:
  *         if token in ident:             # <<<<<<<<<<<<<<
@@ -1991,7 +2019,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy__py_is_valid_sqlite_id
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":32
+    /* "sqliteplus/core/schemas_cy.pyx":31
  *     cdef object token
  * 
  *     for token in _DISALLOWED_TOKENS:             # <<<<<<<<<<<<<<
@@ -2001,7 +2029,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy__py_is_valid_sqlite_id
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":36
+  /* "sqliteplus/core/schemas_cy.pyx":35
  *             return False
  * 
  *     return bool(_IDENTIFIER_PATTERN.match(ident))             # <<<<<<<<<<<<<<
@@ -2009,7 +2037,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy__py_is_valid_sqlite_id
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_10sqliteplus_4core_10schemas_cy__IDENTIFIER_PATTERN, __pyx_n_s_match); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 36, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_10sqliteplus_4core_10schemas_cy__IDENTIFIER_PATTERN, __pyx_n_s_match); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 35, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __pyx_t_6 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
@@ -2023,18 +2051,18 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy__py_is_valid_sqlite_id
   }
   __pyx_t_3 = (__pyx_t_6) ? __Pyx_PyObject_Call2Args(__pyx_t_5, __pyx_t_6, __pyx_v_ident) : __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_v_ident);
   __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-  if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 36, __pyx_L1_error)
+  if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 35, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 36, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 35, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyBool_FromLong((!(!__pyx_t_1))); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 36, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyBool_FromLong((!(!__pyx_t_1))); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 35, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":25
+  /* "sqliteplus/core/schemas_cy.pyx":24
  * 
  * 
  * def _py_is_valid_sqlite_identifier(identifier):             # <<<<<<<<<<<<<<
@@ -2057,7 +2085,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy__py_is_valid_sqlite_id
   return __pyx_r;
 }
 
-/* "sqliteplus/core/schemas_cy.pyx":40
+/* "sqliteplus/core/schemas_cy.pyx":39
  * 
  * @cython.cfunc
  * def _has_balanced_parentheses_impl(str expr) -> cython.bint:             # <<<<<<<<<<<<<<
@@ -2084,7 +2112,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_has_balanced_parentheses_impl", 0);
 
-  /* "sqliteplus/core/schemas_cy.pyx":41
+  /* "sqliteplus/core/schemas_cy.pyx":40
  * @cython.cfunc
  * def _has_balanced_parentheses_impl(str expr) -> cython.bint:
  *     cdef Py_ssize_t depth = 0             # <<<<<<<<<<<<<<
@@ -2093,7 +2121,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
  */
   __pyx_v_depth = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":43
+  /* "sqliteplus/core/schemas_cy.pyx":42
  *     cdef Py_ssize_t depth = 0
  *     cdef Py_ssize_t idx
  *     cdef Py_ssize_t length = len(expr)             # <<<<<<<<<<<<<<
@@ -2102,12 +2130,12 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
  */
   if (unlikely(__pyx_v_expr == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-    __PYX_ERR(0, 43, __pyx_L1_error)
+    __PYX_ERR(0, 42, __pyx_L1_error)
   }
-  __pyx_t_1 = __Pyx_PyUnicode_GET_LENGTH(__pyx_v_expr); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 43, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyUnicode_GET_LENGTH(__pyx_v_expr); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 42, __pyx_L1_error)
   __pyx_v_length = __pyx_t_1;
 
-  /* "sqliteplus/core/schemas_cy.pyx":46
+  /* "sqliteplus/core/schemas_cy.pyx":45
  *     cdef str char
  * 
  *     for idx in range(length):             # <<<<<<<<<<<<<<
@@ -2119,32 +2147,32 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
   for (__pyx_t_3 = 0; __pyx_t_3 < __pyx_t_2; __pyx_t_3+=1) {
     __pyx_v_idx = __pyx_t_3;
 
-    /* "sqliteplus/core/schemas_cy.pyx":47
+    /* "sqliteplus/core/schemas_cy.pyx":46
  * 
  *     for idx in range(length):
  *         char = expr[idx]             # <<<<<<<<<<<<<<
  *         if char == "(":
  *             depth += 1
  */
-    __pyx_t_4 = __Pyx_GetItemInt_Unicode(__pyx_v_expr, __pyx_v_idx, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 0, 0); if (unlikely(__pyx_t_4 == (Py_UCS4)-1)) __PYX_ERR(0, 47, __pyx_L1_error)
-    __pyx_t_5 = PyUnicode_FromOrdinal(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 47, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetItemInt_Unicode(__pyx_v_expr, __pyx_v_idx, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 0, 0); if (unlikely(__pyx_t_4 == (Py_UCS4)-1)) __PYX_ERR(0, 46, __pyx_L1_error)
+    __pyx_t_5 = PyUnicode_FromOrdinal(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 46, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    if (!(likely(PyUnicode_CheckExact(__pyx_t_5))||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_5)->tp_name), 0))) __PYX_ERR(0, 47, __pyx_L1_error)
+    if (!(likely(PyUnicode_CheckExact(__pyx_t_5))||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_5)->tp_name), 0))) __PYX_ERR(0, 46, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_char, ((PyObject*)__pyx_t_5));
     __pyx_t_5 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":48
+    /* "sqliteplus/core/schemas_cy.pyx":47
  *     for idx in range(length):
  *         char = expr[idx]
  *         if char == "(":             # <<<<<<<<<<<<<<
  *             depth += 1
  *         elif char == ")":
  */
-    __pyx_t_6 = (__Pyx_PyUnicode_Equals(__pyx_v_char, __pyx_kp_u_, Py_EQ)); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 48, __pyx_L1_error)
+    __pyx_t_6 = (__Pyx_PyUnicode_Equals(__pyx_v_char, __pyx_kp_u_, Py_EQ)); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 47, __pyx_L1_error)
     __pyx_t_7 = (__pyx_t_6 != 0);
     if (__pyx_t_7) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":49
+      /* "sqliteplus/core/schemas_cy.pyx":48
  *         char = expr[idx]
  *         if char == "(":
  *             depth += 1             # <<<<<<<<<<<<<<
@@ -2153,7 +2181,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
  */
       __pyx_v_depth = (__pyx_v_depth + 1);
 
-      /* "sqliteplus/core/schemas_cy.pyx":48
+      /* "sqliteplus/core/schemas_cy.pyx":47
  *     for idx in range(length):
  *         char = expr[idx]
  *         if char == "(":             # <<<<<<<<<<<<<<
@@ -2163,18 +2191,18 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
       goto __pyx_L5;
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":50
+    /* "sqliteplus/core/schemas_cy.pyx":49
  *         if char == "(":
  *             depth += 1
  *         elif char == ")":             # <<<<<<<<<<<<<<
  *             depth -= 1
  *             if depth < 0:
  */
-    __pyx_t_7 = (__Pyx_PyUnicode_Equals(__pyx_v_char, __pyx_kp_u__2, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 50, __pyx_L1_error)
+    __pyx_t_7 = (__Pyx_PyUnicode_Equals(__pyx_v_char, __pyx_kp_u__2, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 49, __pyx_L1_error)
     __pyx_t_6 = (__pyx_t_7 != 0);
     if (__pyx_t_6) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":51
+      /* "sqliteplus/core/schemas_cy.pyx":50
  *             depth += 1
  *         elif char == ")":
  *             depth -= 1             # <<<<<<<<<<<<<<
@@ -2183,7 +2211,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
  */
       __pyx_v_depth = (__pyx_v_depth - 1);
 
-      /* "sqliteplus/core/schemas_cy.pyx":52
+      /* "sqliteplus/core/schemas_cy.pyx":51
  *         elif char == ")":
  *             depth -= 1
  *             if depth < 0:             # <<<<<<<<<<<<<<
@@ -2193,7 +2221,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
       __pyx_t_6 = ((__pyx_v_depth < 0) != 0);
       if (__pyx_t_6) {
 
-        /* "sqliteplus/core/schemas_cy.pyx":53
+        /* "sqliteplus/core/schemas_cy.pyx":52
  *             depth -= 1
  *             if depth < 0:
  *                 return False             # <<<<<<<<<<<<<<
@@ -2203,7 +2231,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
         __pyx_r = 0;
         goto __pyx_L0;
 
-        /* "sqliteplus/core/schemas_cy.pyx":52
+        /* "sqliteplus/core/schemas_cy.pyx":51
  *         elif char == ")":
  *             depth -= 1
  *             if depth < 0:             # <<<<<<<<<<<<<<
@@ -2212,7 +2240,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
  */
       }
 
-      /* "sqliteplus/core/schemas_cy.pyx":50
+      /* "sqliteplus/core/schemas_cy.pyx":49
  *         if char == "(":
  *             depth += 1
  *         elif char == ")":             # <<<<<<<<<<<<<<
@@ -2223,7 +2251,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
     __pyx_L5:;
   }
 
-  /* "sqliteplus/core/schemas_cy.pyx":54
+  /* "sqliteplus/core/schemas_cy.pyx":53
  *             if depth < 0:
  *                 return False
  *     return depth == 0             # <<<<<<<<<<<<<<
@@ -2233,7 +2261,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
   __pyx_r = (__pyx_v_depth == 0);
   goto __pyx_L0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":40
+  /* "sqliteplus/core/schemas_cy.pyx":39
  * 
  * @cython.cfunc
  * def _has_balanced_parentheses_impl(str expr) -> cython.bint:             # <<<<<<<<<<<<<<
@@ -2252,7 +2280,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_imp
   return __pyx_r;
 }
 
-/* "sqliteplus/core/schemas_cy.pyx":57
+/* "sqliteplus/core/schemas_cy.pyx":56
  * 
  * 
  * cpdef bint _py_has_balanced_parentheses(str expr):             # <<<<<<<<<<<<<<
@@ -2270,18 +2298,18 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_has_balanced_parentheses(
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_py_has_balanced_parentheses", 0);
 
-  /* "sqliteplus/core/schemas_cy.pyx":58
+  /* "sqliteplus/core/schemas_cy.pyx":57
  * 
  * cpdef bint _py_has_balanced_parentheses(str expr):
  *     return _has_balanced_parentheses_impl(expr)             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_t_1 = __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_impl(__pyx_v_expr); if (unlikely(__pyx_t_1 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 58, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_impl(__pyx_v_expr); if (unlikely(__pyx_t_1 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 57, __pyx_L1_error)
   __pyx_r = __pyx_t_1;
   goto __pyx_L0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":57
+  /* "sqliteplus/core/schemas_cy.pyx":56
  * 
  * 
  * cpdef bint _py_has_balanced_parentheses(str expr):             # <<<<<<<<<<<<<<
@@ -2307,7 +2335,7 @@ static PyObject *__pyx_pw_10sqliteplus_4core_10schemas_cy_3_py_has_balanced_pare
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("_py_has_balanced_parentheses (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_expr), (&PyUnicode_Type), 1, "expr", 1))) __PYX_ERR(0, 57, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_expr), (&PyUnicode_Type), 1, "expr", 1))) __PYX_ERR(0, 56, __pyx_L1_error)
   __pyx_r = __pyx_pf_10sqliteplus_4core_10schemas_cy_2_py_has_balanced_parentheses(__pyx_self, ((PyObject*)__pyx_v_expr));
 
   /* function exit code */
@@ -2328,7 +2356,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_2_py_has_balanced_pare
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_py_has_balanced_parentheses", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_10sqliteplus_4core_10schemas_cy__py_has_balanced_parentheses(__pyx_v_expr, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 57, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_10sqliteplus_4core_10schemas_cy__py_has_balanced_parentheses(__pyx_v_expr, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 56, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2345,7 +2373,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_2_py_has_balanced_pare
   return __pyx_r;
 }
 
-/* "sqliteplus/core/schemas_cy.pyx":61
+/* "sqliteplus/core/schemas_cy.pyx":60
  * 
  * 
  * cpdef str _py_strip_enclosing_parentheses(str expr):             # <<<<<<<<<<<<<<
@@ -2371,7 +2399,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_par
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_py_strip_enclosing_parentheses", 0);
 
-  /* "sqliteplus/core/schemas_cy.pyx":62
+  /* "sqliteplus/core/schemas_cy.pyx":61
  * 
  * cpdef str _py_strip_enclosing_parentheses(str expr):
  *     cdef str sanitized = expr             # <<<<<<<<<<<<<<
@@ -2381,7 +2409,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_par
   __Pyx_INCREF(__pyx_v_expr);
   __pyx_v_sanitized = __pyx_v_expr;
 
-  /* "sqliteplus/core/schemas_cy.pyx":65
+  /* "sqliteplus/core/schemas_cy.pyx":64
  *     cdef str inner
  * 
  *     while sanitized.startswith("(") and sanitized.endswith(")") and _has_balanced_parentheses_impl(sanitized):             # <<<<<<<<<<<<<<
@@ -2391,9 +2419,9 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_par
   while (1) {
     if (unlikely(__pyx_v_sanitized == Py_None)) {
       PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "startswith");
-      __PYX_ERR(0, 65, __pyx_L1_error)
+      __PYX_ERR(0, 64, __pyx_L1_error)
     }
-    __pyx_t_2 = __Pyx_PyUnicode_Tailmatch(__pyx_v_sanitized, __pyx_kp_u_, 0, PY_SSIZE_T_MAX, -1); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 65, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyUnicode_Tailmatch(__pyx_v_sanitized, __pyx_kp_u_, 0, PY_SSIZE_T_MAX, -1); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 64, __pyx_L1_error)
     if ((__pyx_t_2 != 0)) {
     } else {
       __pyx_t_1 = (__pyx_t_2 != 0);
@@ -2401,21 +2429,21 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_par
     }
     if (unlikely(__pyx_v_sanitized == Py_None)) {
       PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "endswith");
-      __PYX_ERR(0, 65, __pyx_L1_error)
+      __PYX_ERR(0, 64, __pyx_L1_error)
     }
-    __pyx_t_2 = __Pyx_PyUnicode_Tailmatch(__pyx_v_sanitized, __pyx_kp_u__2, 0, PY_SSIZE_T_MAX, 1); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 65, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyUnicode_Tailmatch(__pyx_v_sanitized, __pyx_kp_u__2, 0, PY_SSIZE_T_MAX, 1); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 64, __pyx_L1_error)
     if ((__pyx_t_2 != 0)) {
     } else {
       __pyx_t_1 = (__pyx_t_2 != 0);
       goto __pyx_L5_bool_binop_done;
     }
-    __pyx_t_2 = __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_impl(__pyx_v_sanitized); if (unlikely(__pyx_t_2 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 65, __pyx_L1_error)
+    __pyx_t_2 = __pyx_f_10sqliteplus_4core_10schemas_cy__has_balanced_parentheses_impl(__pyx_v_sanitized); if (unlikely(__pyx_t_2 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 64, __pyx_L1_error)
     __pyx_t_3 = (__pyx_t_2 != 0);
     __pyx_t_1 = __pyx_t_3;
     __pyx_L5_bool_binop_done:;
     if (!__pyx_t_1) break;
 
-    /* "sqliteplus/core/schemas_cy.pyx":66
+    /* "sqliteplus/core/schemas_cy.pyx":65
  * 
  *     while sanitized.startswith("(") and sanitized.endswith(")") and _has_balanced_parentheses_impl(sanitized):
  *         inner = sanitized[1 : len(sanitized) - 1].strip()             # <<<<<<<<<<<<<<
@@ -2424,16 +2452,16 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_par
  */
     if (unlikely(__pyx_v_sanitized == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 66, __pyx_L1_error)
+      __PYX_ERR(0, 65, __pyx_L1_error)
     }
     if (unlikely(__pyx_v_sanitized == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-      __PYX_ERR(0, 66, __pyx_L1_error)
+      __PYX_ERR(0, 65, __pyx_L1_error)
     }
-    __pyx_t_5 = __Pyx_PyUnicode_GET_LENGTH(__pyx_v_sanitized); if (unlikely(__pyx_t_5 == ((Py_ssize_t)-1))) __PYX_ERR(0, 66, __pyx_L1_error)
-    __pyx_t_6 = __Pyx_PyUnicode_Substring(__pyx_v_sanitized, 1, (__pyx_t_5 - 1)); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 66, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyUnicode_GET_LENGTH(__pyx_v_sanitized); if (unlikely(__pyx_t_5 == ((Py_ssize_t)-1))) __PYX_ERR(0, 65, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyUnicode_Substring(__pyx_v_sanitized, 1, (__pyx_t_5 - 1)); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 65, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_strip); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 66, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_strip); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 65, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __pyx_t_6 = NULL;
@@ -2448,14 +2476,14 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_par
     }
     __pyx_t_4 = (__pyx_t_6) ? __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_6) : __Pyx_PyObject_CallNoArg(__pyx_t_7);
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 66, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 65, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (!(likely(PyUnicode_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_4)->tp_name), 0))) __PYX_ERR(0, 66, __pyx_L1_error)
+    if (!(likely(PyUnicode_CheckExact(__pyx_t_4))||((__pyx_t_4) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_4)->tp_name), 0))) __PYX_ERR(0, 65, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_inner, ((PyObject*)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":67
+    /* "sqliteplus/core/schemas_cy.pyx":66
  *     while sanitized.startswith("(") and sanitized.endswith(")") and _has_balanced_parentheses_impl(sanitized):
  *         inner = sanitized[1 : len(sanitized) - 1].strip()
  *         if not inner:             # <<<<<<<<<<<<<<
@@ -2466,7 +2494,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_par
     __pyx_t_3 = ((!__pyx_t_1) != 0);
     if (__pyx_t_3) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":68
+      /* "sqliteplus/core/schemas_cy.pyx":67
  *         inner = sanitized[1 : len(sanitized) - 1].strip()
  *         if not inner:
  *             break             # <<<<<<<<<<<<<<
@@ -2475,7 +2503,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_par
  */
       goto __pyx_L4_break;
 
-      /* "sqliteplus/core/schemas_cy.pyx":67
+      /* "sqliteplus/core/schemas_cy.pyx":66
  *     while sanitized.startswith("(") and sanitized.endswith(")") and _has_balanced_parentheses_impl(sanitized):
  *         inner = sanitized[1 : len(sanitized) - 1].strip()
  *         if not inner:             # <<<<<<<<<<<<<<
@@ -2484,7 +2512,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_par
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":69
+    /* "sqliteplus/core/schemas_cy.pyx":68
  *         if not inner:
  *             break
  *         sanitized = inner             # <<<<<<<<<<<<<<
@@ -2496,7 +2524,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_par
   }
   __pyx_L4_break:;
 
-  /* "sqliteplus/core/schemas_cy.pyx":70
+  /* "sqliteplus/core/schemas_cy.pyx":69
  *             break
  *         sanitized = inner
  *     return sanitized             # <<<<<<<<<<<<<<
@@ -2508,7 +2536,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_par
   __pyx_r = __pyx_v_sanitized;
   goto __pyx_L0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":61
+  /* "sqliteplus/core/schemas_cy.pyx":60
  * 
  * 
  * cpdef str _py_strip_enclosing_parentheses(str expr):             # <<<<<<<<<<<<<<
@@ -2540,7 +2568,7 @@ static PyObject *__pyx_pw_10sqliteplus_4core_10schemas_cy_5_py_strip_enclosing_p
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("_py_strip_enclosing_parentheses (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_expr), (&PyUnicode_Type), 1, "expr", 1))) __PYX_ERR(0, 61, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_expr), (&PyUnicode_Type), 1, "expr", 1))) __PYX_ERR(0, 60, __pyx_L1_error)
   __pyx_r = __pyx_pf_10sqliteplus_4core_10schemas_cy_4_py_strip_enclosing_parentheses(__pyx_self, ((PyObject*)__pyx_v_expr));
 
   /* function exit code */
@@ -2561,7 +2589,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_4_py_strip_enclosing_p
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_py_strip_enclosing_parentheses", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_parentheses(__pyx_v_expr, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 61, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_parentheses(__pyx_v_expr, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 60, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2578,7 +2606,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_4_py_strip_enclosing_p
   return __pyx_r;
 }
 
-/* "sqliteplus/core/schemas_cy.pyx":73
+/* "sqliteplus/core/schemas_cy.pyx":72
  * 
  * 
  * cpdef _py_parse_function_call(str expr):             # <<<<<<<<<<<<<<
@@ -2612,14 +2640,14 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_py_parse_function_call", 0);
 
-  /* "sqliteplus/core/schemas_cy.pyx":74
+  /* "sqliteplus/core/schemas_cy.pyx":73
  * 
  * cpdef _py_parse_function_call(str expr):
  *     cdef object match = _FUNCTION_CALL_PATTERN.match(expr)             # <<<<<<<<<<<<<<
  *     if not match:
  *         return None
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_10sqliteplus_4core_10schemas_cy__FUNCTION_CALL_PATTERN, __pyx_n_s_match); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 74, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_10sqliteplus_4core_10schemas_cy__FUNCTION_CALL_PATTERN, __pyx_n_s_match); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 73, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
@@ -2633,24 +2661,24 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
   }
   __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_3, __pyx_v_expr) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_expr);
   __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 74, __pyx_L1_error)
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 73, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_match = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":75
+  /* "sqliteplus/core/schemas_cy.pyx":74
  * cpdef _py_parse_function_call(str expr):
  *     cdef object match = _FUNCTION_CALL_PATTERN.match(expr)
  *     if not match:             # <<<<<<<<<<<<<<
  *         return None
  * 
  */
-  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_match); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 75, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_match); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 74, __pyx_L1_error)
   __pyx_t_5 = ((!__pyx_t_4) != 0);
   if (__pyx_t_5) {
 
-    /* "sqliteplus/core/schemas_cy.pyx":76
+    /* "sqliteplus/core/schemas_cy.pyx":75
  *     cdef object match = _FUNCTION_CALL_PATTERN.match(expr)
  *     if not match:
  *         return None             # <<<<<<<<<<<<<<
@@ -2661,7 +2689,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":75
+    /* "sqliteplus/core/schemas_cy.pyx":74
  * cpdef _py_parse_function_call(str expr):
  *     cdef object match = _FUNCTION_CALL_PATTERN.match(expr)
  *     if not match:             # <<<<<<<<<<<<<<
@@ -2670,14 +2698,14 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
  */
   }
 
-  /* "sqliteplus/core/schemas_cy.pyx":78
+  /* "sqliteplus/core/schemas_cy.pyx":77
  *         return None
  * 
  *     cdef str func_name = match.group(1)             # <<<<<<<<<<<<<<
  *     cdef Py_ssize_t idx = match.end() - 1
  *     cdef Py_ssize_t depth = 0
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_match, __pyx_n_s_group); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 78, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_match, __pyx_n_s_group); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 77, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
@@ -2691,21 +2719,21 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
   }
   __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_3, __pyx_int_1) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_int_1);
   __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 78, __pyx_L1_error)
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 77, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (!(likely(PyUnicode_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_1)->tp_name), 0))) __PYX_ERR(0, 78, __pyx_L1_error)
+  if (!(likely(PyUnicode_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_1)->tp_name), 0))) __PYX_ERR(0, 77, __pyx_L1_error)
   __pyx_v_func_name = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":79
+  /* "sqliteplus/core/schemas_cy.pyx":78
  * 
  *     cdef str func_name = match.group(1)
  *     cdef Py_ssize_t idx = match.end() - 1             # <<<<<<<<<<<<<<
  *     cdef Py_ssize_t depth = 0
  *     cdef Py_ssize_t pos
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_match, __pyx_n_s_end); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 79, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_match, __pyx_n_s_end); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 78, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
@@ -2719,17 +2747,17 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
   }
   __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3) : __Pyx_PyObject_CallNoArg(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 79, __pyx_L1_error)
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 78, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyInt_SubtractObjC(__pyx_t_1, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 79, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_SubtractObjC(__pyx_t_1, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 78, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_6 = __Pyx_PyIndex_AsSsize_t(__pyx_t_2); if (unlikely((__pyx_t_6 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 79, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyIndex_AsSsize_t(__pyx_t_2); if (unlikely((__pyx_t_6 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 78, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_idx = __pyx_t_6;
 
-  /* "sqliteplus/core/schemas_cy.pyx":80
+  /* "sqliteplus/core/schemas_cy.pyx":79
  *     cdef str func_name = match.group(1)
  *     cdef Py_ssize_t idx = match.end() - 1
  *     cdef Py_ssize_t depth = 0             # <<<<<<<<<<<<<<
@@ -2738,7 +2766,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
  */
   __pyx_v_depth = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":82
+  /* "sqliteplus/core/schemas_cy.pyx":81
  *     cdef Py_ssize_t depth = 0
  *     cdef Py_ssize_t pos
  *     cdef Py_ssize_t length = len(expr)             # <<<<<<<<<<<<<<
@@ -2747,12 +2775,12 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
  */
   if (unlikely(__pyx_v_expr == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-    __PYX_ERR(0, 82, __pyx_L1_error)
+    __PYX_ERR(0, 81, __pyx_L1_error)
   }
-  __pyx_t_6 = __Pyx_PyUnicode_GET_LENGTH(__pyx_v_expr); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 82, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyUnicode_GET_LENGTH(__pyx_v_expr); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 81, __pyx_L1_error)
   __pyx_v_length = __pyx_t_6;
 
-  /* "sqliteplus/core/schemas_cy.pyx":85
+  /* "sqliteplus/core/schemas_cy.pyx":84
  *     cdef str char
  * 
  *     for pos in range(idx, length):             # <<<<<<<<<<<<<<
@@ -2764,32 +2792,32 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
   for (__pyx_t_8 = __pyx_v_idx; __pyx_t_8 < __pyx_t_7; __pyx_t_8+=1) {
     __pyx_v_pos = __pyx_t_8;
 
-    /* "sqliteplus/core/schemas_cy.pyx":86
+    /* "sqliteplus/core/schemas_cy.pyx":85
  * 
  *     for pos in range(idx, length):
  *         char = expr[pos]             # <<<<<<<<<<<<<<
  *         if char == "(":
  *             depth += 1
  */
-    __pyx_t_9 = __Pyx_GetItemInt_Unicode(__pyx_v_expr, __pyx_v_pos, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 0, 0); if (unlikely(__pyx_t_9 == (Py_UCS4)-1)) __PYX_ERR(0, 86, __pyx_L1_error)
-    __pyx_t_2 = PyUnicode_FromOrdinal(__pyx_t_9); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 86, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_GetItemInt_Unicode(__pyx_v_expr, __pyx_v_pos, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 0, 0); if (unlikely(__pyx_t_9 == (Py_UCS4)-1)) __PYX_ERR(0, 85, __pyx_L1_error)
+    __pyx_t_2 = PyUnicode_FromOrdinal(__pyx_t_9); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 85, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    if (!(likely(PyUnicode_CheckExact(__pyx_t_2))||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 86, __pyx_L1_error)
+    if (!(likely(PyUnicode_CheckExact(__pyx_t_2))||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 85, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_char, ((PyObject*)__pyx_t_2));
     __pyx_t_2 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":87
+    /* "sqliteplus/core/schemas_cy.pyx":86
  *     for pos in range(idx, length):
  *         char = expr[pos]
  *         if char == "(":             # <<<<<<<<<<<<<<
  *             depth += 1
  *         elif char == ")":
  */
-    __pyx_t_5 = (__Pyx_PyUnicode_Equals(__pyx_v_char, __pyx_kp_u_, Py_EQ)); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 87, __pyx_L1_error)
+    __pyx_t_5 = (__Pyx_PyUnicode_Equals(__pyx_v_char, __pyx_kp_u_, Py_EQ)); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 86, __pyx_L1_error)
     __pyx_t_4 = (__pyx_t_5 != 0);
     if (__pyx_t_4) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":88
+      /* "sqliteplus/core/schemas_cy.pyx":87
  *         char = expr[pos]
  *         if char == "(":
  *             depth += 1             # <<<<<<<<<<<<<<
@@ -2798,7 +2826,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
  */
       __pyx_v_depth = (__pyx_v_depth + 1);
 
-      /* "sqliteplus/core/schemas_cy.pyx":87
+      /* "sqliteplus/core/schemas_cy.pyx":86
  *     for pos in range(idx, length):
  *         char = expr[pos]
  *         if char == "(":             # <<<<<<<<<<<<<<
@@ -2808,18 +2836,18 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
       goto __pyx_L6;
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":89
+    /* "sqliteplus/core/schemas_cy.pyx":88
  *         if char == "(":
  *             depth += 1
  *         elif char == ")":             # <<<<<<<<<<<<<<
  *             depth -= 1
  *             if depth == 0:
  */
-    __pyx_t_4 = (__Pyx_PyUnicode_Equals(__pyx_v_char, __pyx_kp_u__2, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 89, __pyx_L1_error)
+    __pyx_t_4 = (__Pyx_PyUnicode_Equals(__pyx_v_char, __pyx_kp_u__2, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 88, __pyx_L1_error)
     __pyx_t_5 = (__pyx_t_4 != 0);
     if (__pyx_t_5) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":90
+      /* "sqliteplus/core/schemas_cy.pyx":89
  *             depth += 1
  *         elif char == ")":
  *             depth -= 1             # <<<<<<<<<<<<<<
@@ -2828,7 +2856,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
  */
       __pyx_v_depth = (__pyx_v_depth - 1);
 
-      /* "sqliteplus/core/schemas_cy.pyx":91
+      /* "sqliteplus/core/schemas_cy.pyx":90
  *         elif char == ")":
  *             depth -= 1
  *             if depth == 0:             # <<<<<<<<<<<<<<
@@ -2838,7 +2866,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
       __pyx_t_5 = ((__pyx_v_depth == 0) != 0);
       if (__pyx_t_5) {
 
-        /* "sqliteplus/core/schemas_cy.pyx":92
+        /* "sqliteplus/core/schemas_cy.pyx":91
  *             depth -= 1
  *             if depth == 0:
  *                 if pos != length - 1:             # <<<<<<<<<<<<<<
@@ -2848,7 +2876,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
         __pyx_t_5 = ((__pyx_v_pos != (__pyx_v_length - 1)) != 0);
         if (__pyx_t_5) {
 
-          /* "sqliteplus/core/schemas_cy.pyx":93
+          /* "sqliteplus/core/schemas_cy.pyx":92
  *             if depth == 0:
  *                 if pos != length - 1:
  *                     return None             # <<<<<<<<<<<<<<
@@ -2859,7 +2887,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
           __pyx_r = Py_None; __Pyx_INCREF(Py_None);
           goto __pyx_L0;
 
-          /* "sqliteplus/core/schemas_cy.pyx":92
+          /* "sqliteplus/core/schemas_cy.pyx":91
  *             depth -= 1
  *             if depth == 0:
  *                 if pos != length - 1:             # <<<<<<<<<<<<<<
@@ -2868,7 +2896,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
  */
         }
 
-        /* "sqliteplus/core/schemas_cy.pyx":94
+        /* "sqliteplus/core/schemas_cy.pyx":93
  *                 if pos != length - 1:
  *                     return None
  *                 args = expr[idx + 1 : pos].strip()             # <<<<<<<<<<<<<<
@@ -2877,11 +2905,11 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
  */
         if (unlikely(__pyx_v_expr == Py_None)) {
           PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 94, __pyx_L1_error)
+          __PYX_ERR(0, 93, __pyx_L1_error)
         }
-        __pyx_t_1 = __Pyx_PyUnicode_Substring(__pyx_v_expr, (__pyx_v_idx + 1), __pyx_v_pos); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 94, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_PyUnicode_Substring(__pyx_v_expr, (__pyx_v_idx + 1), __pyx_v_pos); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 93, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
-        __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_strip); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 94, __pyx_L1_error)
+        __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_strip); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 93, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         __pyx_t_1 = NULL;
@@ -2896,13 +2924,13 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
         }
         __pyx_t_2 = (__pyx_t_1) ? __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_1) : __Pyx_PyObject_CallNoArg(__pyx_t_3);
         __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-        if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 94, __pyx_L1_error)
+        if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 93, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __pyx_v_args = __pyx_t_2;
         __pyx_t_2 = 0;
 
-        /* "sqliteplus/core/schemas_cy.pyx":95
+        /* "sqliteplus/core/schemas_cy.pyx":94
  *                     return None
  *                 args = expr[idx + 1 : pos].strip()
  *                 return func_name, args             # <<<<<<<<<<<<<<
@@ -2910,7 +2938,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
  *                 return None
  */
         __Pyx_XDECREF(__pyx_r);
-        __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 95, __pyx_L1_error)
+        __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 94, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_INCREF(__pyx_v_func_name);
         __Pyx_GIVEREF(__pyx_v_func_name);
@@ -2922,7 +2950,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
         __pyx_t_2 = 0;
         goto __pyx_L0;
 
-        /* "sqliteplus/core/schemas_cy.pyx":91
+        /* "sqliteplus/core/schemas_cy.pyx":90
  *         elif char == ")":
  *             depth -= 1
  *             if depth == 0:             # <<<<<<<<<<<<<<
@@ -2931,7 +2959,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
  */
       }
 
-      /* "sqliteplus/core/schemas_cy.pyx":96
+      /* "sqliteplus/core/schemas_cy.pyx":95
  *                 args = expr[idx + 1 : pos].strip()
  *                 return func_name, args
  *             if depth < 0:             # <<<<<<<<<<<<<<
@@ -2941,7 +2969,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
       __pyx_t_5 = ((__pyx_v_depth < 0) != 0);
       if (__pyx_t_5) {
 
-        /* "sqliteplus/core/schemas_cy.pyx":97
+        /* "sqliteplus/core/schemas_cy.pyx":96
  *                 return func_name, args
  *             if depth < 0:
  *                 return None             # <<<<<<<<<<<<<<
@@ -2952,7 +2980,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
         __pyx_r = Py_None; __Pyx_INCREF(Py_None);
         goto __pyx_L0;
 
-        /* "sqliteplus/core/schemas_cy.pyx":96
+        /* "sqliteplus/core/schemas_cy.pyx":95
  *                 args = expr[idx + 1 : pos].strip()
  *                 return func_name, args
  *             if depth < 0:             # <<<<<<<<<<<<<<
@@ -2961,7 +2989,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
  */
       }
 
-      /* "sqliteplus/core/schemas_cy.pyx":89
+      /* "sqliteplus/core/schemas_cy.pyx":88
  *         if char == "(":
  *             depth += 1
  *         elif char == ")":             # <<<<<<<<<<<<<<
@@ -2972,7 +3000,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
     __pyx_L6:;
   }
 
-  /* "sqliteplus/core/schemas_cy.pyx":98
+  /* "sqliteplus/core/schemas_cy.pyx":97
  *             if depth < 0:
  *                 return None
  *     return None             # <<<<<<<<<<<<<<
@@ -2983,7 +3011,7 @@ static PyObject *__pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call
   __pyx_r = Py_None; __Pyx_INCREF(Py_None);
   goto __pyx_L0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":73
+  /* "sqliteplus/core/schemas_cy.pyx":72
  * 
  * 
  * cpdef _py_parse_function_call(str expr):             # <<<<<<<<<<<<<<
@@ -3017,7 +3045,7 @@ static PyObject *__pyx_pw_10sqliteplus_4core_10schemas_cy_7_py_parse_function_ca
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("_py_parse_function_call (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_expr), (&PyUnicode_Type), 1, "expr", 1))) __PYX_ERR(0, 73, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_expr), (&PyUnicode_Type), 1, "expr", 1))) __PYX_ERR(0, 72, __pyx_L1_error)
   __pyx_r = __pyx_pf_10sqliteplus_4core_10schemas_cy_6_py_parse_function_call(__pyx_self, ((PyObject*)__pyx_v_expr));
 
   /* function exit code */
@@ -3038,7 +3066,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_6_py_parse_function_ca
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_py_parse_function_call", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call(__pyx_v_expr, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 73, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call(__pyx_v_expr, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -3055,7 +3083,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_6_py_parse_function_ca
   return __pyx_r;
 }
 
-/* "sqliteplus/core/schemas_cy.pyx":101
+/* "sqliteplus/core/schemas_cy.pyx":100
  * 
  * 
  * cpdef bint _py_is_safe_default_expr(str expr):             # <<<<<<<<<<<<<<
@@ -3085,30 +3113,30 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_py_is_safe_default_expr", 0);
 
-  /* "sqliteplus/core/schemas_cy.pyx":102
+  /* "sqliteplus/core/schemas_cy.pyx":101
  * 
  * cpdef bint _py_is_safe_default_expr(str expr):
  *     cdef str sanitized = _py_strip_enclosing_parentheses(expr.strip())             # <<<<<<<<<<<<<<
  *     cdef str upper = f" {sanitized.upper()} "
  * 
  */
-  __pyx_t_1 = __Pyx_CallUnboundCMethod0(&__pyx_umethod_PyUnicode_Type_strip, __pyx_v_expr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 102, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CallUnboundCMethod0(&__pyx_umethod_PyUnicode_Type_strip, __pyx_v_expr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 101, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (!(likely(PyUnicode_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_1)->tp_name), 0))) __PYX_ERR(0, 102, __pyx_L1_error)
-  __pyx_t_2 = __pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_parentheses(((PyObject*)__pyx_t_1), 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 102, __pyx_L1_error)
+  if (!(likely(PyUnicode_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_1)->tp_name), 0))) __PYX_ERR(0, 101, __pyx_L1_error)
+  __pyx_t_2 = __pyx_f_10sqliteplus_4core_10schemas_cy__py_strip_enclosing_parentheses(((PyObject*)__pyx_t_1), 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 101, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_sanitized = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":103
+  /* "sqliteplus/core/schemas_cy.pyx":102
  * cpdef bint _py_is_safe_default_expr(str expr):
  *     cdef str sanitized = _py_strip_enclosing_parentheses(expr.strip())
  *     cdef str upper = f" {sanitized.upper()} "             # <<<<<<<<<<<<<<
  * 
  *     cdef object token
  */
-  __pyx_t_2 = PyTuple_New(3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 103, __pyx_L1_error)
+  __pyx_t_2 = PyTuple_New(3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 102, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = 0;
   __pyx_t_4 = 127;
@@ -3116,7 +3144,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
   __pyx_t_3 += 1;
   __Pyx_GIVEREF(__pyx_kp_u__3);
   PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_kp_u__3);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_sanitized, __pyx_n_s_upper); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 103, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_sanitized, __pyx_n_s_upper); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 102, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __pyx_t_6 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
@@ -3130,10 +3158,10 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
   }
   __pyx_t_1 = (__pyx_t_6) ? __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_6) : __Pyx_PyObject_CallNoArg(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 103, __pyx_L1_error)
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 102, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_PyObject_FormatSimple(__pyx_t_1, __pyx_empty_unicode); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 103, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_FormatSimple(__pyx_t_1, __pyx_empty_unicode); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 102, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_4 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_5) > __pyx_t_4) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_5) : __pyx_t_4;
@@ -3145,13 +3173,13 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
   __pyx_t_3 += 1;
   __Pyx_GIVEREF(__pyx_kp_u__3);
   PyTuple_SET_ITEM(__pyx_t_2, 2, __pyx_kp_u__3);
-  __pyx_t_5 = __Pyx_PyUnicode_Join(__pyx_t_2, 3, __pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 103, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyUnicode_Join(__pyx_t_2, 3, __pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 102, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_upper = ((PyObject*)__pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":106
+  /* "sqliteplus/core/schemas_cy.pyx":105
  * 
  *     cdef object token
  *     for token in _DEFAULT_DISALLOWED_TOKENS:             # <<<<<<<<<<<<<<
@@ -3160,21 +3188,21 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
  */
   if (unlikely(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_DISALLOWED_TOKENS == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    __PYX_ERR(0, 106, __pyx_L1_error)
+    __PYX_ERR(0, 105, __pyx_L1_error)
   }
   __pyx_t_5 = __pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_DISALLOWED_TOKENS; __Pyx_INCREF(__pyx_t_5); __pyx_t_3 = 0;
   for (;;) {
     if (__pyx_t_3 >= PyTuple_GET_SIZE(__pyx_t_5)) break;
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-    __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_3); __Pyx_INCREF(__pyx_t_2); __pyx_t_3++; if (unlikely(0 < 0)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_3); __Pyx_INCREF(__pyx_t_2); __pyx_t_3++; if (unlikely(0 < 0)) __PYX_ERR(0, 105, __pyx_L1_error)
     #else
-    __pyx_t_2 = PySequence_ITEM(__pyx_t_5, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_2 = PySequence_ITEM(__pyx_t_5, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 105, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     #endif
     __Pyx_XDECREF_SET(__pyx_v_token, __pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":107
+    /* "sqliteplus/core/schemas_cy.pyx":106
  *     cdef object token
  *     for token in _DEFAULT_DISALLOWED_TOKENS:
  *         if token in sanitized:             # <<<<<<<<<<<<<<
@@ -3183,13 +3211,13 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
  */
     if (unlikely(__pyx_v_sanitized == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-      __PYX_ERR(0, 107, __pyx_L1_error)
+      __PYX_ERR(0, 106, __pyx_L1_error)
     }
-    __pyx_t_7 = (__Pyx_PyUnicode_ContainsTF(__pyx_v_token, __pyx_v_sanitized, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 107, __pyx_L1_error)
+    __pyx_t_7 = (__Pyx_PyUnicode_ContainsTF(__pyx_v_token, __pyx_v_sanitized, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 106, __pyx_L1_error)
     __pyx_t_8 = (__pyx_t_7 != 0);
     if (__pyx_t_8) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":108
+      /* "sqliteplus/core/schemas_cy.pyx":107
  *     for token in _DEFAULT_DISALLOWED_TOKENS:
  *         if token in sanitized:
  *             return False             # <<<<<<<<<<<<<<
@@ -3200,7 +3228,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       goto __pyx_L0;
 
-      /* "sqliteplus/core/schemas_cy.pyx":107
+      /* "sqliteplus/core/schemas_cy.pyx":106
  *     cdef object token
  *     for token in _DEFAULT_DISALLOWED_TOKENS:
  *         if token in sanitized:             # <<<<<<<<<<<<<<
@@ -3209,7 +3237,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":106
+    /* "sqliteplus/core/schemas_cy.pyx":105
  * 
  *     cdef object token
  *     for token in _DEFAULT_DISALLOWED_TOKENS:             # <<<<<<<<<<<<<<
@@ -3219,7 +3247,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
   }
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":110
+  /* "sqliteplus/core/schemas_cy.pyx":109
  *             return False
  * 
  *     for token in _DEFAULT_DISALLOWED_KEYWORDS:             # <<<<<<<<<<<<<<
@@ -3228,32 +3256,32 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
  */
   if (unlikely(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_DISALLOWED_KEYWORDS == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    __PYX_ERR(0, 110, __pyx_L1_error)
+    __PYX_ERR(0, 109, __pyx_L1_error)
   }
   __pyx_t_5 = __pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_DISALLOWED_KEYWORDS; __Pyx_INCREF(__pyx_t_5); __pyx_t_3 = 0;
   for (;;) {
     if (__pyx_t_3 >= PyTuple_GET_SIZE(__pyx_t_5)) break;
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-    __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_3); __Pyx_INCREF(__pyx_t_2); __pyx_t_3++; if (unlikely(0 < 0)) __PYX_ERR(0, 110, __pyx_L1_error)
+    __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_3); __Pyx_INCREF(__pyx_t_2); __pyx_t_3++; if (unlikely(0 < 0)) __PYX_ERR(0, 109, __pyx_L1_error)
     #else
-    __pyx_t_2 = PySequence_ITEM(__pyx_t_5, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 110, __pyx_L1_error)
+    __pyx_t_2 = PySequence_ITEM(__pyx_t_5, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 109, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     #endif
     __Pyx_XDECREF_SET(__pyx_v_token, __pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":111
+    /* "sqliteplus/core/schemas_cy.pyx":110
  * 
  *     for token in _DEFAULT_DISALLOWED_KEYWORDS:
  *         if token in upper:             # <<<<<<<<<<<<<<
  *             return False
  * 
  */
-    __pyx_t_8 = (__Pyx_PyUnicode_ContainsTF(__pyx_v_token, __pyx_v_upper, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 111, __pyx_L1_error)
+    __pyx_t_8 = (__Pyx_PyUnicode_ContainsTF(__pyx_v_token, __pyx_v_upper, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 110, __pyx_L1_error)
     __pyx_t_7 = (__pyx_t_8 != 0);
     if (__pyx_t_7) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":112
+      /* "sqliteplus/core/schemas_cy.pyx":111
  *     for token in _DEFAULT_DISALLOWED_KEYWORDS:
  *         if token in upper:
  *             return False             # <<<<<<<<<<<<<<
@@ -3264,7 +3292,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       goto __pyx_L0;
 
-      /* "sqliteplus/core/schemas_cy.pyx":111
+      /* "sqliteplus/core/schemas_cy.pyx":110
  * 
  *     for token in _DEFAULT_DISALLOWED_KEYWORDS:
  *         if token in upper:             # <<<<<<<<<<<<<<
@@ -3273,7 +3301,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":110
+    /* "sqliteplus/core/schemas_cy.pyx":109
  *             return False
  * 
  *     for token in _DEFAULT_DISALLOWED_KEYWORDS:             # <<<<<<<<<<<<<<
@@ -3283,14 +3311,14 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
   }
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":114
+  /* "sqliteplus/core/schemas_cy.pyx":113
  *             return False
  * 
  *     if _DEFAULT_NUMERIC_PATTERN.match(sanitized):             # <<<<<<<<<<<<<<
  *         return True
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_NUMERIC_PATTERN, __pyx_n_s_match); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 114, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_NUMERIC_PATTERN, __pyx_n_s_match); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 113, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_1 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
@@ -3304,14 +3332,14 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
   }
   __pyx_t_5 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_1, __pyx_v_sanitized) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_sanitized);
   __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 114, __pyx_L1_error)
+  if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 113, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 114, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 113, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   if (__pyx_t_7) {
 
-    /* "sqliteplus/core/schemas_cy.pyx":115
+    /* "sqliteplus/core/schemas_cy.pyx":114
  * 
  *     if _DEFAULT_NUMERIC_PATTERN.match(sanitized):
  *         return True             # <<<<<<<<<<<<<<
@@ -3321,7 +3349,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
     __pyx_r = 1;
     goto __pyx_L0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":114
+    /* "sqliteplus/core/schemas_cy.pyx":113
  *             return False
  * 
  *     if _DEFAULT_NUMERIC_PATTERN.match(sanitized):             # <<<<<<<<<<<<<<
@@ -3330,14 +3358,14 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
  */
   }
 
-  /* "sqliteplus/core/schemas_cy.pyx":117
+  /* "sqliteplus/core/schemas_cy.pyx":116
  *         return True
  * 
  *     if sanitized.upper() in _DEFAULT_LITERALS:             # <<<<<<<<<<<<<<
  *         return True
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_sanitized, __pyx_n_s_upper); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 117, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_sanitized, __pyx_n_s_upper); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 116, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_1 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
@@ -3351,15 +3379,15 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
   }
   __pyx_t_5 = (__pyx_t_1) ? __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_1) : __Pyx_PyObject_CallNoArg(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 117, __pyx_L1_error)
+  if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 116, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_t_5, __pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_LITERALS, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 117, __pyx_L1_error)
+  __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_t_5, __pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_LITERALS, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 116, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_t_8 = (__pyx_t_7 != 0);
   if (__pyx_t_8) {
 
-    /* "sqliteplus/core/schemas_cy.pyx":118
+    /* "sqliteplus/core/schemas_cy.pyx":117
  * 
  *     if sanitized.upper() in _DEFAULT_LITERALS:
  *         return True             # <<<<<<<<<<<<<<
@@ -3369,7 +3397,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
     __pyx_r = 1;
     goto __pyx_L0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":117
+    /* "sqliteplus/core/schemas_cy.pyx":116
  *         return True
  * 
  *     if sanitized.upper() in _DEFAULT_LITERALS:             # <<<<<<<<<<<<<<
@@ -3378,14 +3406,14 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
  */
   }
 
-  /* "sqliteplus/core/schemas_cy.pyx":120
+  /* "sqliteplus/core/schemas_cy.pyx":119
  *         return True
  * 
  *     if _DEFAULT_STRING_PATTERN.match(sanitized):             # <<<<<<<<<<<<<<
  *         return True
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_STRING_PATTERN, __pyx_n_s_match); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 120, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_STRING_PATTERN, __pyx_n_s_match); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 119, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_1 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
@@ -3399,14 +3427,14 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
   }
   __pyx_t_5 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_1, __pyx_v_sanitized) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_sanitized);
   __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 120, __pyx_L1_error)
+  if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 119, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 120, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 119, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   if (__pyx_t_8) {
 
-    /* "sqliteplus/core/schemas_cy.pyx":121
+    /* "sqliteplus/core/schemas_cy.pyx":120
  * 
  *     if _DEFAULT_STRING_PATTERN.match(sanitized):
  *         return True             # <<<<<<<<<<<<<<
@@ -3416,7 +3444,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
     __pyx_r = 1;
     goto __pyx_L0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":120
+    /* "sqliteplus/core/schemas_cy.pyx":119
  *         return True
  * 
  *     if _DEFAULT_STRING_PATTERN.match(sanitized):             # <<<<<<<<<<<<<<
@@ -3425,49 +3453,49 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
  */
   }
 
-  /* "sqliteplus/core/schemas_cy.pyx":123
+  /* "sqliteplus/core/schemas_cy.pyx":122
  *         return True
  * 
  *     cdef object function_call = _py_parse_function_call(sanitized)             # <<<<<<<<<<<<<<
  *     cdef str func_name
  *     if function_call:
  */
-  __pyx_t_5 = __pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call(__pyx_v_sanitized, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 123, __pyx_L1_error)
+  __pyx_t_5 = __pyx_f_10sqliteplus_4core_10schemas_cy__py_parse_function_call(__pyx_v_sanitized, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 122, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __pyx_v_function_call = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":125
+  /* "sqliteplus/core/schemas_cy.pyx":124
  *     cdef object function_call = _py_parse_function_call(sanitized)
  *     cdef str func_name
  *     if function_call:             # <<<<<<<<<<<<<<
  *         func_name = function_call[0]
  *         if func_name.upper() in _DEFAULT_FUNCTIONS:
  */
-  __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_v_function_call); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 125, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_v_function_call); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 124, __pyx_L1_error)
   if (__pyx_t_8) {
 
-    /* "sqliteplus/core/schemas_cy.pyx":126
+    /* "sqliteplus/core/schemas_cy.pyx":125
  *     cdef str func_name
  *     if function_call:
  *         func_name = function_call[0]             # <<<<<<<<<<<<<<
  *         if func_name.upper() in _DEFAULT_FUNCTIONS:
  *             return True
  */
-    __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_function_call, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 126, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_function_call, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 125, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    if (!(likely(PyUnicode_CheckExact(__pyx_t_5))||((__pyx_t_5) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_5)->tp_name), 0))) __PYX_ERR(0, 126, __pyx_L1_error)
+    if (!(likely(PyUnicode_CheckExact(__pyx_t_5))||((__pyx_t_5) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_5)->tp_name), 0))) __PYX_ERR(0, 125, __pyx_L1_error)
     __pyx_v_func_name = ((PyObject*)__pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":127
+    /* "sqliteplus/core/schemas_cy.pyx":126
  *     if function_call:
  *         func_name = function_call[0]
  *         if func_name.upper() in _DEFAULT_FUNCTIONS:             # <<<<<<<<<<<<<<
  *             return True
  * 
  */
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_func_name, __pyx_n_s_upper); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 127, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_func_name, __pyx_n_s_upper); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 126, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __pyx_t_1 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
@@ -3481,15 +3509,15 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
     }
     __pyx_t_5 = (__pyx_t_1) ? __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_1) : __Pyx_PyObject_CallNoArg(__pyx_t_2);
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 127, __pyx_L1_error)
+    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 126, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_t_5, __pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_FUNCTIONS, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 127, __pyx_L1_error)
+    __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_t_5, __pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_FUNCTIONS, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 126, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_t_7 = (__pyx_t_8 != 0);
     if (__pyx_t_7) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":128
+      /* "sqliteplus/core/schemas_cy.pyx":127
  *         func_name = function_call[0]
  *         if func_name.upper() in _DEFAULT_FUNCTIONS:
  *             return True             # <<<<<<<<<<<<<<
@@ -3499,7 +3527,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
       __pyx_r = 1;
       goto __pyx_L0;
 
-      /* "sqliteplus/core/schemas_cy.pyx":127
+      /* "sqliteplus/core/schemas_cy.pyx":126
  *     if function_call:
  *         func_name = function_call[0]
  *         if func_name.upper() in _DEFAULT_FUNCTIONS:             # <<<<<<<<<<<<<<
@@ -3508,7 +3536,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":125
+    /* "sqliteplus/core/schemas_cy.pyx":124
  *     cdef object function_call = _py_parse_function_call(sanitized)
  *     cdef str func_name
  *     if function_call:             # <<<<<<<<<<<<<<
@@ -3517,7 +3545,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
  */
   }
 
-  /* "sqliteplus/core/schemas_cy.pyx":130
+  /* "sqliteplus/core/schemas_cy.pyx":129
  *             return True
  * 
  *     return False             # <<<<<<<<<<<<<<
@@ -3527,7 +3555,7 @@ static int __pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(PyOb
   __pyx_r = 0;
   goto __pyx_L0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":101
+  /* "sqliteplus/core/schemas_cy.pyx":100
  * 
  * 
  * cpdef bint _py_is_safe_default_expr(str expr):             # <<<<<<<<<<<<<<
@@ -3562,7 +3590,7 @@ static PyObject *__pyx_pw_10sqliteplus_4core_10schemas_cy_9_py_is_safe_default_e
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("_py_is_safe_default_expr (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_expr), (&PyUnicode_Type), 1, "expr", 1))) __PYX_ERR(0, 101, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_expr), (&PyUnicode_Type), 1, "expr", 1))) __PYX_ERR(0, 100, __pyx_L1_error)
   __pyx_r = __pyx_pf_10sqliteplus_4core_10schemas_cy_8_py_is_safe_default_expr(__pyx_self, ((PyObject*)__pyx_v_expr));
 
   /* function exit code */
@@ -3583,7 +3611,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_8_py_is_safe_default_e
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_py_is_safe_default_expr", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(__pyx_v_expr, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 101, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(__pyx_v_expr, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 100, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -3600,7 +3628,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_8_py_is_safe_default_e
   return __pyx_r;
 }
 
-/* "sqliteplus/core/schemas_cy.pyx":133
+/* "sqliteplus/core/schemas_cy.pyx":132
  * 
  * 
  * def _py_normalized_columns(columns):             # <<<<<<<<<<<<<<
@@ -3623,7 +3651,7 @@ static PyObject *__pyx_pw_10sqliteplus_4core_10schemas_cy_11_py_normalized_colum
 }
 static PyObject *__pyx_gb_10sqliteplus_4core_10schemas_cy_22_py_normalized_columns_2generator(__pyx_CoroutineObject *__pyx_generator, CYTHON_UNUSED PyThreadState *__pyx_tstate, PyObject *__pyx_sent_value); /* proto */
 
-/* "sqliteplus/core/schemas_cy.pyx":170
+/* "sqliteplus/core/schemas_cy.pyx":169
  *             raise ValueError(f"Nombre de columna invlido: {raw_name}")
  * 
  *         if any(token in normalized_name for token in _DISALLOWED_TOKENS):             # <<<<<<<<<<<<<<
@@ -3643,7 +3671,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_22_py_normalized_colum
   if (unlikely(!__pyx_cur_scope)) {
     __pyx_cur_scope = ((struct __pyx_obj_10sqliteplus_4core_10schemas_cy___pyx_scope_struct_1_genexpr *)Py_None);
     __Pyx_INCREF(Py_None);
-    __PYX_ERR(0, 170, __pyx_L1_error)
+    __PYX_ERR(0, 169, __pyx_L1_error)
   } else {
     __Pyx_GOTREF(__pyx_cur_scope);
   }
@@ -3651,7 +3679,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_22_py_normalized_colum
   __Pyx_INCREF(((PyObject *)__pyx_cur_scope->__pyx_outer_scope));
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_outer_scope);
   {
-    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_10sqliteplus_4core_10schemas_cy_22_py_normalized_columns_2generator, NULL, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_py_normalized_columns_locals_ge, __pyx_n_s_sqliteplus_core_schemas_cy); if (unlikely(!gen)) __PYX_ERR(0, 170, __pyx_L1_error)
+    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_10sqliteplus_4core_10schemas_cy_22_py_normalized_columns_2generator, NULL, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_py_normalized_columns_locals_ge, __pyx_n_s_sqliteplus_core_schemas_cy); if (unlikely(!gen)) __PYX_ERR(0, 169, __pyx_L1_error)
     __Pyx_DECREF(__pyx_cur_scope);
     __Pyx_RefNannyFinishContext();
     return (PyObject *) gen;
@@ -3688,30 +3716,30 @@ static PyObject *__pyx_gb_10sqliteplus_4core_10schemas_cy_22_py_normalized_colum
     return NULL;
   }
   __pyx_L3_first_run:;
-  if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 170, __pyx_L1_error)
+  if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 169, __pyx_L1_error)
   if (unlikely(__pyx_v_10sqliteplus_4core_10schemas_cy__DISALLOWED_TOKENS == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    __PYX_ERR(0, 170, __pyx_L1_error)
+    __PYX_ERR(0, 169, __pyx_L1_error)
   }
   __pyx_t_1 = __pyx_v_10sqliteplus_4core_10schemas_cy__DISALLOWED_TOKENS; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
   for (;;) {
     if (__pyx_t_2 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-    __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_3); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 170, __pyx_L1_error)
+    __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_3); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 169, __pyx_L1_error)
     #else
-    __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 170, __pyx_L1_error)
+    __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 169, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     #endif
     __Pyx_XGOTREF(__pyx_cur_scope->__pyx_v_token);
     __Pyx_XDECREF_SET(__pyx_cur_scope->__pyx_v_token, __pyx_t_3);
     __Pyx_GIVEREF(__pyx_t_3);
     __pyx_t_3 = 0;
-    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_normalized_name)) { __Pyx_RaiseClosureNameError("normalized_name"); __PYX_ERR(0, 170, __pyx_L1_error) }
+    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_normalized_name)) { __Pyx_RaiseClosureNameError("normalized_name"); __PYX_ERR(0, 169, __pyx_L1_error) }
     if (unlikely(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_normalized_name == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-      __PYX_ERR(0, 170, __pyx_L1_error)
+      __PYX_ERR(0, 169, __pyx_L1_error)
     }
-    __pyx_t_4 = (__Pyx_PyUnicode_ContainsTF(__pyx_cur_scope->__pyx_v_token, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_normalized_name, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 170, __pyx_L1_error)
+    __pyx_t_4 = (__Pyx_PyUnicode_ContainsTF(__pyx_cur_scope->__pyx_v_token, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_normalized_name, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 169, __pyx_L1_error)
     __pyx_t_5 = (__pyx_t_4 != 0);
     if (__pyx_t_5) {
       __Pyx_XDECREF(__pyx_r);
@@ -3748,7 +3776,7 @@ static PyObject *__pyx_gb_10sqliteplus_4core_10schemas_cy_22_py_normalized_colum
   return __pyx_r;
 }
 
-/* "sqliteplus/core/schemas_cy.pyx":133
+/* "sqliteplus/core/schemas_cy.pyx":132
  * 
  * 
  * def _py_normalized_columns(columns):             # <<<<<<<<<<<<<<
@@ -3810,36 +3838,36 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
   if (unlikely(!__pyx_cur_scope)) {
     __pyx_cur_scope = ((struct __pyx_obj_10sqliteplus_4core_10schemas_cy___pyx_scope_struct___py_normalized_columns *)Py_None);
     __Pyx_INCREF(Py_None);
-    __PYX_ERR(0, 133, __pyx_L1_error)
+    __PYX_ERR(0, 132, __pyx_L1_error)
   } else {
     __Pyx_GOTREF(__pyx_cur_scope);
   }
 
-  /* "sqliteplus/core/schemas_cy.pyx":134
+  /* "sqliteplus/core/schemas_cy.pyx":133
  * 
  * def _py_normalized_columns(columns):
  *     if not columns:             # <<<<<<<<<<<<<<
  *         raise ValueError("Se requiere al menos una columna para crear la tabla")
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_columns); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 134, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_columns); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 133, __pyx_L1_error)
   __pyx_t_2 = ((!__pyx_t_1) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "sqliteplus/core/schemas_cy.pyx":135
+    /* "sqliteplus/core/schemas_cy.pyx":134
  * def _py_normalized_columns(columns):
  *     if not columns:
  *         raise ValueError("Se requiere al menos una columna para crear la tabla")             # <<<<<<<<<<<<<<
  * 
  *     cdef dict sanitized_columns = {}
  */
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__4, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 135, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__4, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 134, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __PYX_ERR(0, 135, __pyx_L1_error)
+    __PYX_ERR(0, 134, __pyx_L1_error)
 
-    /* "sqliteplus/core/schemas_cy.pyx":134
+    /* "sqliteplus/core/schemas_cy.pyx":133
  * 
  * def _py_normalized_columns(columns):
  *     if not columns:             # <<<<<<<<<<<<<<
@@ -3848,31 +3876,31 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
   }
 
-  /* "sqliteplus/core/schemas_cy.pyx":137
+  /* "sqliteplus/core/schemas_cy.pyx":136
  *         raise ValueError("Se requiere al menos una columna para crear la tabla")
  * 
  *     cdef dict sanitized_columns = {}             # <<<<<<<<<<<<<<
  *     cdef set seen_names = set()
  *     cdef object raw_name
  */
-  __pyx_t_3 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 137, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 136, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_v_sanitized_columns = ((PyObject*)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":138
+  /* "sqliteplus/core/schemas_cy.pyx":137
  * 
  *     cdef dict sanitized_columns = {}
  *     cdef set seen_names = set()             # <<<<<<<<<<<<<<
  *     cdef object raw_name
  *     cdef object raw_type
  */
-  __pyx_t_3 = PySet_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 138, __pyx_L1_error)
+  __pyx_t_3 = PySet_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 137, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_v_seen_names = ((PyObject*)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":162
+  /* "sqliteplus/core/schemas_cy.pyx":161
  *     cdef list normalized_parts
  * 
  *     for raw_name, raw_type in columns.items():             # <<<<<<<<<<<<<<
@@ -3882,9 +3910,9 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
   __pyx_t_4 = 0;
   if (unlikely(__pyx_v_columns == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "items");
-    __PYX_ERR(0, 162, __pyx_L1_error)
+    __PYX_ERR(0, 161, __pyx_L1_error)
   }
-  __pyx_t_7 = __Pyx_dict_iterator(__pyx_v_columns, 0, __pyx_n_s_items, (&__pyx_t_5), (&__pyx_t_6)); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 162, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_dict_iterator(__pyx_v_columns, 0, __pyx_n_s_items, (&__pyx_t_5), (&__pyx_t_6)); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 161, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_XDECREF(__pyx_t_3);
   __pyx_t_3 = __pyx_t_7;
@@ -3892,7 +3920,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
   while (1) {
     __pyx_t_9 = __Pyx_dict_iter_next(__pyx_t_3, __pyx_t_5, &__pyx_t_4, &__pyx_t_7, &__pyx_t_8, NULL, __pyx_t_6);
     if (unlikely(__pyx_t_9 == 0)) break;
-    if (unlikely(__pyx_t_9 == -1)) __PYX_ERR(0, 162, __pyx_L1_error)
+    if (unlikely(__pyx_t_9 == -1)) __PYX_ERR(0, 161, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_GOTREF(__pyx_t_8);
     __Pyx_XDECREF_SET(__pyx_v_raw_name, __pyx_t_7);
@@ -3900,14 +3928,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     __Pyx_XDECREF_SET(__pyx_v_raw_type, __pyx_t_8);
     __pyx_t_8 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":163
+    /* "sqliteplus/core/schemas_cy.pyx":162
  * 
  *     for raw_name, raw_type in columns.items():
  *         normalized_name = (<str>raw_name).strip()             # <<<<<<<<<<<<<<
  *         if not normalized_name:
  *             raise ValueError("Los nombres de columna no pueden estar vacos")
  */
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_raw_name, __pyx_n_s_strip); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 163, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_raw_name, __pyx_n_s_strip); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 162, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __pyx_t_10 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_7))) {
@@ -3921,16 +3949,16 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     }
     __pyx_t_8 = (__pyx_t_10) ? __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_10) : __Pyx_PyObject_CallNoArg(__pyx_t_7);
     __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
-    if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 163, __pyx_L1_error)
+    if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 162, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (!(likely(PyUnicode_CheckExact(__pyx_t_8))||((__pyx_t_8) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_8)->tp_name), 0))) __PYX_ERR(0, 163, __pyx_L1_error)
+    if (!(likely(PyUnicode_CheckExact(__pyx_t_8))||((__pyx_t_8) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_8)->tp_name), 0))) __PYX_ERR(0, 162, __pyx_L1_error)
     __Pyx_XGOTREF(__pyx_cur_scope->__pyx_v_normalized_name);
     __Pyx_XDECREF_SET(__pyx_cur_scope->__pyx_v_normalized_name, ((PyObject*)__pyx_t_8));
     __Pyx_GIVEREF(__pyx_t_8);
     __pyx_t_8 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":164
+    /* "sqliteplus/core/schemas_cy.pyx":163
  *     for raw_name, raw_type in columns.items():
  *         normalized_name = (<str>raw_name).strip()
  *         if not normalized_name:             # <<<<<<<<<<<<<<
@@ -3941,20 +3969,20 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     __pyx_t_1 = ((!__pyx_t_2) != 0);
     if (unlikely(__pyx_t_1)) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":165
+      /* "sqliteplus/core/schemas_cy.pyx":164
  *         normalized_name = (<str>raw_name).strip()
  *         if not normalized_name:
  *             raise ValueError("Los nombres de columna no pueden estar vacos")             # <<<<<<<<<<<<<<
  * 
  *         if not _IDENTIFIER_PATTERN.match(normalized_name):
  */
-      __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__5, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 165, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__5, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 164, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_Raise(__pyx_t_8, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-      __PYX_ERR(0, 165, __pyx_L1_error)
+      __PYX_ERR(0, 164, __pyx_L1_error)
 
-      /* "sqliteplus/core/schemas_cy.pyx":164
+      /* "sqliteplus/core/schemas_cy.pyx":163
  *     for raw_name, raw_type in columns.items():
  *         normalized_name = (<str>raw_name).strip()
  *         if not normalized_name:             # <<<<<<<<<<<<<<
@@ -3963,14 +3991,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":167
+    /* "sqliteplus/core/schemas_cy.pyx":166
  *             raise ValueError("Los nombres de columna no pueden estar vacos")
  * 
  *         if not _IDENTIFIER_PATTERN.match(normalized_name):             # <<<<<<<<<<<<<<
  *             raise ValueError(f"Nombre de columna invlido: {raw_name}")
  * 
  */
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_10sqliteplus_4core_10schemas_cy__IDENTIFIER_PATTERN, __pyx_n_s_match); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 167, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_10sqliteplus_4core_10schemas_cy__IDENTIFIER_PATTERN, __pyx_n_s_match); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 166, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __pyx_t_10 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_7))) {
@@ -3984,34 +4012,34 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     }
     __pyx_t_8 = (__pyx_t_10) ? __Pyx_PyObject_Call2Args(__pyx_t_7, __pyx_t_10, __pyx_cur_scope->__pyx_v_normalized_name) : __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_cur_scope->__pyx_v_normalized_name);
     __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
-    if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 167, __pyx_L1_error)
+    if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 166, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_8); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 167, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_8); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 166, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     __pyx_t_2 = ((!__pyx_t_1) != 0);
     if (unlikely(__pyx_t_2)) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":168
+      /* "sqliteplus/core/schemas_cy.pyx":167
  * 
  *         if not _IDENTIFIER_PATTERN.match(normalized_name):
  *             raise ValueError(f"Nombre de columna invlido: {raw_name}")             # <<<<<<<<<<<<<<
  * 
  *         if any(token in normalized_name for token in _DISALLOWED_TOKENS):
  */
-      __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 168, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 167, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      __pyx_t_7 = __Pyx_PyUnicode_Concat(__pyx_kp_u_Nombre_de_columna_invlido, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 168, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyUnicode_Concat(__pyx_kp_u_Nombre_de_columna_invlido, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 167, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-      __pyx_t_8 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 168, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 167, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_Raise(__pyx_t_8, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-      __PYX_ERR(0, 168, __pyx_L1_error)
+      __PYX_ERR(0, 167, __pyx_L1_error)
 
-      /* "sqliteplus/core/schemas_cy.pyx":167
+      /* "sqliteplus/core/schemas_cy.pyx":166
  *             raise ValueError("Los nombres de columna no pueden estar vacos")
  * 
  *         if not _IDENTIFIER_PATTERN.match(normalized_name):             # <<<<<<<<<<<<<<
@@ -4020,42 +4048,42 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":170
+    /* "sqliteplus/core/schemas_cy.pyx":169
  *             raise ValueError(f"Nombre de columna invlido: {raw_name}")
  * 
  *         if any(token in normalized_name for token in _DISALLOWED_TOKENS):             # <<<<<<<<<<<<<<
  *             raise ValueError(f"Nombre de columna invlido: {raw_name}")
  * 
  */
-    __pyx_t_8 = __pyx_pf_10sqliteplus_4core_10schemas_cy_22_py_normalized_columns_genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 170, __pyx_L1_error)
+    __pyx_t_8 = __pyx_pf_10sqliteplus_4core_10schemas_cy_22_py_normalized_columns_genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 169, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_7 = __Pyx_Generator_Next(__pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 170, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_Generator_Next(__pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 169, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 170, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 169, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     if (unlikely(__pyx_t_2)) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":171
+      /* "sqliteplus/core/schemas_cy.pyx":170
  * 
  *         if any(token in normalized_name for token in _DISALLOWED_TOKENS):
  *             raise ValueError(f"Nombre de columna invlido: {raw_name}")             # <<<<<<<<<<<<<<
  * 
  *         normalized_key = normalized_name.casefold()
  */
-      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 171, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 170, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_8 = __Pyx_PyUnicode_Concat(__pyx_kp_u_Nombre_de_columna_invlido, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 171, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyUnicode_Concat(__pyx_kp_u_Nombre_de_columna_invlido, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 170, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 171, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 170, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_Raise(__pyx_t_7, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __PYX_ERR(0, 171, __pyx_L1_error)
+      __PYX_ERR(0, 170, __pyx_L1_error)
 
-      /* "sqliteplus/core/schemas_cy.pyx":170
+      /* "sqliteplus/core/schemas_cy.pyx":169
  *             raise ValueError(f"Nombre de columna invlido: {raw_name}")
  * 
  *         if any(token in normalized_name for token in _DISALLOWED_TOKENS):             # <<<<<<<<<<<<<<
@@ -4064,58 +4092,58 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":173
+    /* "sqliteplus/core/schemas_cy.pyx":172
  *             raise ValueError(f"Nombre de columna invlido: {raw_name}")
  * 
  *         normalized_key = normalized_name.casefold()             # <<<<<<<<<<<<<<
  *         if normalized_key in seen_names:
  *             raise ValueError(
  */
-    __pyx_t_7 = __Pyx_CallUnboundCMethod0(&__pyx_umethod_PyUnicode_Type_casefold, __pyx_cur_scope->__pyx_v_normalized_name); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 173, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_CallUnboundCMethod0(&__pyx_umethod_PyUnicode_Type_casefold, __pyx_cur_scope->__pyx_v_normalized_name); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 172, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
-    if (!(likely(PyUnicode_CheckExact(__pyx_t_7))||((__pyx_t_7) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_7)->tp_name), 0))) __PYX_ERR(0, 173, __pyx_L1_error)
+    if (!(likely(PyUnicode_CheckExact(__pyx_t_7))||((__pyx_t_7) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_7)->tp_name), 0))) __PYX_ERR(0, 172, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_normalized_key, ((PyObject*)__pyx_t_7));
     __pyx_t_7 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":174
+    /* "sqliteplus/core/schemas_cy.pyx":173
  * 
  *         normalized_key = normalized_name.casefold()
  *         if normalized_key in seen_names:             # <<<<<<<<<<<<<<
  *             raise ValueError(
  *                 f"Nombre de columna duplicado tras normalizacin: {normalized_name}"
  */
-    __pyx_t_2 = (__Pyx_PySet_ContainsTF(__pyx_v_normalized_key, __pyx_v_seen_names, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 174, __pyx_L1_error)
+    __pyx_t_2 = (__Pyx_PySet_ContainsTF(__pyx_v_normalized_key, __pyx_v_seen_names, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 173, __pyx_L1_error)
     __pyx_t_1 = (__pyx_t_2 != 0);
     if (unlikely(__pyx_t_1)) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":176
+      /* "sqliteplus/core/schemas_cy.pyx":175
  *         if normalized_key in seen_names:
  *             raise ValueError(
  *                 f"Nombre de columna duplicado tras normalizacin: {normalized_name}"             # <<<<<<<<<<<<<<
  *             )
  *         seen_names.add(normalized_key)
  */
-      __pyx_t_7 = __Pyx_PyUnicode_Unicode(__pyx_cur_scope->__pyx_v_normalized_name); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 176, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyUnicode_Unicode(__pyx_cur_scope->__pyx_v_normalized_name); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 175, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_8 = __Pyx_PyUnicode_Concat(__pyx_kp_u_Nombre_de_columna_duplicado_tras, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 176, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyUnicode_Concat(__pyx_kp_u_Nombre_de_columna_duplicado_tras, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 175, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-      /* "sqliteplus/core/schemas_cy.pyx":175
+      /* "sqliteplus/core/schemas_cy.pyx":174
  *         normalized_key = normalized_name.casefold()
  *         if normalized_key in seen_names:
  *             raise ValueError(             # <<<<<<<<<<<<<<
  *                 f"Nombre de columna duplicado tras normalizacin: {normalized_name}"
  *             )
  */
-      __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 175, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 174, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_Raise(__pyx_t_7, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __PYX_ERR(0, 175, __pyx_L1_error)
+      __PYX_ERR(0, 174, __pyx_L1_error)
 
-      /* "sqliteplus/core/schemas_cy.pyx":174
+      /* "sqliteplus/core/schemas_cy.pyx":173
  * 
  *         normalized_key = normalized_name.casefold()
  *         if normalized_key in seen_names:             # <<<<<<<<<<<<<<
@@ -4124,23 +4152,23 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":178
+    /* "sqliteplus/core/schemas_cy.pyx":177
  *                 f"Nombre de columna duplicado tras normalizacin: {normalized_name}"
  *             )
  *         seen_names.add(normalized_key)             # <<<<<<<<<<<<<<
  * 
  *         normalized_original = " ".join((<str>raw_type).strip().split())
  */
-    __pyx_t_11 = PySet_Add(__pyx_v_seen_names, __pyx_v_normalized_key); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 178, __pyx_L1_error)
+    __pyx_t_11 = PySet_Add(__pyx_v_seen_names, __pyx_v_normalized_key); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 177, __pyx_L1_error)
 
-    /* "sqliteplus/core/schemas_cy.pyx":180
+    /* "sqliteplus/core/schemas_cy.pyx":179
  *         seen_names.add(normalized_key)
  * 
  *         normalized_original = " ".join((<str>raw_type).strip().split())             # <<<<<<<<<<<<<<
  *         if not normalized_original:
  *             raise ValueError(f"Tipo de columna vaco para '{raw_name}'")
  */
-    __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_v_raw_type, __pyx_n_s_strip); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 180, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_v_raw_type, __pyx_n_s_strip); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 179, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __pyx_t_12 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_10))) {
@@ -4154,10 +4182,10 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     }
     __pyx_t_8 = (__pyx_t_12) ? __Pyx_PyObject_CallOneArg(__pyx_t_10, __pyx_t_12) : __Pyx_PyObject_CallNoArg(__pyx_t_10);
     __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
-    if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 180, __pyx_L1_error)
+    if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 179, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
     __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-    __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_split); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 180, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_split); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 179, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     __pyx_t_8 = NULL;
@@ -4172,16 +4200,16 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     }
     __pyx_t_7 = (__pyx_t_8) ? __Pyx_PyObject_CallOneArg(__pyx_t_10, __pyx_t_8) : __Pyx_PyObject_CallNoArg(__pyx_t_10);
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 180, __pyx_L1_error)
+    if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 179, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-    __pyx_t_10 = PyUnicode_Join(__pyx_kp_u__3, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 180, __pyx_L1_error)
+    __pyx_t_10 = PyUnicode_Join(__pyx_kp_u__3, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 179, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_XDECREF_SET(__pyx_v_normalized_original, ((PyObject*)__pyx_t_10));
     __pyx_t_10 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":181
+    /* "sqliteplus/core/schemas_cy.pyx":180
  * 
  *         normalized_original = " ".join((<str>raw_type).strip().split())
  *         if not normalized_original:             # <<<<<<<<<<<<<<
@@ -4192,14 +4220,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     __pyx_t_2 = ((!__pyx_t_1) != 0);
     if (unlikely(__pyx_t_2)) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":182
+      /* "sqliteplus/core/schemas_cy.pyx":181
  *         normalized_original = " ".join((<str>raw_type).strip().split())
  *         if not normalized_original:
  *             raise ValueError(f"Tipo de columna vaco para '{raw_name}'")             # <<<<<<<<<<<<<<
  * 
  *         rest_original_tokens = normalized_original.split(" ")
  */
-      __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 182, __pyx_L1_error)
+      __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 181, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
       __pyx_t_13 = 0;
       __pyx_t_14 = 127;
@@ -4208,7 +4236,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
       __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_Tipo_de_columna_vaco_para);
       __Pyx_GIVEREF(__pyx_kp_u_Tipo_de_columna_vaco_para);
       PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_kp_u_Tipo_de_columna_vaco_para);
-      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 182, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 181, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) : __pyx_t_14;
       __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_7);
@@ -4219,17 +4247,17 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
       __pyx_t_13 += 1;
       __Pyx_GIVEREF(__pyx_kp_u__6);
       PyTuple_SET_ITEM(__pyx_t_10, 2, __pyx_kp_u__6);
-      __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 182, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 181, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-      __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 182, __pyx_L1_error)
+      __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 181, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_Raise(__pyx_t_10, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-      __PYX_ERR(0, 182, __pyx_L1_error)
+      __PYX_ERR(0, 181, __pyx_L1_error)
 
-      /* "sqliteplus/core/schemas_cy.pyx":181
+      /* "sqliteplus/core/schemas_cy.pyx":180
  * 
  *         normalized_original = " ".join((<str>raw_type).strip().split())
  *         if not normalized_original:             # <<<<<<<<<<<<<<
@@ -4238,7 +4266,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":184
+    /* "sqliteplus/core/schemas_cy.pyx":183
  *             raise ValueError(f"Tipo de columna vaco para '{raw_name}'")
  * 
  *         rest_original_tokens = normalized_original.split(" ")             # <<<<<<<<<<<<<<
@@ -4247,14 +4275,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     if (unlikely(__pyx_v_normalized_original == Py_None)) {
       PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "split");
-      __PYX_ERR(0, 184, __pyx_L1_error)
+      __PYX_ERR(0, 183, __pyx_L1_error)
     }
-    __pyx_t_10 = PyUnicode_Split(__pyx_v_normalized_original, __pyx_kp_u__3, -1L); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 184, __pyx_L1_error)
+    __pyx_t_10 = PyUnicode_Split(__pyx_v_normalized_original, __pyx_kp_u__3, -1L); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 183, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_XDECREF_SET(__pyx_v_rest_original_tokens, ((PyObject*)__pyx_t_10));
     __pyx_t_10 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":185
+    /* "sqliteplus/core/schemas_cy.pyx":184
  * 
  *         rest_original_tokens = normalized_original.split(" ")
  *         base_original = rest_original_tokens[0]             # <<<<<<<<<<<<<<
@@ -4263,15 +4291,15 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     if (unlikely(__pyx_v_rest_original_tokens == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 185, __pyx_L1_error)
+      __PYX_ERR(0, 184, __pyx_L1_error)
     }
-    if (!(likely(PyUnicode_CheckExact(PyList_GET_ITEM(__pyx_v_rest_original_tokens, 0)))||((PyList_GET_ITEM(__pyx_v_rest_original_tokens, 0)) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(PyList_GET_ITEM(__pyx_v_rest_original_tokens, 0))->tp_name), 0))) __PYX_ERR(0, 185, __pyx_L1_error)
+    if (!(likely(PyUnicode_CheckExact(PyList_GET_ITEM(__pyx_v_rest_original_tokens, 0)))||((PyList_GET_ITEM(__pyx_v_rest_original_tokens, 0)) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(PyList_GET_ITEM(__pyx_v_rest_original_tokens, 0))->tp_name), 0))) __PYX_ERR(0, 184, __pyx_L1_error)
     __pyx_t_10 = PyList_GET_ITEM(__pyx_v_rest_original_tokens, 0);
     __Pyx_INCREF(__pyx_t_10);
     __Pyx_XDECREF_SET(__pyx_v_base_original, ((PyObject*)__pyx_t_10));
     __pyx_t_10 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":186
+    /* "sqliteplus/core/schemas_cy.pyx":185
  *         rest_original_tokens = normalized_original.split(" ")
  *         base_original = rest_original_tokens[0]
  *         rest_original_tokens = rest_original_tokens[1:]             # <<<<<<<<<<<<<<
@@ -4280,21 +4308,21 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     if (unlikely(__pyx_v_rest_original_tokens == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      __PYX_ERR(0, 186, __pyx_L1_error)
+      __PYX_ERR(0, 185, __pyx_L1_error)
     }
-    __pyx_t_10 = __Pyx_PyList_GetSlice(__pyx_v_rest_original_tokens, 1, PY_SSIZE_T_MAX); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 186, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyList_GetSlice(__pyx_v_rest_original_tokens, 1, PY_SSIZE_T_MAX); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 185, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_DECREF_SET(__pyx_v_rest_original_tokens, ((PyObject*)__pyx_t_10));
     __pyx_t_10 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":187
+    /* "sqliteplus/core/schemas_cy.pyx":186
  *         base_original = rest_original_tokens[0]
  *         rest_original_tokens = rest_original_tokens[1:]
  *         base = base_original.upper()             # <<<<<<<<<<<<<<
  *         if base not in _ALLOWED_BASE_TYPES:
  *             raise ValueError(f"Tipo de dato no permitido para '{raw_name}': {raw_type}")
  */
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_base_original, __pyx_n_s_upper); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 187, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_base_original, __pyx_n_s_upper); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 186, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __pyx_t_8 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_7))) {
@@ -4308,32 +4336,32 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     }
     __pyx_t_10 = (__pyx_t_8) ? __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_8) : __Pyx_PyObject_CallNoArg(__pyx_t_7);
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-    if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 187, __pyx_L1_error)
+    if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 186, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (!(likely(PyUnicode_CheckExact(__pyx_t_10))||((__pyx_t_10) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_10)->tp_name), 0))) __PYX_ERR(0, 187, __pyx_L1_error)
+    if (!(likely(PyUnicode_CheckExact(__pyx_t_10))||((__pyx_t_10) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_10)->tp_name), 0))) __PYX_ERR(0, 186, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_base, ((PyObject*)__pyx_t_10));
     __pyx_t_10 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":188
+    /* "sqliteplus/core/schemas_cy.pyx":187
  *         rest_original_tokens = rest_original_tokens[1:]
  *         base = base_original.upper()
  *         if base not in _ALLOWED_BASE_TYPES:             # <<<<<<<<<<<<<<
  *             raise ValueError(f"Tipo de dato no permitido para '{raw_name}': {raw_type}")
  * 
  */
-    __pyx_t_2 = (__Pyx_PySequence_ContainsTF(__pyx_v_base, __pyx_v_10sqliteplus_4core_10schemas_cy__ALLOWED_BASE_TYPES, Py_NE)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 188, __pyx_L1_error)
+    __pyx_t_2 = (__Pyx_PySequence_ContainsTF(__pyx_v_base, __pyx_v_10sqliteplus_4core_10schemas_cy__ALLOWED_BASE_TYPES, Py_NE)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 187, __pyx_L1_error)
     __pyx_t_1 = (__pyx_t_2 != 0);
     if (unlikely(__pyx_t_1)) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":189
+      /* "sqliteplus/core/schemas_cy.pyx":188
  *         base = base_original.upper()
  *         if base not in _ALLOWED_BASE_TYPES:
  *             raise ValueError(f"Tipo de dato no permitido para '{raw_name}': {raw_type}")             # <<<<<<<<<<<<<<
  * 
  *         rest_original = " ".join(rest_original_tokens)
  */
-      __pyx_t_10 = PyTuple_New(4); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 189, __pyx_L1_error)
+      __pyx_t_10 = PyTuple_New(4); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 188, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
       __pyx_t_13 = 0;
       __pyx_t_14 = 127;
@@ -4341,7 +4369,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
       __pyx_t_13 += 32;
       __Pyx_GIVEREF(__pyx_kp_u_Tipo_de_dato_no_permitido_para);
       PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_kp_u_Tipo_de_dato_no_permitido_para);
-      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 189, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 188, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) : __pyx_t_14;
       __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_7);
@@ -4352,24 +4380,24 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
       __pyx_t_13 += 3;
       __Pyx_GIVEREF(__pyx_kp_u__7);
       PyTuple_SET_ITEM(__pyx_t_10, 2, __pyx_kp_u__7);
-      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_type, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 189, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_type, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 188, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) : __pyx_t_14;
       __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_7);
       __Pyx_GIVEREF(__pyx_t_7);
       PyTuple_SET_ITEM(__pyx_t_10, 3, __pyx_t_7);
       __pyx_t_7 = 0;
-      __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 4, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 189, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 4, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 188, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-      __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 189, __pyx_L1_error)
+      __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 188, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_Raise(__pyx_t_10, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-      __PYX_ERR(0, 189, __pyx_L1_error)
+      __PYX_ERR(0, 188, __pyx_L1_error)
 
-      /* "sqliteplus/core/schemas_cy.pyx":188
+      /* "sqliteplus/core/schemas_cy.pyx":187
  *         rest_original_tokens = rest_original_tokens[1:]
  *         base = base_original.upper()
  *         if base not in _ALLOWED_BASE_TYPES:             # <<<<<<<<<<<<<<
@@ -4378,26 +4406,26 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":191
+    /* "sqliteplus/core/schemas_cy.pyx":190
  *             raise ValueError(f"Tipo de dato no permitido para '{raw_name}': {raw_type}")
  * 
  *         rest_original = " ".join(rest_original_tokens)             # <<<<<<<<<<<<<<
  *         rest_upper = rest_original.upper()
  * 
  */
-    __pyx_t_10 = PyUnicode_Join(__pyx_kp_u__3, __pyx_v_rest_original_tokens); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 191, __pyx_L1_error)
+    __pyx_t_10 = PyUnicode_Join(__pyx_kp_u__3, __pyx_v_rest_original_tokens); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 190, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_XDECREF_SET(__pyx_v_rest_original, ((PyObject*)__pyx_t_10));
     __pyx_t_10 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":192
+    /* "sqliteplus/core/schemas_cy.pyx":191
  * 
  *         rest_original = " ".join(rest_original_tokens)
  *         rest_upper = rest_original.upper()             # <<<<<<<<<<<<<<
  * 
  *         not_null = False
  */
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_rest_original, __pyx_n_s_upper); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 192, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_rest_original, __pyx_n_s_upper); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 191, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __pyx_t_8 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_7))) {
@@ -4411,14 +4439,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     }
     __pyx_t_10 = (__pyx_t_8) ? __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_8) : __Pyx_PyObject_CallNoArg(__pyx_t_7);
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-    if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 192, __pyx_L1_error)
+    if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 191, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (!(likely(PyUnicode_CheckExact(__pyx_t_10))||((__pyx_t_10) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_10)->tp_name), 0))) __PYX_ERR(0, 192, __pyx_L1_error)
+    if (!(likely(PyUnicode_CheckExact(__pyx_t_10))||((__pyx_t_10) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "unicode", Py_TYPE(__pyx_t_10)->tp_name), 0))) __PYX_ERR(0, 191, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_rest_upper, ((PyObject*)__pyx_t_10));
     __pyx_t_10 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":194
+    /* "sqliteplus/core/schemas_cy.pyx":193
  *         rest_upper = rest_original.upper()
  * 
  *         not_null = False             # <<<<<<<<<<<<<<
@@ -4427,7 +4455,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     __pyx_v_not_null = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":195
+    /* "sqliteplus/core/schemas_cy.pyx":194
  * 
  *         not_null = False
  *         unique = False             # <<<<<<<<<<<<<<
@@ -4436,7 +4464,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     __pyx_v_unique = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":196
+    /* "sqliteplus/core/schemas_cy.pyx":195
  *         not_null = False
  *         unique = False
  *         primary_key = False             # <<<<<<<<<<<<<<
@@ -4445,7 +4473,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     __pyx_v_primary_key = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":197
+    /* "sqliteplus/core/schemas_cy.pyx":196
  *         unique = False
  *         primary_key = False
  *         autoincrement = False             # <<<<<<<<<<<<<<
@@ -4454,7 +4482,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     __pyx_v_autoincrement = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":198
+    /* "sqliteplus/core/schemas_cy.pyx":197
  *         primary_key = False
  *         autoincrement = False
  *         default_expr = None             # <<<<<<<<<<<<<<
@@ -4464,7 +4492,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     __Pyx_INCREF(Py_None);
     __Pyx_XDECREF_SET(__pyx_v_default_expr, Py_None);
 
-    /* "sqliteplus/core/schemas_cy.pyx":200
+    /* "sqliteplus/core/schemas_cy.pyx":199
  *         default_expr = None
  * 
  *         idx = 0             # <<<<<<<<<<<<<<
@@ -4473,7 +4501,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     __pyx_v_idx = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":201
+    /* "sqliteplus/core/schemas_cy.pyx":200
  * 
  *         idx = 0
  *         length = len(rest_upper)             # <<<<<<<<<<<<<<
@@ -4482,12 +4510,12 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     if (unlikely(__pyx_v_rest_upper == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-      __PYX_ERR(0, 201, __pyx_L1_error)
+      __PYX_ERR(0, 200, __pyx_L1_error)
     }
-    __pyx_t_13 = __Pyx_PyUnicode_GET_LENGTH(__pyx_v_rest_upper); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 201, __pyx_L1_error)
+    __pyx_t_13 = __Pyx_PyUnicode_GET_LENGTH(__pyx_v_rest_upper); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 200, __pyx_L1_error)
     __pyx_v_length = __pyx_t_13;
 
-    /* "sqliteplus/core/schemas_cy.pyx":202
+    /* "sqliteplus/core/schemas_cy.pyx":201
  *         idx = 0
  *         length = len(rest_upper)
  *         while idx < length:             # <<<<<<<<<<<<<<
@@ -4498,18 +4526,18 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
       __pyx_t_1 = ((__pyx_v_idx < __pyx_v_length) != 0);
       if (!__pyx_t_1) break;
 
-      /* "sqliteplus/core/schemas_cy.pyx":203
+      /* "sqliteplus/core/schemas_cy.pyx":202
  *         length = len(rest_upper)
  *         while idx < length:
  *             if rest_upper[idx] == " ":             # <<<<<<<<<<<<<<
  *                 idx += 1
  *                 continue
  */
-      __pyx_t_14 = __Pyx_GetItemInt_Unicode(__pyx_v_rest_upper, __pyx_v_idx, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 0, 0); if (unlikely(__pyx_t_14 == (Py_UCS4)-1)) __PYX_ERR(0, 203, __pyx_L1_error)
+      __pyx_t_14 = __Pyx_GetItemInt_Unicode(__pyx_v_rest_upper, __pyx_v_idx, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 0, 0); if (unlikely(__pyx_t_14 == (Py_UCS4)-1)) __PYX_ERR(0, 202, __pyx_L1_error)
       __pyx_t_1 = ((__pyx_t_14 == 32) != 0);
       if (__pyx_t_1) {
 
-        /* "sqliteplus/core/schemas_cy.pyx":204
+        /* "sqliteplus/core/schemas_cy.pyx":203
  *         while idx < length:
  *             if rest_upper[idx] == " ":
  *                 idx += 1             # <<<<<<<<<<<<<<
@@ -4518,7 +4546,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         __pyx_v_idx = (__pyx_v_idx + 1);
 
-        /* "sqliteplus/core/schemas_cy.pyx":205
+        /* "sqliteplus/core/schemas_cy.pyx":204
  *             if rest_upper[idx] == " ":
  *                 idx += 1
  *                 continue             # <<<<<<<<<<<<<<
@@ -4527,7 +4555,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         goto __pyx_L12_continue;
 
-        /* "sqliteplus/core/schemas_cy.pyx":203
+        /* "sqliteplus/core/schemas_cy.pyx":202
  *         length = len(rest_upper)
  *         while idx < length:
  *             if rest_upper[idx] == " ":             # <<<<<<<<<<<<<<
@@ -4536,7 +4564,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
       }
 
-      /* "sqliteplus/core/schemas_cy.pyx":207
+      /* "sqliteplus/core/schemas_cy.pyx":206
  *                 continue
  * 
  *             if rest_upper.startswith("NOT NULL", idx):             # <<<<<<<<<<<<<<
@@ -4545,16 +4573,16 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
       if (unlikely(__pyx_v_rest_upper == Py_None)) {
         PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "startswith");
-        __PYX_ERR(0, 207, __pyx_L1_error)
+        __PYX_ERR(0, 206, __pyx_L1_error)
       }
-      __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_idx); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 207, __pyx_L1_error)
+      __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_idx); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 206, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
-      __pyx_t_13 = __Pyx_PyIndex_AsSsize_t(__pyx_t_10); if (unlikely((__pyx_t_13 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 207, __pyx_L1_error)
+      __pyx_t_13 = __Pyx_PyIndex_AsSsize_t(__pyx_t_10); if (unlikely((__pyx_t_13 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 206, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-      __pyx_t_1 = __Pyx_PyUnicode_Tailmatch(__pyx_v_rest_upper, __pyx_kp_u_NOT_NULL, __pyx_t_13, PY_SSIZE_T_MAX, -1); if (unlikely(__pyx_t_1 == ((int)-1))) __PYX_ERR(0, 207, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyUnicode_Tailmatch(__pyx_v_rest_upper, __pyx_kp_u_NOT_NULL, __pyx_t_13, PY_SSIZE_T_MAX, -1); if (unlikely(__pyx_t_1 == ((int)-1))) __PYX_ERR(0, 206, __pyx_L1_error)
       if ((__pyx_t_1 != 0)) {
 
-        /* "sqliteplus/core/schemas_cy.pyx":208
+        /* "sqliteplus/core/schemas_cy.pyx":207
  * 
  *             if rest_upper.startswith("NOT NULL", idx):
  *                 if not_null:             # <<<<<<<<<<<<<<
@@ -4564,14 +4592,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
         __pyx_t_1 = (__pyx_v_not_null != 0);
         if (unlikely(__pyx_t_1)) {
 
-          /* "sqliteplus/core/schemas_cy.pyx":210
+          /* "sqliteplus/core/schemas_cy.pyx":209
  *                 if not_null:
  *                     raise ValueError(
  *                         f"Restriccin repetida para columna '{raw_name}': NOT NULL"             # <<<<<<<<<<<<<<
  *                     )
  *                 not_null = True
  */
-          __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 210, __pyx_L1_error)
+          __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 209, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_10);
           __pyx_t_13 = 0;
           __pyx_t_14 = 127;
@@ -4580,7 +4608,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_Restriccin_repetida_para_columna);
           __Pyx_GIVEREF(__pyx_kp_u_Restriccin_repetida_para_columna);
           PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_kp_u_Restriccin_repetida_para_columna);
-          __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 210, __pyx_L1_error)
+          __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 209, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
           __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) : __pyx_t_14;
           __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_7);
@@ -4591,25 +4619,25 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_t_13 += 11;
           __Pyx_GIVEREF(__pyx_kp_u_NOT_NULL_2);
           PyTuple_SET_ITEM(__pyx_t_10, 2, __pyx_kp_u_NOT_NULL_2);
-          __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 210, __pyx_L1_error)
+          __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 209, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
 
-          /* "sqliteplus/core/schemas_cy.pyx":209
+          /* "sqliteplus/core/schemas_cy.pyx":208
  *             if rest_upper.startswith("NOT NULL", idx):
  *                 if not_null:
  *                     raise ValueError(             # <<<<<<<<<<<<<<
  *                         f"Restriccin repetida para columna '{raw_name}': NOT NULL"
  *                     )
  */
-          __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 209, __pyx_L1_error)
+          __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 208, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_10);
           __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
           __Pyx_Raise(__pyx_t_10, 0, 0, 0);
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-          __PYX_ERR(0, 209, __pyx_L1_error)
+          __PYX_ERR(0, 208, __pyx_L1_error)
 
-          /* "sqliteplus/core/schemas_cy.pyx":208
+          /* "sqliteplus/core/schemas_cy.pyx":207
  * 
  *             if rest_upper.startswith("NOT NULL", idx):
  *                 if not_null:             # <<<<<<<<<<<<<<
@@ -4618,7 +4646,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         }
 
-        /* "sqliteplus/core/schemas_cy.pyx":212
+        /* "sqliteplus/core/schemas_cy.pyx":211
  *                         f"Restriccin repetida para columna '{raw_name}': NOT NULL"
  *                     )
  *                 not_null = True             # <<<<<<<<<<<<<<
@@ -4627,17 +4655,17 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         __pyx_v_not_null = 1;
 
-        /* "sqliteplus/core/schemas_cy.pyx":213
+        /* "sqliteplus/core/schemas_cy.pyx":212
  *                     )
  *                 not_null = True
  *                 idx += len("NOT NULL")             # <<<<<<<<<<<<<<
  *                 continue
  * 
  */
-        __pyx_t_13 = __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_NOT_NULL); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 213, __pyx_L1_error)
+        __pyx_t_13 = __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_NOT_NULL); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 212, __pyx_L1_error)
         __pyx_v_idx = (__pyx_v_idx + __pyx_t_13);
 
-        /* "sqliteplus/core/schemas_cy.pyx":214
+        /* "sqliteplus/core/schemas_cy.pyx":213
  *                 not_null = True
  *                 idx += len("NOT NULL")
  *                 continue             # <<<<<<<<<<<<<<
@@ -4646,7 +4674,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         goto __pyx_L12_continue;
 
-        /* "sqliteplus/core/schemas_cy.pyx":207
+        /* "sqliteplus/core/schemas_cy.pyx":206
  *                 continue
  * 
  *             if rest_upper.startswith("NOT NULL", idx):             # <<<<<<<<<<<<<<
@@ -4655,7 +4683,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
       }
 
-      /* "sqliteplus/core/schemas_cy.pyx":216
+      /* "sqliteplus/core/schemas_cy.pyx":215
  *                 continue
  * 
  *             if rest_upper.startswith("UNIQUE", idx):             # <<<<<<<<<<<<<<
@@ -4664,16 +4692,16 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
       if (unlikely(__pyx_v_rest_upper == Py_None)) {
         PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "startswith");
-        __PYX_ERR(0, 216, __pyx_L1_error)
+        __PYX_ERR(0, 215, __pyx_L1_error)
       }
-      __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_idx); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 216, __pyx_L1_error)
+      __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_idx); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 215, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
-      __pyx_t_13 = __Pyx_PyIndex_AsSsize_t(__pyx_t_10); if (unlikely((__pyx_t_13 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 216, __pyx_L1_error)
+      __pyx_t_13 = __Pyx_PyIndex_AsSsize_t(__pyx_t_10); if (unlikely((__pyx_t_13 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 215, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-      __pyx_t_1 = __Pyx_PyUnicode_Tailmatch(__pyx_v_rest_upper, __pyx_n_u_UNIQUE, __pyx_t_13, PY_SSIZE_T_MAX, -1); if (unlikely(__pyx_t_1 == ((int)-1))) __PYX_ERR(0, 216, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyUnicode_Tailmatch(__pyx_v_rest_upper, __pyx_n_u_UNIQUE, __pyx_t_13, PY_SSIZE_T_MAX, -1); if (unlikely(__pyx_t_1 == ((int)-1))) __PYX_ERR(0, 215, __pyx_L1_error)
       if ((__pyx_t_1 != 0)) {
 
-        /* "sqliteplus/core/schemas_cy.pyx":217
+        /* "sqliteplus/core/schemas_cy.pyx":216
  * 
  *             if rest_upper.startswith("UNIQUE", idx):
  *                 if unique:             # <<<<<<<<<<<<<<
@@ -4683,14 +4711,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
         __pyx_t_1 = (__pyx_v_unique != 0);
         if (unlikely(__pyx_t_1)) {
 
-          /* "sqliteplus/core/schemas_cy.pyx":219
+          /* "sqliteplus/core/schemas_cy.pyx":218
  *                 if unique:
  *                     raise ValueError(
  *                         f"Restriccin repetida para columna '{raw_name}': UNIQUE"             # <<<<<<<<<<<<<<
  *                     )
  *                 unique = True
  */
-          __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 219, __pyx_L1_error)
+          __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 218, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_10);
           __pyx_t_13 = 0;
           __pyx_t_14 = 127;
@@ -4699,7 +4727,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_Restriccin_repetida_para_columna);
           __Pyx_GIVEREF(__pyx_kp_u_Restriccin_repetida_para_columna);
           PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_kp_u_Restriccin_repetida_para_columna);
-          __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 219, __pyx_L1_error)
+          __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 218, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
           __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) : __pyx_t_14;
           __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_7);
@@ -4710,25 +4738,25 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_t_13 += 9;
           __Pyx_GIVEREF(__pyx_kp_u_UNIQUE_2);
           PyTuple_SET_ITEM(__pyx_t_10, 2, __pyx_kp_u_UNIQUE_2);
-          __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 219, __pyx_L1_error)
+          __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 218, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
 
-          /* "sqliteplus/core/schemas_cy.pyx":218
+          /* "sqliteplus/core/schemas_cy.pyx":217
  *             if rest_upper.startswith("UNIQUE", idx):
  *                 if unique:
  *                     raise ValueError(             # <<<<<<<<<<<<<<
  *                         f"Restriccin repetida para columna '{raw_name}': UNIQUE"
  *                     )
  */
-          __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 218, __pyx_L1_error)
+          __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 217, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_10);
           __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
           __Pyx_Raise(__pyx_t_10, 0, 0, 0);
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-          __PYX_ERR(0, 218, __pyx_L1_error)
+          __PYX_ERR(0, 217, __pyx_L1_error)
 
-          /* "sqliteplus/core/schemas_cy.pyx":217
+          /* "sqliteplus/core/schemas_cy.pyx":216
  * 
  *             if rest_upper.startswith("UNIQUE", idx):
  *                 if unique:             # <<<<<<<<<<<<<<
@@ -4737,7 +4765,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         }
 
-        /* "sqliteplus/core/schemas_cy.pyx":221
+        /* "sqliteplus/core/schemas_cy.pyx":220
  *                         f"Restriccin repetida para columna '{raw_name}': UNIQUE"
  *                     )
  *                 unique = True             # <<<<<<<<<<<<<<
@@ -4746,17 +4774,17 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         __pyx_v_unique = 1;
 
-        /* "sqliteplus/core/schemas_cy.pyx":222
+        /* "sqliteplus/core/schemas_cy.pyx":221
  *                     )
  *                 unique = True
  *                 idx += len("UNIQUE")             # <<<<<<<<<<<<<<
  *                 continue
  * 
  */
-        __pyx_t_13 = __Pyx_PyUnicode_GET_LENGTH(__pyx_n_u_UNIQUE); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 222, __pyx_L1_error)
+        __pyx_t_13 = __Pyx_PyUnicode_GET_LENGTH(__pyx_n_u_UNIQUE); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 221, __pyx_L1_error)
         __pyx_v_idx = (__pyx_v_idx + __pyx_t_13);
 
-        /* "sqliteplus/core/schemas_cy.pyx":223
+        /* "sqliteplus/core/schemas_cy.pyx":222
  *                 unique = True
  *                 idx += len("UNIQUE")
  *                 continue             # <<<<<<<<<<<<<<
@@ -4765,7 +4793,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         goto __pyx_L12_continue;
 
-        /* "sqliteplus/core/schemas_cy.pyx":216
+        /* "sqliteplus/core/schemas_cy.pyx":215
  *                 continue
  * 
  *             if rest_upper.startswith("UNIQUE", idx):             # <<<<<<<<<<<<<<
@@ -4774,7 +4802,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
       }
 
-      /* "sqliteplus/core/schemas_cy.pyx":225
+      /* "sqliteplus/core/schemas_cy.pyx":224
  *                 continue
  * 
  *             if rest_upper.startswith("PRIMARY KEY", idx):             # <<<<<<<<<<<<<<
@@ -4783,16 +4811,16 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
       if (unlikely(__pyx_v_rest_upper == Py_None)) {
         PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "startswith");
-        __PYX_ERR(0, 225, __pyx_L1_error)
+        __PYX_ERR(0, 224, __pyx_L1_error)
       }
-      __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_idx); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 225, __pyx_L1_error)
+      __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_idx); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 224, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
-      __pyx_t_13 = __Pyx_PyIndex_AsSsize_t(__pyx_t_10); if (unlikely((__pyx_t_13 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 225, __pyx_L1_error)
+      __pyx_t_13 = __Pyx_PyIndex_AsSsize_t(__pyx_t_10); if (unlikely((__pyx_t_13 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 224, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-      __pyx_t_1 = __Pyx_PyUnicode_Tailmatch(__pyx_v_rest_upper, __pyx_kp_u_PRIMARY_KEY, __pyx_t_13, PY_SSIZE_T_MAX, -1); if (unlikely(__pyx_t_1 == ((int)-1))) __PYX_ERR(0, 225, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyUnicode_Tailmatch(__pyx_v_rest_upper, __pyx_kp_u_PRIMARY_KEY, __pyx_t_13, PY_SSIZE_T_MAX, -1); if (unlikely(__pyx_t_1 == ((int)-1))) __PYX_ERR(0, 224, __pyx_L1_error)
       if ((__pyx_t_1 != 0)) {
 
-        /* "sqliteplus/core/schemas_cy.pyx":226
+        /* "sqliteplus/core/schemas_cy.pyx":225
  * 
  *             if rest_upper.startswith("PRIMARY KEY", idx):
  *                 if primary_key:             # <<<<<<<<<<<<<<
@@ -4802,14 +4830,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
         __pyx_t_1 = (__pyx_v_primary_key != 0);
         if (unlikely(__pyx_t_1)) {
 
-          /* "sqliteplus/core/schemas_cy.pyx":228
+          /* "sqliteplus/core/schemas_cy.pyx":227
  *                 if primary_key:
  *                     raise ValueError(
  *                         f"Restriccin repetida para columna '{raw_name}': PRIMARY KEY"             # <<<<<<<<<<<<<<
  *                     )
  *                 primary_key = True
  */
-          __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 228, __pyx_L1_error)
+          __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 227, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_10);
           __pyx_t_13 = 0;
           __pyx_t_14 = 127;
@@ -4818,7 +4846,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_Restriccin_repetida_para_columna);
           __Pyx_GIVEREF(__pyx_kp_u_Restriccin_repetida_para_columna);
           PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_kp_u_Restriccin_repetida_para_columna);
-          __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 228, __pyx_L1_error)
+          __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 227, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
           __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) : __pyx_t_14;
           __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_7);
@@ -4829,25 +4857,25 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_t_13 += 14;
           __Pyx_GIVEREF(__pyx_kp_u_PRIMARY_KEY_2);
           PyTuple_SET_ITEM(__pyx_t_10, 2, __pyx_kp_u_PRIMARY_KEY_2);
-          __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 228, __pyx_L1_error)
+          __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 227, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
 
-          /* "sqliteplus/core/schemas_cy.pyx":227
+          /* "sqliteplus/core/schemas_cy.pyx":226
  *             if rest_upper.startswith("PRIMARY KEY", idx):
  *                 if primary_key:
  *                     raise ValueError(             # <<<<<<<<<<<<<<
  *                         f"Restriccin repetida para columna '{raw_name}': PRIMARY KEY"
  *                     )
  */
-          __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 227, __pyx_L1_error)
+          __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 226, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_10);
           __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
           __Pyx_Raise(__pyx_t_10, 0, 0, 0);
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-          __PYX_ERR(0, 227, __pyx_L1_error)
+          __PYX_ERR(0, 226, __pyx_L1_error)
 
-          /* "sqliteplus/core/schemas_cy.pyx":226
+          /* "sqliteplus/core/schemas_cy.pyx":225
  * 
  *             if rest_upper.startswith("PRIMARY KEY", idx):
  *                 if primary_key:             # <<<<<<<<<<<<<<
@@ -4856,7 +4884,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         }
 
-        /* "sqliteplus/core/schemas_cy.pyx":230
+        /* "sqliteplus/core/schemas_cy.pyx":229
  *                         f"Restriccin repetida para columna '{raw_name}': PRIMARY KEY"
  *                     )
  *                 primary_key = True             # <<<<<<<<<<<<<<
@@ -4865,17 +4893,17 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         __pyx_v_primary_key = 1;
 
-        /* "sqliteplus/core/schemas_cy.pyx":231
+        /* "sqliteplus/core/schemas_cy.pyx":230
  *                     )
  *                 primary_key = True
  *                 idx += len("PRIMARY KEY")             # <<<<<<<<<<<<<<
  * 
  *                 if idx < length and rest_upper.startswith(" AUTOINCREMENT", idx):
  */
-        __pyx_t_13 = __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_PRIMARY_KEY); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 231, __pyx_L1_error)
+        __pyx_t_13 = __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_PRIMARY_KEY); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 230, __pyx_L1_error)
         __pyx_v_idx = (__pyx_v_idx + __pyx_t_13);
 
-        /* "sqliteplus/core/schemas_cy.pyx":233
+        /* "sqliteplus/core/schemas_cy.pyx":232
  *                 idx += len("PRIMARY KEY")
  * 
  *                 if idx < length and rest_upper.startswith(" AUTOINCREMENT", idx):             # <<<<<<<<<<<<<<
@@ -4890,14 +4918,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
         }
         if (unlikely(__pyx_v_rest_upper == Py_None)) {
           PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "startswith");
-          __PYX_ERR(0, 233, __pyx_L1_error)
+          __PYX_ERR(0, 232, __pyx_L1_error)
         }
-        __pyx_t_2 = __Pyx_PyUnicode_Tailmatch(__pyx_v_rest_upper, __pyx_kp_u_AUTOINCREMENT, __pyx_v_idx, PY_SSIZE_T_MAX, -1); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 233, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyUnicode_Tailmatch(__pyx_v_rest_upper, __pyx_kp_u_AUTOINCREMENT, __pyx_v_idx, PY_SSIZE_T_MAX, -1); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 232, __pyx_L1_error)
         __pyx_t_1 = (__pyx_t_2 != 0);
         __pyx_L22_bool_binop_done:;
         if (__pyx_t_1) {
 
-          /* "sqliteplus/core/schemas_cy.pyx":234
+          /* "sqliteplus/core/schemas_cy.pyx":233
  * 
  *                 if idx < length and rest_upper.startswith(" AUTOINCREMENT", idx):
  *                     if autoincrement:             # <<<<<<<<<<<<<<
@@ -4907,14 +4935,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_t_1 = (__pyx_v_autoincrement != 0);
           if (unlikely(__pyx_t_1)) {
 
-            /* "sqliteplus/core/schemas_cy.pyx":236
+            /* "sqliteplus/core/schemas_cy.pyx":235
  *                     if autoincrement:
  *                         raise ValueError(
  *                             f"Restriccin repetida para columna '{raw_name}': AUTOINCREMENT"             # <<<<<<<<<<<<<<
  *                         )
  *                     autoincrement = True
  */
-            __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 236, __pyx_L1_error)
+            __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 235, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_10);
             __pyx_t_13 = 0;
             __pyx_t_14 = 127;
@@ -4923,7 +4951,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
             __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_Restriccin_repetida_para_columna);
             __Pyx_GIVEREF(__pyx_kp_u_Restriccin_repetida_para_columna);
             PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_kp_u_Restriccin_repetida_para_columna);
-            __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 236, __pyx_L1_error)
+            __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 235, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_7);
             __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) : __pyx_t_14;
             __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_7);
@@ -4934,25 +4962,25 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
             __pyx_t_13 += 16;
             __Pyx_GIVEREF(__pyx_kp_u_AUTOINCREMENT_2);
             PyTuple_SET_ITEM(__pyx_t_10, 2, __pyx_kp_u_AUTOINCREMENT_2);
-            __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 236, __pyx_L1_error)
+            __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 235, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_7);
             __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
 
-            /* "sqliteplus/core/schemas_cy.pyx":235
+            /* "sqliteplus/core/schemas_cy.pyx":234
  *                 if idx < length and rest_upper.startswith(" AUTOINCREMENT", idx):
  *                     if autoincrement:
  *                         raise ValueError(             # <<<<<<<<<<<<<<
  *                             f"Restriccin repetida para columna '{raw_name}': AUTOINCREMENT"
  *                         )
  */
-            __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 235, __pyx_L1_error)
+            __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 234, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_10);
             __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
             __Pyx_Raise(__pyx_t_10, 0, 0, 0);
             __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-            __PYX_ERR(0, 235, __pyx_L1_error)
+            __PYX_ERR(0, 234, __pyx_L1_error)
 
-            /* "sqliteplus/core/schemas_cy.pyx":234
+            /* "sqliteplus/core/schemas_cy.pyx":233
  * 
  *                 if idx < length and rest_upper.startswith(" AUTOINCREMENT", idx):
  *                     if autoincrement:             # <<<<<<<<<<<<<<
@@ -4961,7 +4989,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
           }
 
-          /* "sqliteplus/core/schemas_cy.pyx":238
+          /* "sqliteplus/core/schemas_cy.pyx":237
  *                             f"Restriccin repetida para columna '{raw_name}': AUTOINCREMENT"
  *                         )
  *                     autoincrement = True             # <<<<<<<<<<<<<<
@@ -4970,17 +4998,17 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
           __pyx_v_autoincrement = 1;
 
-          /* "sqliteplus/core/schemas_cy.pyx":239
+          /* "sqliteplus/core/schemas_cy.pyx":238
  *                         )
  *                     autoincrement = True
  *                     idx += len(" AUTOINCREMENT")             # <<<<<<<<<<<<<<
  *                 continue
  * 
  */
-          __pyx_t_13 = __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_AUTOINCREMENT); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 239, __pyx_L1_error)
+          __pyx_t_13 = __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_AUTOINCREMENT); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 238, __pyx_L1_error)
           __pyx_v_idx = (__pyx_v_idx + __pyx_t_13);
 
-          /* "sqliteplus/core/schemas_cy.pyx":233
+          /* "sqliteplus/core/schemas_cy.pyx":232
  *                 idx += len("PRIMARY KEY")
  * 
  *                 if idx < length and rest_upper.startswith(" AUTOINCREMENT", idx):             # <<<<<<<<<<<<<<
@@ -4989,7 +5017,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         }
 
-        /* "sqliteplus/core/schemas_cy.pyx":240
+        /* "sqliteplus/core/schemas_cy.pyx":239
  *                     autoincrement = True
  *                     idx += len(" AUTOINCREMENT")
  *                 continue             # <<<<<<<<<<<<<<
@@ -4998,7 +5026,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         goto __pyx_L12_continue;
 
-        /* "sqliteplus/core/schemas_cy.pyx":225
+        /* "sqliteplus/core/schemas_cy.pyx":224
  *                 continue
  * 
  *             if rest_upper.startswith("PRIMARY KEY", idx):             # <<<<<<<<<<<<<<
@@ -5007,7 +5035,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
       }
 
-      /* "sqliteplus/core/schemas_cy.pyx":242
+      /* "sqliteplus/core/schemas_cy.pyx":241
  *                 continue
  * 
  *             if rest_upper.startswith("DEFAULT", idx):             # <<<<<<<<<<<<<<
@@ -5016,16 +5044,16 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
       if (unlikely(__pyx_v_rest_upper == Py_None)) {
         PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "startswith");
-        __PYX_ERR(0, 242, __pyx_L1_error)
+        __PYX_ERR(0, 241, __pyx_L1_error)
       }
-      __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_idx); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 242, __pyx_L1_error)
+      __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_idx); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 241, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
-      __pyx_t_13 = __Pyx_PyIndex_AsSsize_t(__pyx_t_10); if (unlikely((__pyx_t_13 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 242, __pyx_L1_error)
+      __pyx_t_13 = __Pyx_PyIndex_AsSsize_t(__pyx_t_10); if (unlikely((__pyx_t_13 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 241, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-      __pyx_t_1 = __Pyx_PyUnicode_Tailmatch(__pyx_v_rest_upper, __pyx_n_u_DEFAULT, __pyx_t_13, PY_SSIZE_T_MAX, -1); if (unlikely(__pyx_t_1 == ((int)-1))) __PYX_ERR(0, 242, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyUnicode_Tailmatch(__pyx_v_rest_upper, __pyx_n_u_DEFAULT, __pyx_t_13, PY_SSIZE_T_MAX, -1); if (unlikely(__pyx_t_1 == ((int)-1))) __PYX_ERR(0, 241, __pyx_L1_error)
       if ((__pyx_t_1 != 0)) {
 
-        /* "sqliteplus/core/schemas_cy.pyx":243
+        /* "sqliteplus/core/schemas_cy.pyx":242
  * 
  *             if rest_upper.startswith("DEFAULT", idx):
  *                 if default_expr is not None:             # <<<<<<<<<<<<<<
@@ -5036,14 +5064,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
         __pyx_t_2 = (__pyx_t_1 != 0);
         if (unlikely(__pyx_t_2)) {
 
-          /* "sqliteplus/core/schemas_cy.pyx":245
+          /* "sqliteplus/core/schemas_cy.pyx":244
  *                 if default_expr is not None:
  *                     raise ValueError(
  *                         f"Restriccin repetida para columna '{raw_name}': DEFAULT"             # <<<<<<<<<<<<<<
  *                     )
  * 
  */
-          __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 245, __pyx_L1_error)
+          __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 244, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_10);
           __pyx_t_13 = 0;
           __pyx_t_14 = 127;
@@ -5052,7 +5080,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_Restriccin_repetida_para_columna);
           __Pyx_GIVEREF(__pyx_kp_u_Restriccin_repetida_para_columna);
           PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_kp_u_Restriccin_repetida_para_columna);
-          __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 245, __pyx_L1_error)
+          __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 244, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
           __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) : __pyx_t_14;
           __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_7);
@@ -5063,25 +5091,25 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_t_13 += 10;
           __Pyx_GIVEREF(__pyx_kp_u_DEFAULT_2);
           PyTuple_SET_ITEM(__pyx_t_10, 2, __pyx_kp_u_DEFAULT_2);
-          __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 245, __pyx_L1_error)
+          __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_10, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 244, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
 
-          /* "sqliteplus/core/schemas_cy.pyx":244
+          /* "sqliteplus/core/schemas_cy.pyx":243
  *             if rest_upper.startswith("DEFAULT", idx):
  *                 if default_expr is not None:
  *                     raise ValueError(             # <<<<<<<<<<<<<<
  *                         f"Restriccin repetida para columna '{raw_name}': DEFAULT"
  *                     )
  */
-          __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 244, __pyx_L1_error)
+          __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 243, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_10);
           __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
           __Pyx_Raise(__pyx_t_10, 0, 0, 0);
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-          __PYX_ERR(0, 244, __pyx_L1_error)
+          __PYX_ERR(0, 243, __pyx_L1_error)
 
-          /* "sqliteplus/core/schemas_cy.pyx":243
+          /* "sqliteplus/core/schemas_cy.pyx":242
  * 
  *             if rest_upper.startswith("DEFAULT", idx):
  *                 if default_expr is not None:             # <<<<<<<<<<<<<<
@@ -5090,17 +5118,17 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         }
 
-        /* "sqliteplus/core/schemas_cy.pyx":248
+        /* "sqliteplus/core/schemas_cy.pyx":247
  *                     )
  * 
  *                 expr_start = idx + len("DEFAULT")             # <<<<<<<<<<<<<<
  *                 while expr_start < length and rest_upper[expr_start] == " ":
  *                     expr_start += 1
  */
-        __pyx_t_13 = __Pyx_PyUnicode_GET_LENGTH(__pyx_n_u_DEFAULT); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 248, __pyx_L1_error)
+        __pyx_t_13 = __Pyx_PyUnicode_GET_LENGTH(__pyx_n_u_DEFAULT); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 247, __pyx_L1_error)
         __pyx_v_expr_start = (__pyx_v_idx + __pyx_t_13);
 
-        /* "sqliteplus/core/schemas_cy.pyx":249
+        /* "sqliteplus/core/schemas_cy.pyx":248
  * 
  *                 expr_start = idx + len("DEFAULT")
  *                 while expr_start < length and rest_upper[expr_start] == " ":             # <<<<<<<<<<<<<<
@@ -5114,13 +5142,13 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
             __pyx_t_2 = __pyx_t_1;
             goto __pyx_L29_bool_binop_done;
           }
-          __pyx_t_14 = __Pyx_GetItemInt_Unicode(__pyx_v_rest_upper, __pyx_v_expr_start, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 0, 0); if (unlikely(__pyx_t_14 == (Py_UCS4)-1)) __PYX_ERR(0, 249, __pyx_L1_error)
+          __pyx_t_14 = __Pyx_GetItemInt_Unicode(__pyx_v_rest_upper, __pyx_v_expr_start, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 0, 0); if (unlikely(__pyx_t_14 == (Py_UCS4)-1)) __PYX_ERR(0, 248, __pyx_L1_error)
           __pyx_t_1 = ((__pyx_t_14 == 32) != 0);
           __pyx_t_2 = __pyx_t_1;
           __pyx_L29_bool_binop_done:;
           if (!__pyx_t_2) break;
 
-          /* "sqliteplus/core/schemas_cy.pyx":250
+          /* "sqliteplus/core/schemas_cy.pyx":249
  *                 expr_start = idx + len("DEFAULT")
  *                 while expr_start < length and rest_upper[expr_start] == " ":
  *                     expr_start += 1             # <<<<<<<<<<<<<<
@@ -5130,16 +5158,16 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_v_expr_start = (__pyx_v_expr_start + 1);
         }
 
-        /* "sqliteplus/core/schemas_cy.pyx":252
+        /* "sqliteplus/core/schemas_cy.pyx":251
  *                     expr_start += 1
  * 
  *                 potential_ends = [length]             # <<<<<<<<<<<<<<
  *                 for token in (" NOT NULL", " UNIQUE", " PRIMARY KEY", " DEFAULT"):
  *                     keyword_pos = rest_upper.find(token, expr_start)
  */
-        __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_length); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 252, __pyx_L1_error)
+        __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_length); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 251, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_10);
-        __pyx_t_7 = PyList_New(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 252, __pyx_L1_error)
+        __pyx_t_7 = PyList_New(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 251, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_7);
         __Pyx_GIVEREF(__pyx_t_10);
         PyList_SET_ITEM(__pyx_t_7, 0, __pyx_t_10);
@@ -5147,7 +5175,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
         __Pyx_XDECREF_SET(__pyx_v_potential_ends, ((PyObject*)__pyx_t_7));
         __pyx_t_7 = 0;
 
-        /* "sqliteplus/core/schemas_cy.pyx":253
+        /* "sqliteplus/core/schemas_cy.pyx":252
  * 
  *                 potential_ends = [length]
  *                 for token in (" NOT NULL", " UNIQUE", " PRIMARY KEY", " DEFAULT"):             # <<<<<<<<<<<<<<
@@ -5158,15 +5186,15 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
         for (;;) {
           if (__pyx_t_13 >= 4) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_10 = PyTuple_GET_ITEM(__pyx_t_7, __pyx_t_13); __Pyx_INCREF(__pyx_t_10); __pyx_t_13++; if (unlikely(0 < 0)) __PYX_ERR(0, 253, __pyx_L1_error)
+          __pyx_t_10 = PyTuple_GET_ITEM(__pyx_t_7, __pyx_t_13); __Pyx_INCREF(__pyx_t_10); __pyx_t_13++; if (unlikely(0 < 0)) __PYX_ERR(0, 252, __pyx_L1_error)
           #else
-          __pyx_t_10 = PySequence_ITEM(__pyx_t_7, __pyx_t_13); __pyx_t_13++; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 253, __pyx_L1_error)
+          __pyx_t_10 = PySequence_ITEM(__pyx_t_7, __pyx_t_13); __pyx_t_13++; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 252, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_10);
           #endif
           __Pyx_XDECREF_SET(__pyx_v_token, ((PyObject*)__pyx_t_10));
           __pyx_t_10 = 0;
 
-          /* "sqliteplus/core/schemas_cy.pyx":254
+          /* "sqliteplus/core/schemas_cy.pyx":253
  *                 potential_ends = [length]
  *                 for token in (" NOT NULL", " UNIQUE", " PRIMARY KEY", " DEFAULT"):
  *                     keyword_pos = rest_upper.find(token, expr_start)             # <<<<<<<<<<<<<<
@@ -5175,16 +5203,16 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
           if (unlikely(__pyx_v_rest_upper == Py_None)) {
             PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "find");
-            __PYX_ERR(0, 254, __pyx_L1_error)
+            __PYX_ERR(0, 253, __pyx_L1_error)
           }
-          __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_expr_start); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 254, __pyx_L1_error)
+          __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_expr_start); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 253, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_10);
-          __pyx_t_15 = __Pyx_PyIndex_AsSsize_t(__pyx_t_10); if (unlikely((__pyx_t_15 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 254, __pyx_L1_error)
+          __pyx_t_15 = __Pyx_PyIndex_AsSsize_t(__pyx_t_10); if (unlikely((__pyx_t_15 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 253, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-          __pyx_t_16 = PyUnicode_Find(__pyx_v_rest_upper, __pyx_v_token, __pyx_t_15, PY_SSIZE_T_MAX, 1); if (unlikely(__pyx_t_16 == ((Py_ssize_t)-2))) __PYX_ERR(0, 254, __pyx_L1_error)
+          __pyx_t_16 = PyUnicode_Find(__pyx_v_rest_upper, __pyx_v_token, __pyx_t_15, PY_SSIZE_T_MAX, 1); if (unlikely(__pyx_t_16 == ((Py_ssize_t)-2))) __PYX_ERR(0, 253, __pyx_L1_error)
           __pyx_v_keyword_pos = __pyx_t_16;
 
-          /* "sqliteplus/core/schemas_cy.pyx":255
+          /* "sqliteplus/core/schemas_cy.pyx":254
  *                 for token in (" NOT NULL", " UNIQUE", " PRIMARY KEY", " DEFAULT"):
  *                     keyword_pos = rest_upper.find(token, expr_start)
  *                     if keyword_pos != -1:             # <<<<<<<<<<<<<<
@@ -5194,19 +5222,19 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_t_2 = ((__pyx_v_keyword_pos != -1L) != 0);
           if (__pyx_t_2) {
 
-            /* "sqliteplus/core/schemas_cy.pyx":256
+            /* "sqliteplus/core/schemas_cy.pyx":255
  *                     keyword_pos = rest_upper.find(token, expr_start)
  *                     if keyword_pos != -1:
  *                         potential_ends.append(keyword_pos)             # <<<<<<<<<<<<<<
  * 
  *                 expr_end = min(potential_ends)
  */
-            __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_keyword_pos); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 256, __pyx_L1_error)
+            __pyx_t_10 = PyInt_FromSsize_t(__pyx_v_keyword_pos); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 255, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_10);
-            __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_potential_ends, __pyx_t_10); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 256, __pyx_L1_error)
+            __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_potential_ends, __pyx_t_10); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 255, __pyx_L1_error)
             __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
 
-            /* "sqliteplus/core/schemas_cy.pyx":255
+            /* "sqliteplus/core/schemas_cy.pyx":254
  *                 for token in (" NOT NULL", " UNIQUE", " PRIMARY KEY", " DEFAULT"):
  *                     keyword_pos = rest_upper.find(token, expr_start)
  *                     if keyword_pos != -1:             # <<<<<<<<<<<<<<
@@ -5215,7 +5243,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
           }
 
-          /* "sqliteplus/core/schemas_cy.pyx":253
+          /* "sqliteplus/core/schemas_cy.pyx":252
  * 
  *                 potential_ends = [length]
  *                 for token in (" NOT NULL", " UNIQUE", " PRIMARY KEY", " DEFAULT"):             # <<<<<<<<<<<<<<
@@ -5225,20 +5253,20 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
         }
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-        /* "sqliteplus/core/schemas_cy.pyx":258
+        /* "sqliteplus/core/schemas_cy.pyx":257
  *                         potential_ends.append(keyword_pos)
  * 
  *                 expr_end = min(potential_ends)             # <<<<<<<<<<<<<<
  *                 default_expr = rest_original[expr_start:expr_end].strip()
  *                 if not default_expr:
  */
-        __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_min, __pyx_v_potential_ends); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 258, __pyx_L1_error)
+        __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_min, __pyx_v_potential_ends); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 257, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_7);
-        __pyx_t_13 = __Pyx_PyIndex_AsSsize_t(__pyx_t_7); if (unlikely((__pyx_t_13 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 258, __pyx_L1_error)
+        __pyx_t_13 = __Pyx_PyIndex_AsSsize_t(__pyx_t_7); if (unlikely((__pyx_t_13 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 257, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
         __pyx_v_expr_end = __pyx_t_13;
 
-        /* "sqliteplus/core/schemas_cy.pyx":259
+        /* "sqliteplus/core/schemas_cy.pyx":258
  * 
  *                 expr_end = min(potential_ends)
  *                 default_expr = rest_original[expr_start:expr_end].strip()             # <<<<<<<<<<<<<<
@@ -5247,11 +5275,11 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         if (unlikely(__pyx_v_rest_original == Py_None)) {
           PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-          __PYX_ERR(0, 259, __pyx_L1_error)
+          __PYX_ERR(0, 258, __pyx_L1_error)
         }
-        __pyx_t_10 = __Pyx_PyUnicode_Substring(__pyx_v_rest_original, __pyx_v_expr_start, __pyx_v_expr_end); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 259, __pyx_L1_error)
+        __pyx_t_10 = __Pyx_PyUnicode_Substring(__pyx_v_rest_original, __pyx_v_expr_start, __pyx_v_expr_end); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 258, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_10);
-        __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_10, __pyx_n_s_strip); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 259, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_10, __pyx_n_s_strip); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 258, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
         __pyx_t_10 = NULL;
@@ -5266,31 +5294,31 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
         }
         __pyx_t_7 = (__pyx_t_10) ? __Pyx_PyObject_CallOneArg(__pyx_t_8, __pyx_t_10) : __Pyx_PyObject_CallNoArg(__pyx_t_8);
         __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
-        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 259, __pyx_L1_error)
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 258, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_7);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
         __Pyx_DECREF_SET(__pyx_v_default_expr, __pyx_t_7);
         __pyx_t_7 = 0;
 
-        /* "sqliteplus/core/schemas_cy.pyx":260
+        /* "sqliteplus/core/schemas_cy.pyx":259
  *                 expr_end = min(potential_ends)
  *                 default_expr = rest_original[expr_start:expr_end].strip()
  *                 if not default_expr:             # <<<<<<<<<<<<<<
  *                     raise ValueError(
  *                         f"Expresin DEFAULT invlida para columna '{raw_name}'"
  */
-        __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_default_expr); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 260, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_default_expr); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 259, __pyx_L1_error)
         __pyx_t_1 = ((!__pyx_t_2) != 0);
         if (unlikely(__pyx_t_1)) {
 
-          /* "sqliteplus/core/schemas_cy.pyx":262
+          /* "sqliteplus/core/schemas_cy.pyx":261
  *                 if not default_expr:
  *                     raise ValueError(
  *                         f"Expresin DEFAULT invlida para columna '{raw_name}'"             # <<<<<<<<<<<<<<
  *                     )
  *                 idx = expr_end
  */
-          __pyx_t_7 = PyTuple_New(3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 262, __pyx_L1_error)
+          __pyx_t_7 = PyTuple_New(3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 261, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
           __pyx_t_13 = 0;
           __pyx_t_14 = 127;
@@ -5299,7 +5327,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_Expresin_DEFAULT_invlida_para_co);
           __Pyx_GIVEREF(__pyx_kp_u_Expresin_DEFAULT_invlida_para_co);
           PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_kp_u_Expresin_DEFAULT_invlida_para_co);
-          __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 262, __pyx_L1_error)
+          __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 261, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_8);
           __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_8) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_8) : __pyx_t_14;
           __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_8);
@@ -5310,25 +5338,25 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
           __pyx_t_13 += 1;
           __Pyx_GIVEREF(__pyx_kp_u__6);
           PyTuple_SET_ITEM(__pyx_t_7, 2, __pyx_kp_u__6);
-          __pyx_t_8 = __Pyx_PyUnicode_Join(__pyx_t_7, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 262, __pyx_L1_error)
+          __pyx_t_8 = __Pyx_PyUnicode_Join(__pyx_t_7, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 261, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_8);
           __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-          /* "sqliteplus/core/schemas_cy.pyx":261
+          /* "sqliteplus/core/schemas_cy.pyx":260
  *                 default_expr = rest_original[expr_start:expr_end].strip()
  *                 if not default_expr:
  *                     raise ValueError(             # <<<<<<<<<<<<<<
  *                         f"Expresin DEFAULT invlida para columna '{raw_name}'"
  *                     )
  */
-          __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 261, __pyx_L1_error)
+          __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 260, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_7);
           __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
           __Pyx_Raise(__pyx_t_7, 0, 0, 0);
           __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-          __PYX_ERR(0, 261, __pyx_L1_error)
+          __PYX_ERR(0, 260, __pyx_L1_error)
 
-          /* "sqliteplus/core/schemas_cy.pyx":260
+          /* "sqliteplus/core/schemas_cy.pyx":259
  *                 expr_end = min(potential_ends)
  *                 default_expr = rest_original[expr_start:expr_end].strip()
  *                 if not default_expr:             # <<<<<<<<<<<<<<
@@ -5337,7 +5365,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         }
 
-        /* "sqliteplus/core/schemas_cy.pyx":264
+        /* "sqliteplus/core/schemas_cy.pyx":263
  *                         f"Expresin DEFAULT invlida para columna '{raw_name}'"
  *                     )
  *                 idx = expr_end             # <<<<<<<<<<<<<<
@@ -5346,7 +5374,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         __pyx_v_idx = __pyx_v_expr_end;
 
-        /* "sqliteplus/core/schemas_cy.pyx":265
+        /* "sqliteplus/core/schemas_cy.pyx":264
  *                     )
  *                 idx = expr_end
  *                 continue             # <<<<<<<<<<<<<<
@@ -5355,7 +5383,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
         goto __pyx_L12_continue;
 
-        /* "sqliteplus/core/schemas_cy.pyx":242
+        /* "sqliteplus/core/schemas_cy.pyx":241
  *                 continue
  * 
  *             if rest_upper.startswith("DEFAULT", idx):             # <<<<<<<<<<<<<<
@@ -5364,14 +5392,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
       }
 
-      /* "sqliteplus/core/schemas_cy.pyx":268
+      /* "sqliteplus/core/schemas_cy.pyx":267
  * 
  *             raise ValueError(
  *                 f"Restriccin no permitida para columna '{raw_name}': {raw_type}"             # <<<<<<<<<<<<<<
  *             )
  * 
  */
-      __pyx_t_7 = PyTuple_New(4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 268, __pyx_L1_error)
+      __pyx_t_7 = PyTuple_New(4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 267, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __pyx_t_13 = 0;
       __pyx_t_14 = 127;
@@ -5380,7 +5408,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
       __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_Restriccin_no_permitida_para_col);
       __Pyx_GIVEREF(__pyx_kp_u_Restriccin_no_permitida_para_col);
       PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_kp_u_Restriccin_no_permitida_para_col);
-      __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 268, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 267, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_8) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_8) : __pyx_t_14;
       __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_8);
@@ -5391,34 +5419,34 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
       __pyx_t_13 += 3;
       __Pyx_GIVEREF(__pyx_kp_u__7);
       PyTuple_SET_ITEM(__pyx_t_7, 2, __pyx_kp_u__7);
-      __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_type, __pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 268, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_type, __pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 267, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_8) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_8) : __pyx_t_14;
       __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_8);
       __Pyx_GIVEREF(__pyx_t_8);
       PyTuple_SET_ITEM(__pyx_t_7, 3, __pyx_t_8);
       __pyx_t_8 = 0;
-      __pyx_t_8 = __Pyx_PyUnicode_Join(__pyx_t_7, 4, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 268, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyUnicode_Join(__pyx_t_7, 4, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 267, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-      /* "sqliteplus/core/schemas_cy.pyx":267
+      /* "sqliteplus/core/schemas_cy.pyx":266
  *                 continue
  * 
  *             raise ValueError(             # <<<<<<<<<<<<<<
  *                 f"Restriccin no permitida para columna '{raw_name}': {raw_type}"
  *             )
  */
-      __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 267, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 266, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_Raise(__pyx_t_7, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __PYX_ERR(0, 267, __pyx_L1_error)
+      __PYX_ERR(0, 266, __pyx_L1_error)
       __pyx_L12_continue:;
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":271
+    /* "sqliteplus/core/schemas_cy.pyx":270
  *             )
  * 
  *         if autoincrement and base != "INTEGER":             # <<<<<<<<<<<<<<
@@ -5431,40 +5459,40 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
       __pyx_t_1 = __pyx_t_2;
       goto __pyx_L36_bool_binop_done;
     }
-    __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_v_base, __pyx_n_u_INTEGER, Py_NE)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 271, __pyx_L1_error)
+    __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_v_base, __pyx_n_u_INTEGER, Py_NE)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 270, __pyx_L1_error)
     __pyx_t_17 = (__pyx_t_2 != 0);
     __pyx_t_1 = __pyx_t_17;
     __pyx_L36_bool_binop_done:;
     if (unlikely(__pyx_t_1)) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":273
+      /* "sqliteplus/core/schemas_cy.pyx":272
  *         if autoincrement and base != "INTEGER":
  *             raise ValueError(
  *                 f"AUTOINCREMENT solo es vlido en columnas INTEGER: {raw_type}"             # <<<<<<<<<<<<<<
  *             )
  * 
  */
-      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_type, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 273, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_type, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 272, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_8 = __Pyx_PyUnicode_Concat(__pyx_kp_u_AUTOINCREMENT_solo_es_vlido_en_c, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 273, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyUnicode_Concat(__pyx_kp_u_AUTOINCREMENT_solo_es_vlido_en_c, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 272, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-      /* "sqliteplus/core/schemas_cy.pyx":272
+      /* "sqliteplus/core/schemas_cy.pyx":271
  * 
  *         if autoincrement and base != "INTEGER":
  *             raise ValueError(             # <<<<<<<<<<<<<<
  *                 f"AUTOINCREMENT solo es vlido en columnas INTEGER: {raw_type}"
  *             )
  */
-      __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 272, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 271, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_Raise(__pyx_t_7, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __PYX_ERR(0, 272, __pyx_L1_error)
+      __PYX_ERR(0, 271, __pyx_L1_error)
 
-      /* "sqliteplus/core/schemas_cy.pyx":271
+      /* "sqliteplus/core/schemas_cy.pyx":270
  *             )
  * 
  *         if autoincrement and base != "INTEGER":             # <<<<<<<<<<<<<<
@@ -5473,7 +5501,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":276
+    /* "sqliteplus/core/schemas_cy.pyx":275
  *             )
  * 
  *         if autoincrement and not primary_key:             # <<<<<<<<<<<<<<
@@ -5491,14 +5519,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     __pyx_L39_bool_binop_done:;
     if (unlikely(__pyx_t_1)) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":278
+      /* "sqliteplus/core/schemas_cy.pyx":277
  *         if autoincrement and not primary_key:
  *             raise ValueError(
  *                 f"AUTOINCREMENT requiere PRIMARY KEY en la columna '{raw_name}'"             # <<<<<<<<<<<<<<
  *             )
  * 
  */
-      __pyx_t_7 = PyTuple_New(3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 278, __pyx_L1_error)
+      __pyx_t_7 = PyTuple_New(3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 277, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __pyx_t_13 = 0;
       __pyx_t_14 = 127;
@@ -5506,7 +5534,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
       __pyx_t_13 += 50;
       __Pyx_GIVEREF(__pyx_kp_u_AUTOINCREMENT_requiere_PRIMARY_K);
       PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_kp_u_AUTOINCREMENT_requiere_PRIMARY_K);
-      __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 278, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 277, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_8) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_8) : __pyx_t_14;
       __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_8);
@@ -5517,25 +5545,25 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
       __pyx_t_13 += 1;
       __Pyx_GIVEREF(__pyx_kp_u__6);
       PyTuple_SET_ITEM(__pyx_t_7, 2, __pyx_kp_u__6);
-      __pyx_t_8 = __Pyx_PyUnicode_Join(__pyx_t_7, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 278, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyUnicode_Join(__pyx_t_7, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 277, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-      /* "sqliteplus/core/schemas_cy.pyx":277
+      /* "sqliteplus/core/schemas_cy.pyx":276
  * 
  *         if autoincrement and not primary_key:
  *             raise ValueError(             # <<<<<<<<<<<<<<
  *                 f"AUTOINCREMENT requiere PRIMARY KEY en la columna '{raw_name}'"
  *             )
  */
-      __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 277, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 276, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_Raise(__pyx_t_7, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __PYX_ERR(0, 277, __pyx_L1_error)
+      __PYX_ERR(0, 276, __pyx_L1_error)
 
-      /* "sqliteplus/core/schemas_cy.pyx":276
+      /* "sqliteplus/core/schemas_cy.pyx":275
  *             )
  * 
  *         if autoincrement and not primary_key:             # <<<<<<<<<<<<<<
@@ -5544,14 +5572,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":281
+    /* "sqliteplus/core/schemas_cy.pyx":280
  *             )
  * 
  *         normalized_parts = [base]             # <<<<<<<<<<<<<<
  *         if primary_key:
  *             normalized_parts.append("PRIMARY KEY")
  */
-    __pyx_t_7 = PyList_New(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 281, __pyx_L1_error)
+    __pyx_t_7 = PyList_New(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 280, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_INCREF(__pyx_v_base);
     __Pyx_GIVEREF(__pyx_v_base);
@@ -5559,7 +5587,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     __Pyx_XDECREF_SET(__pyx_v_normalized_parts, ((PyObject*)__pyx_t_7));
     __pyx_t_7 = 0;
 
-    /* "sqliteplus/core/schemas_cy.pyx":282
+    /* "sqliteplus/core/schemas_cy.pyx":281
  * 
  *         normalized_parts = [base]
  *         if primary_key:             # <<<<<<<<<<<<<<
@@ -5569,16 +5597,16 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     __pyx_t_1 = (__pyx_v_primary_key != 0);
     if (__pyx_t_1) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":283
+      /* "sqliteplus/core/schemas_cy.pyx":282
  *         normalized_parts = [base]
  *         if primary_key:
  *             normalized_parts.append("PRIMARY KEY")             # <<<<<<<<<<<<<<
  *             if autoincrement:
  *                 normalized_parts.append("AUTOINCREMENT")
  */
-      __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_normalized_parts, __pyx_kp_u_PRIMARY_KEY); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 283, __pyx_L1_error)
+      __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_normalized_parts, __pyx_kp_u_PRIMARY_KEY); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 282, __pyx_L1_error)
 
-      /* "sqliteplus/core/schemas_cy.pyx":284
+      /* "sqliteplus/core/schemas_cy.pyx":283
  *         if primary_key:
  *             normalized_parts.append("PRIMARY KEY")
  *             if autoincrement:             # <<<<<<<<<<<<<<
@@ -5588,16 +5616,16 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
       __pyx_t_1 = (__pyx_v_autoincrement != 0);
       if (__pyx_t_1) {
 
-        /* "sqliteplus/core/schemas_cy.pyx":285
+        /* "sqliteplus/core/schemas_cy.pyx":284
  *             normalized_parts.append("PRIMARY KEY")
  *             if autoincrement:
  *                 normalized_parts.append("AUTOINCREMENT")             # <<<<<<<<<<<<<<
  *         if not_null:
  *             normalized_parts.append("NOT NULL")
  */
-        __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_normalized_parts, __pyx_n_u_AUTOINCREMENT_3); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 285, __pyx_L1_error)
+        __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_normalized_parts, __pyx_n_u_AUTOINCREMENT_3); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 284, __pyx_L1_error)
 
-        /* "sqliteplus/core/schemas_cy.pyx":284
+        /* "sqliteplus/core/schemas_cy.pyx":283
  *         if primary_key:
  *             normalized_parts.append("PRIMARY KEY")
  *             if autoincrement:             # <<<<<<<<<<<<<<
@@ -5606,7 +5634,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
       }
 
-      /* "sqliteplus/core/schemas_cy.pyx":282
+      /* "sqliteplus/core/schemas_cy.pyx":281
  * 
  *         normalized_parts = [base]
  *         if primary_key:             # <<<<<<<<<<<<<<
@@ -5615,7 +5643,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":286
+    /* "sqliteplus/core/schemas_cy.pyx":285
  *             if autoincrement:
  *                 normalized_parts.append("AUTOINCREMENT")
  *         if not_null:             # <<<<<<<<<<<<<<
@@ -5625,16 +5653,16 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     __pyx_t_1 = (__pyx_v_not_null != 0);
     if (__pyx_t_1) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":287
+      /* "sqliteplus/core/schemas_cy.pyx":286
  *                 normalized_parts.append("AUTOINCREMENT")
  *         if not_null:
  *             normalized_parts.append("NOT NULL")             # <<<<<<<<<<<<<<
  *         if unique:
  *             normalized_parts.append("UNIQUE")
  */
-      __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_normalized_parts, __pyx_kp_u_NOT_NULL); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 287, __pyx_L1_error)
+      __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_normalized_parts, __pyx_kp_u_NOT_NULL); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 286, __pyx_L1_error)
 
-      /* "sqliteplus/core/schemas_cy.pyx":286
+      /* "sqliteplus/core/schemas_cy.pyx":285
  *             if autoincrement:
  *                 normalized_parts.append("AUTOINCREMENT")
  *         if not_null:             # <<<<<<<<<<<<<<
@@ -5643,7 +5671,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":288
+    /* "sqliteplus/core/schemas_cy.pyx":287
  *         if not_null:
  *             normalized_parts.append("NOT NULL")
  *         if unique:             # <<<<<<<<<<<<<<
@@ -5653,16 +5681,16 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     __pyx_t_1 = (__pyx_v_unique != 0);
     if (__pyx_t_1) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":289
+      /* "sqliteplus/core/schemas_cy.pyx":288
  *             normalized_parts.append("NOT NULL")
  *         if unique:
  *             normalized_parts.append("UNIQUE")             # <<<<<<<<<<<<<<
  *         if default_expr is not None:
  *             if not _py_is_safe_default_expr(<str>default_expr):
  */
-      __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_normalized_parts, __pyx_n_u_UNIQUE); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 289, __pyx_L1_error)
+      __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_normalized_parts, __pyx_n_u_UNIQUE); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 288, __pyx_L1_error)
 
-      /* "sqliteplus/core/schemas_cy.pyx":288
+      /* "sqliteplus/core/schemas_cy.pyx":287
  *         if not_null:
  *             normalized_parts.append("NOT NULL")
  *         if unique:             # <<<<<<<<<<<<<<
@@ -5671,7 +5699,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":290
+    /* "sqliteplus/core/schemas_cy.pyx":289
  *         if unique:
  *             normalized_parts.append("UNIQUE")
  *         if default_expr is not None:             # <<<<<<<<<<<<<<
@@ -5682,7 +5710,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
     __pyx_t_17 = (__pyx_t_1 != 0);
     if (__pyx_t_17) {
 
-      /* "sqliteplus/core/schemas_cy.pyx":291
+      /* "sqliteplus/core/schemas_cy.pyx":290
  *             normalized_parts.append("UNIQUE")
  *         if default_expr is not None:
  *             if not _py_is_safe_default_expr(<str>default_expr):             # <<<<<<<<<<<<<<
@@ -5692,14 +5720,14 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
       __pyx_t_17 = ((!(__pyx_f_10sqliteplus_4core_10schemas_cy__py_is_safe_default_expr(((PyObject*)__pyx_v_default_expr), 0) != 0)) != 0);
       if (unlikely(__pyx_t_17)) {
 
-        /* "sqliteplus/core/schemas_cy.pyx":293
+        /* "sqliteplus/core/schemas_cy.pyx":292
  *             if not _py_is_safe_default_expr(<str>default_expr):
  *                 raise ValueError(
  *                     f"Expresin DEFAULT potencialmente insegura para columna '{raw_name}'"             # <<<<<<<<<<<<<<
  *                 )
  *             normalized_parts.append(f"DEFAULT {default_expr}")
  */
-        __pyx_t_7 = PyTuple_New(3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 293, __pyx_L1_error)
+        __pyx_t_7 = PyTuple_New(3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 292, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_7);
         __pyx_t_13 = 0;
         __pyx_t_14 = 127;
@@ -5708,7 +5736,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
         __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_kp_u_Expresin_DEFAULT_potencialmente);
         __Pyx_GIVEREF(__pyx_kp_u_Expresin_DEFAULT_potencialmente);
         PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_kp_u_Expresin_DEFAULT_potencialmente);
-        __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 293, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PyObject_FormatSimple(__pyx_v_raw_name, __pyx_empty_unicode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 292, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
         __pyx_t_14 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_8) > __pyx_t_14) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_8) : __pyx_t_14;
         __pyx_t_13 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_8);
@@ -5719,25 +5747,25 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
         __pyx_t_13 += 1;
         __Pyx_GIVEREF(__pyx_kp_u__6);
         PyTuple_SET_ITEM(__pyx_t_7, 2, __pyx_kp_u__6);
-        __pyx_t_8 = __Pyx_PyUnicode_Join(__pyx_t_7, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 293, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PyUnicode_Join(__pyx_t_7, 3, __pyx_t_13, __pyx_t_14); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 292, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-        /* "sqliteplus/core/schemas_cy.pyx":292
+        /* "sqliteplus/core/schemas_cy.pyx":291
  *         if default_expr is not None:
  *             if not _py_is_safe_default_expr(<str>default_expr):
  *                 raise ValueError(             # <<<<<<<<<<<<<<
  *                     f"Expresin DEFAULT potencialmente insegura para columna '{raw_name}'"
  *                 )
  */
-        __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 292, __pyx_L1_error)
+        __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 291, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_7);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
         __Pyx_Raise(__pyx_t_7, 0, 0, 0);
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-        __PYX_ERR(0, 292, __pyx_L1_error)
+        __PYX_ERR(0, 291, __pyx_L1_error)
 
-        /* "sqliteplus/core/schemas_cy.pyx":291
+        /* "sqliteplus/core/schemas_cy.pyx":290
  *             normalized_parts.append("UNIQUE")
  *         if default_expr is not None:
  *             if not _py_is_safe_default_expr(<str>default_expr):             # <<<<<<<<<<<<<<
@@ -5746,22 +5774,22 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
       }
 
-      /* "sqliteplus/core/schemas_cy.pyx":295
+      /* "sqliteplus/core/schemas_cy.pyx":294
  *                     f"Expresin DEFAULT potencialmente insegura para columna '{raw_name}'"
  *                 )
  *             normalized_parts.append(f"DEFAULT {default_expr}")             # <<<<<<<<<<<<<<
  * 
  *         sanitized_columns[normalized_name] = " ".join(normalized_parts)
  */
-      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_default_expr, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 295, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_FormatSimple(__pyx_v_default_expr, __pyx_empty_unicode); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 294, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_8 = __Pyx_PyUnicode_Concat(__pyx_kp_u_DEFAULT_4, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 295, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyUnicode_Concat(__pyx_kp_u_DEFAULT_4, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 294, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_normalized_parts, __pyx_t_8); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 295, __pyx_L1_error)
+      __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_normalized_parts, __pyx_t_8); if (unlikely(__pyx_t_11 == ((int)-1))) __PYX_ERR(0, 294, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-      /* "sqliteplus/core/schemas_cy.pyx":290
+      /* "sqliteplus/core/schemas_cy.pyx":289
  *         if unique:
  *             normalized_parts.append("UNIQUE")
  *         if default_expr is not None:             # <<<<<<<<<<<<<<
@@ -5770,21 +5798,21 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
  */
     }
 
-    /* "sqliteplus/core/schemas_cy.pyx":297
+    /* "sqliteplus/core/schemas_cy.pyx":296
  *             normalized_parts.append(f"DEFAULT {default_expr}")
  * 
  *         sanitized_columns[normalized_name] = " ".join(normalized_parts)             # <<<<<<<<<<<<<<
  * 
  *     return sanitized_columns
  */
-    __pyx_t_8 = PyUnicode_Join(__pyx_kp_u__3, __pyx_v_normalized_parts); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 297, __pyx_L1_error)
+    __pyx_t_8 = PyUnicode_Join(__pyx_kp_u__3, __pyx_v_normalized_parts); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 296, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
-    if (unlikely(PyDict_SetItem(__pyx_v_sanitized_columns, __pyx_cur_scope->__pyx_v_normalized_name, __pyx_t_8) < 0)) __PYX_ERR(0, 297, __pyx_L1_error)
+    if (unlikely(PyDict_SetItem(__pyx_v_sanitized_columns, __pyx_cur_scope->__pyx_v_normalized_name, __pyx_t_8) < 0)) __PYX_ERR(0, 296, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":299
+  /* "sqliteplus/core/schemas_cy.pyx":298
  *         sanitized_columns[normalized_name] = " ".join(normalized_parts)
  * 
  *     return sanitized_columns             # <<<<<<<<<<<<<<
@@ -5794,7 +5822,7 @@ static PyObject *__pyx_pf_10sqliteplus_4core_10schemas_cy_10_py_normalized_colum
   __pyx_r = __pyx_v_sanitized_columns;
   goto __pyx_L0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":133
+  /* "sqliteplus/core/schemas_cy.pyx":132
  * 
  * 
  * def _py_normalized_columns(columns):             # <<<<<<<<<<<<<<
@@ -6096,6 +6124,7 @@ static struct PyModuleDef __pyx_moduledef = {
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_u_, __pyx_k_, sizeof(__pyx_k_), 0, 1, 0, 0},
+  {&__pyx_n_s_ALLOWED_BASE_TYPES, __pyx_k_ALLOWED_BASE_TYPES, sizeof(__pyx_k_ALLOWED_BASE_TYPES), 0, 0, 1, 1},
   {&__pyx_kp_u_AUTOINCREMENT, __pyx_k_AUTOINCREMENT, sizeof(__pyx_k_AUTOINCREMENT), 0, 1, 0, 0},
   {&__pyx_kp_u_AUTOINCREMENT_2, __pyx_k_AUTOINCREMENT_2, sizeof(__pyx_k_AUTOINCREMENT_2), 0, 1, 0, 0},
   {&__pyx_n_u_AUTOINCREMENT_3, __pyx_k_AUTOINCREMENT_3, sizeof(__pyx_k_AUTOINCREMENT_3), 0, 1, 0, 1},
@@ -6105,8 +6134,15 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_u_DEFAULT_2, __pyx_k_DEFAULT_2, sizeof(__pyx_k_DEFAULT_2), 0, 1, 0, 0},
   {&__pyx_kp_u_DEFAULT_3, __pyx_k_DEFAULT_3, sizeof(__pyx_k_DEFAULT_3), 0, 1, 0, 0},
   {&__pyx_kp_u_DEFAULT_4, __pyx_k_DEFAULT_4, sizeof(__pyx_k_DEFAULT_4), 0, 1, 0, 0},
+  {&__pyx_n_s_DEFAULT_EXPR_ALLOWED_FUNCTIONS, __pyx_k_DEFAULT_EXPR_ALLOWED_FUNCTIONS, sizeof(__pyx_k_DEFAULT_EXPR_ALLOWED_FUNCTIONS), 0, 0, 1, 1},
+  {&__pyx_n_s_DEFAULT_EXPR_ALLOWED_LITERALS, __pyx_k_DEFAULT_EXPR_ALLOWED_LITERALS, sizeof(__pyx_k_DEFAULT_EXPR_ALLOWED_LITERALS), 0, 0, 1, 1},
+  {&__pyx_n_s_DEFAULT_EXPR_DISALLOWED_KEYWORDS, __pyx_k_DEFAULT_EXPR_DISALLOWED_KEYWORDS, sizeof(__pyx_k_DEFAULT_EXPR_DISALLOWED_KEYWORDS), 0, 0, 1, 1},
+  {&__pyx_n_s_DEFAULT_EXPR_DISALLOWED_TOKENS, __pyx_k_DEFAULT_EXPR_DISALLOWED_TOKENS, sizeof(__pyx_k_DEFAULT_EXPR_DISALLOWED_TOKENS), 0, 0, 1, 1},
+  {&__pyx_n_s_DEFAULT_EXPR_NUMERIC_PATTERN, __pyx_k_DEFAULT_EXPR_NUMERIC_PATTERN, sizeof(__pyx_k_DEFAULT_EXPR_NUMERIC_PATTERN), 0, 0, 1, 1},
+  {&__pyx_n_s_DEFAULT_EXPR_STRING_PATTERN, __pyx_k_DEFAULT_EXPR_STRING_PATTERN, sizeof(__pyx_k_DEFAULT_EXPR_STRING_PATTERN), 0, 0, 1, 1},
   {&__pyx_kp_u_Expresin_DEFAULT_invlida_para_co, __pyx_k_Expresin_DEFAULT_invlida_para_co, sizeof(__pyx_k_Expresin_DEFAULT_invlida_para_co), 0, 1, 0, 0},
   {&__pyx_kp_u_Expresin_DEFAULT_potencialmente, __pyx_k_Expresin_DEFAULT_potencialmente, sizeof(__pyx_k_Expresin_DEFAULT_potencialmente), 0, 1, 0, 0},
+  {&__pyx_n_s_FUNCTION_CALL_PATTERN, __pyx_k_FUNCTION_CALL_PATTERN, sizeof(__pyx_k_FUNCTION_CALL_PATTERN), 0, 0, 1, 1},
   {&__pyx_n_u_INTEGER, __pyx_k_INTEGER, sizeof(__pyx_k_INTEGER), 0, 1, 0, 1},
   {&__pyx_kp_u_Los_nombres_de_columna_no_pueden, __pyx_k_Los_nombres_de_columna_no_pueden, sizeof(__pyx_k_Los_nombres_de_columna_no_pueden), 0, 1, 0, 0},
   {&__pyx_kp_u_NOT_NULL, __pyx_k_NOT_NULL, sizeof(__pyx_k_NOT_NULL), 0, 1, 0, 0},
@@ -6120,6 +6156,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_u_PRIMARY_KEY_3, __pyx_k_PRIMARY_KEY_3, sizeof(__pyx_k_PRIMARY_KEY_3), 0, 1, 0, 0},
   {&__pyx_kp_u_Restriccin_no_permitida_para_col, __pyx_k_Restriccin_no_permitida_para_col, sizeof(__pyx_k_Restriccin_no_permitida_para_col), 0, 1, 0, 0},
   {&__pyx_kp_u_Restriccin_repetida_para_columna, __pyx_k_Restriccin_repetida_para_columna, sizeof(__pyx_k_Restriccin_repetida_para_columna), 0, 1, 0, 0},
+  {&__pyx_n_s_SQLITE_IDENTIFIER_DISALLOWED_TOK, __pyx_k_SQLITE_IDENTIFIER_DISALLOWED_TOK, sizeof(__pyx_k_SQLITE_IDENTIFIER_DISALLOWED_TOK), 0, 0, 1, 1},
+  {&__pyx_n_s_SQLITE_IDENTIFIER_PATTERN, __pyx_k_SQLITE_IDENTIFIER_PATTERN, sizeof(__pyx_k_SQLITE_IDENTIFIER_PATTERN), 0, 0, 1, 1},
   {&__pyx_kp_u_Se_requiere_al_menos_una_columna, __pyx_k_Se_requiere_al_menos_una_columna, sizeof(__pyx_k_Se_requiere_al_menos_una_columna), 0, 1, 0, 0},
   {&__pyx_kp_u_Tipo_de_columna_vaco_para, __pyx_k_Tipo_de_columna_vaco_para, sizeof(__pyx_k_Tipo_de_columna_vaco_para), 0, 1, 0, 0},
   {&__pyx_kp_u_Tipo_de_dato_no_permitido_para, __pyx_k_Tipo_de_dato_no_permitido_para, sizeof(__pyx_k_Tipo_de_dato_no_permitido_para), 0, 1, 0, 0},
@@ -6139,6 +6177,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_cline_in_traceback, __pyx_k_cline_in_traceback, sizeof(__pyx_k_cline_in_traceback), 0, 0, 1, 1},
   {&__pyx_n_s_close, __pyx_k_close, sizeof(__pyx_k_close), 0, 0, 1, 1},
   {&__pyx_n_s_columns, __pyx_k_columns, sizeof(__pyx_k_columns), 0, 0, 1, 1},
+  {&__pyx_n_s_const, __pyx_k_const, sizeof(__pyx_k_const), 0, 0, 1, 1},
   {&__pyx_n_s_default_expr, __pyx_k_default_expr, sizeof(__pyx_k_default_expr), 0, 0, 1, 1},
   {&__pyx_n_s_end, __pyx_k_end, sizeof(__pyx_k_end), 0, 0, 1, 1},
   {&__pyx_n_s_expr_end, __pyx_k_expr_end, sizeof(__pyx_k_expr_end), 0, 0, 1, 1},
@@ -6148,6 +6187,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_ident, __pyx_k_ident, sizeof(__pyx_k_ident), 0, 0, 1, 1},
   {&__pyx_n_s_identifier, __pyx_k_identifier, sizeof(__pyx_k_identifier), 0, 0, 1, 1},
   {&__pyx_n_s_idx, __pyx_k_idx, sizeof(__pyx_k_idx), 0, 0, 1, 1},
+  {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
   {&__pyx_n_s_items, __pyx_k_items, sizeof(__pyx_k_items), 0, 0, 1, 1},
   {&__pyx_n_s_keyword_pos, __pyx_k_keyword_pos, sizeof(__pyx_k_keyword_pos), 0, 0, 1, 1},
   {&__pyx_n_s_length, __pyx_k_length, sizeof(__pyx_k_length), 0, 0, 1, 1},
@@ -6172,9 +6212,11 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_rest_original_tokens, __pyx_k_rest_original_tokens, sizeof(__pyx_k_rest_original_tokens), 0, 0, 1, 1},
   {&__pyx_n_s_rest_upper, __pyx_k_rest_upper, sizeof(__pyx_k_rest_upper), 0, 0, 1, 1},
   {&__pyx_n_s_sanitized_columns, __pyx_k_sanitized_columns, sizeof(__pyx_k_sanitized_columns), 0, 0, 1, 1},
+  {&__pyx_n_s_schemas_constants, __pyx_k_schemas_constants, sizeof(__pyx_k_schemas_constants), 0, 0, 1, 1},
   {&__pyx_n_s_seen_names, __pyx_k_seen_names, sizeof(__pyx_k_seen_names), 0, 0, 1, 1},
   {&__pyx_n_s_send, __pyx_k_send, sizeof(__pyx_k_send), 0, 0, 1, 1},
   {&__pyx_n_s_split, __pyx_k_split, sizeof(__pyx_k_split), 0, 0, 1, 1},
+  {&__pyx_n_s_sqliteplus_core, __pyx_k_sqliteplus_core, sizeof(__pyx_k_sqliteplus_core), 0, 0, 1, 1},
   {&__pyx_n_s_sqliteplus_core_schemas_cy, __pyx_k_sqliteplus_core_schemas_cy, sizeof(__pyx_k_sqliteplus_core_schemas_cy), 0, 0, 1, 1},
   {&__pyx_kp_s_sqliteplus_core_schemas_cy_pyx, __pyx_k_sqliteplus_core_schemas_cy_pyx, sizeof(__pyx_k_sqliteplus_core_schemas_cy_pyx), 0, 0, 1, 0},
   {&__pyx_n_s_strip, __pyx_k_strip, sizeof(__pyx_k_strip), 0, 0, 1, 1},
@@ -6186,9 +6228,9 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 46, __pyx_L1_error)
-  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 135, __pyx_L1_error)
-  __pyx_builtin_min = __Pyx_GetBuiltinName(__pyx_n_s_min); if (!__pyx_builtin_min) __PYX_ERR(0, 258, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 45, __pyx_L1_error)
+  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 134, __pyx_L1_error)
+  __pyx_builtin_min = __Pyx_GetBuiltinName(__pyx_n_s_min); if (!__pyx_builtin_min) __PYX_ERR(0, 257, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -6198,62 +6240,62 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "sqliteplus/core/schemas_cy.pyx":135
+  /* "sqliteplus/core/schemas_cy.pyx":134
  * def _py_normalized_columns(columns):
  *     if not columns:
  *         raise ValueError("Se requiere al menos una columna para crear la tabla")             # <<<<<<<<<<<<<<
  * 
  *     cdef dict sanitized_columns = {}
  */
-  __pyx_tuple__4 = PyTuple_Pack(1, __pyx_kp_u_Se_requiere_al_menos_una_columna); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 135, __pyx_L1_error)
+  __pyx_tuple__4 = PyTuple_Pack(1, __pyx_kp_u_Se_requiere_al_menos_una_columna); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 134, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__4);
   __Pyx_GIVEREF(__pyx_tuple__4);
 
-  /* "sqliteplus/core/schemas_cy.pyx":165
+  /* "sqliteplus/core/schemas_cy.pyx":164
  *         normalized_name = (<str>raw_name).strip()
  *         if not normalized_name:
  *             raise ValueError("Los nombres de columna no pueden estar vacos")             # <<<<<<<<<<<<<<
  * 
  *         if not _IDENTIFIER_PATTERN.match(normalized_name):
  */
-  __pyx_tuple__5 = PyTuple_Pack(1, __pyx_kp_u_Los_nombres_de_columna_no_pueden); if (unlikely(!__pyx_tuple__5)) __PYX_ERR(0, 165, __pyx_L1_error)
+  __pyx_tuple__5 = PyTuple_Pack(1, __pyx_kp_u_Los_nombres_de_columna_no_pueden); if (unlikely(!__pyx_tuple__5)) __PYX_ERR(0, 164, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__5);
   __Pyx_GIVEREF(__pyx_tuple__5);
 
-  /* "sqliteplus/core/schemas_cy.pyx":253
+  /* "sqliteplus/core/schemas_cy.pyx":252
  * 
  *                 potential_ends = [length]
  *                 for token in (" NOT NULL", " UNIQUE", " PRIMARY KEY", " DEFAULT"):             # <<<<<<<<<<<<<<
  *                     keyword_pos = rest_upper.find(token, expr_start)
  *                     if keyword_pos != -1:
  */
-  __pyx_tuple__8 = PyTuple_Pack(4, __pyx_kp_u_NOT_NULL_3, __pyx_kp_u_UNIQUE_3, __pyx_kp_u_PRIMARY_KEY_3, __pyx_kp_u_DEFAULT_3); if (unlikely(!__pyx_tuple__8)) __PYX_ERR(0, 253, __pyx_L1_error)
+  __pyx_tuple__8 = PyTuple_Pack(4, __pyx_kp_u_NOT_NULL_3, __pyx_kp_u_UNIQUE_3, __pyx_kp_u_PRIMARY_KEY_3, __pyx_kp_u_DEFAULT_3); if (unlikely(!__pyx_tuple__8)) __PYX_ERR(0, 252, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__8);
   __Pyx_GIVEREF(__pyx_tuple__8);
 
-  /* "sqliteplus/core/schemas_cy.pyx":25
+  /* "sqliteplus/core/schemas_cy.pyx":24
  * 
  * 
  * def _py_is_valid_sqlite_identifier(identifier):             # <<<<<<<<<<<<<<
  *     if not isinstance(identifier, str):
  *         return False
  */
-  __pyx_tuple__9 = PyTuple_Pack(3, __pyx_n_s_identifier, __pyx_n_s_ident, __pyx_n_s_token); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 25, __pyx_L1_error)
+  __pyx_tuple__9 = PyTuple_Pack(3, __pyx_n_s_identifier, __pyx_n_s_ident, __pyx_n_s_token); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 24, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
-  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sqliteplus_core_schemas_cy_pyx, __pyx_n_s_py_is_valid_sqlite_identifier, 25, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 25, __pyx_L1_error)
+  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sqliteplus_core_schemas_cy_pyx, __pyx_n_s_py_is_valid_sqlite_identifier, 24, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 24, __pyx_L1_error)
 
-  /* "sqliteplus/core/schemas_cy.pyx":133
+  /* "sqliteplus/core/schemas_cy.pyx":132
  * 
  * 
  * def _py_normalized_columns(columns):             # <<<<<<<<<<<<<<
  *     if not columns:
  *         raise ValueError("Se requiere al menos una columna para crear la tabla")
  */
-  __pyx_tuple__11 = PyTuple_Pack(28, __pyx_n_s_columns, __pyx_n_s_sanitized_columns, __pyx_n_s_seen_names, __pyx_n_s_raw_name, __pyx_n_s_raw_type, __pyx_n_s_normalized_name, __pyx_n_s_normalized_key, __pyx_n_s_normalized_original, __pyx_n_s_base_original, __pyx_n_s_rest_original_tokens, __pyx_n_s_base, __pyx_n_s_rest_original, __pyx_n_s_rest_upper, __pyx_n_s_not_null, __pyx_n_s_unique, __pyx_n_s_primary_key, __pyx_n_s_autoincrement, __pyx_n_s_default_expr, __pyx_n_s_idx, __pyx_n_s_length, __pyx_n_s_expr_start, __pyx_n_s_expr_end, __pyx_n_s_potential_ends, __pyx_n_s_keyword_pos, __pyx_n_s_normalized_parts, __pyx_n_s_token, __pyx_n_s_genexpr, __pyx_n_s_genexpr); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 133, __pyx_L1_error)
+  __pyx_tuple__11 = PyTuple_Pack(28, __pyx_n_s_columns, __pyx_n_s_sanitized_columns, __pyx_n_s_seen_names, __pyx_n_s_raw_name, __pyx_n_s_raw_type, __pyx_n_s_normalized_name, __pyx_n_s_normalized_key, __pyx_n_s_normalized_original, __pyx_n_s_base_original, __pyx_n_s_rest_original_tokens, __pyx_n_s_base, __pyx_n_s_rest_original, __pyx_n_s_rest_upper, __pyx_n_s_not_null, __pyx_n_s_unique, __pyx_n_s_primary_key, __pyx_n_s_autoincrement, __pyx_n_s_default_expr, __pyx_n_s_idx, __pyx_n_s_length, __pyx_n_s_expr_start, __pyx_n_s_expr_end, __pyx_n_s_potential_ends, __pyx_n_s_keyword_pos, __pyx_n_s_normalized_parts, __pyx_n_s_token, __pyx_n_s_genexpr, __pyx_n_s_genexpr); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 132, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
-  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(1, 0, 28, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sqliteplus_core_schemas_cy_pyx, __pyx_n_s_py_normalized_columns, 133, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 133, __pyx_L1_error)
+  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(1, 0, 28, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sqliteplus_core_schemas_cy_pyx, __pyx_n_s_py_normalized_columns, 132, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 132, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -6320,7 +6362,7 @@ static int __Pyx_modinit_type_init_code(void) {
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__Pyx_modinit_type_init_code", 0);
   /*--- Type init code ---*/
-  if (PyType_Ready(&__pyx_type_10sqliteplus_4core_10schemas_cy___pyx_scope_struct___py_normalized_columns) < 0) __PYX_ERR(0, 133, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_10sqliteplus_4core_10schemas_cy___pyx_scope_struct___py_normalized_columns) < 0) __PYX_ERR(0, 132, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
   __pyx_type_10sqliteplus_4core_10schemas_cy___pyx_scope_struct___py_normalized_columns.tp_print = 0;
   #endif
@@ -6328,7 +6370,7 @@ static int __Pyx_modinit_type_init_code(void) {
     __pyx_type_10sqliteplus_4core_10schemas_cy___pyx_scope_struct___py_normalized_columns.tp_getattro = __Pyx_PyObject_GenericGetAttrNoDict;
   }
   __pyx_ptype_10sqliteplus_4core_10schemas_cy___pyx_scope_struct___py_normalized_columns = &__pyx_type_10sqliteplus_4core_10schemas_cy___pyx_scope_struct___py_normalized_columns;
-  if (PyType_Ready(&__pyx_type_10sqliteplus_4core_10schemas_cy___pyx_scope_struct_1_genexpr) < 0) __PYX_ERR(0, 170, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_10sqliteplus_4core_10schemas_cy___pyx_scope_struct_1_genexpr) < 0) __PYX_ERR(0, 169, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
   __pyx_type_10sqliteplus_4core_10schemas_cy___pyx_scope_struct_1_genexpr.tp_print = 0;
   #endif
@@ -6353,31 +6395,10 @@ static int __Pyx_modinit_type_import_code(void) {
 
 static int __Pyx_modinit_variable_import_code(void) {
   __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__Pyx_modinit_variable_import_code", 0);
   /*--- Variable import code ---*/
-  __pyx_t_1 = PyImport_ImportModule("sqliteplus.core._schemas_constants"); if (!__pyx_t_1) __PYX_ERR(0, 1, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (__Pyx_ImportVoidPtr_0_29_36(__pyx_t_1, "SQLITE_IDENTIFIER_PATTERN", (void **)&__pyx_vp_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_PATTERN, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ImportVoidPtr_0_29_36(__pyx_t_1, "SQLITE_IDENTIFIER_DISALLOWED_TOKENS", (void **)&__pyx_vp_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_DISALLOWED_TOKENS, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ImportVoidPtr_0_29_36(__pyx_t_1, "ALLOWED_BASE_TYPES", (void **)&__pyx_vp_10sqliteplus_4core_18_schemas_constants_ALLOWED_BASE_TYPES, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ImportVoidPtr_0_29_36(__pyx_t_1, "DEFAULT_EXPR_NUMERIC_PATTERN", (void **)&__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_NUMERIC_PATTERN, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ImportVoidPtr_0_29_36(__pyx_t_1, "DEFAULT_EXPR_STRING_PATTERN", (void **)&__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_STRING_PATTERN, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ImportVoidPtr_0_29_36(__pyx_t_1, "DEFAULT_EXPR_ALLOWED_LITERALS", (void **)&__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_LITERALS, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ImportVoidPtr_0_29_36(__pyx_t_1, "DEFAULT_EXPR_ALLOWED_FUNCTIONS", (void **)&__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_FUNCTIONS, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ImportVoidPtr_0_29_36(__pyx_t_1, "DEFAULT_EXPR_DISALLOWED_TOKENS", (void **)&__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_TOKENS, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ImportVoidPtr_0_29_36(__pyx_t_1, "DEFAULT_EXPR_DISALLOWED_KEYWORDS", (void **)&__pyx_vp_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_KEYWORDS, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ImportVoidPtr_0_29_36(__pyx_t_1, "FUNCTION_CALL_PATTERN", (void **)&__pyx_vp_10sqliteplus_4core_18_schemas_constants_FUNCTION_CALL_PATTERN, "PyObject *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_RefNannyFinishContext();
   return 0;
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_RefNannyFinishContext();
-  return -1;
 }
 
 static int __Pyx_modinit_function_import_code(void) {
@@ -6483,6 +6504,7 @@ static CYTHON_SMALL_CODE int __pyx_pymod_exec_schemas_cy(PyObject *__pyx_pyinit_
 #endif
 {
   PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -6581,178 +6603,247 @@ if (!__Pyx_RefNanny) {
   (void)__Pyx_modinit_function_export_code();
   if (unlikely(__Pyx_modinit_type_init_code() < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
   (void)__Pyx_modinit_type_import_code();
-  if (unlikely(__Pyx_modinit_variable_import_code() < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+  (void)__Pyx_modinit_variable_import_code();
   (void)__Pyx_modinit_function_import_code();
   /*--- Execution code ---*/
   #if defined(__Pyx_Generator_USED) || defined(__Pyx_Coroutine_USED)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "sqliteplus/core/schemas_cy.pyx":13
+  /* "sqliteplus/core/schemas_cy.pyx":9
+ * 
+ * cimport cython
+ * from sqliteplus.core import _schemas_constants as _const             # <<<<<<<<<<<<<<
  * 
  * 
- * cdef tuple _DISALLOWED_TOKENS = _schemas_constants.SQLITE_IDENTIFIER_DISALLOWED_TOKENS             # <<<<<<<<<<<<<<
- * cdef object _IDENTIFIER_PATTERN = _schemas_constants.SQLITE_IDENTIFIER_PATTERN
- * cdef object _FUNCTION_CALL_PATTERN = _schemas_constants.FUNCTION_CALL_PATTERN
  */
-  __Pyx_INCREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_DISALLOWED_TOKENS);
+  __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 9, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_INCREF(__pyx_n_s_schemas_constants);
+  __Pyx_GIVEREF(__pyx_n_s_schemas_constants);
+  PyList_SET_ITEM(__pyx_t_1, 0, __pyx_n_s_schemas_constants);
+  __pyx_t_2 = __Pyx_Import(__pyx_n_s_sqliteplus_core, __pyx_t_1, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 9, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_2, __pyx_n_s_schemas_constants); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 9, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_const, __pyx_t_1) < 0) __PYX_ERR(0, 9, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+  /* "sqliteplus/core/schemas_cy.pyx":12
+ * 
+ * 
+ * cdef tuple _DISALLOWED_TOKENS = _const.SQLITE_IDENTIFIER_DISALLOWED_TOKENS             # <<<<<<<<<<<<<<
+ * cdef object _IDENTIFIER_PATTERN = _const.SQLITE_IDENTIFIER_PATTERN
+ * cdef object _FUNCTION_CALL_PATTERN = _const.FUNCTION_CALL_PATTERN
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_const); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 12, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_SQLITE_IDENTIFIER_DISALLOWED_TOK); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 12, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  if (!(likely(PyTuple_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_1)->tp_name), 0))) __PYX_ERR(0, 12, __pyx_L1_error)
   __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__DISALLOWED_TOKENS);
-  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DISALLOWED_TOKENS, __pyx_v_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_DISALLOWED_TOKENS);
-  __Pyx_GIVEREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_DISALLOWED_TOKENS);
-
-  /* "sqliteplus/core/schemas_cy.pyx":14
- * 
- * cdef tuple _DISALLOWED_TOKENS = _schemas_constants.SQLITE_IDENTIFIER_DISALLOWED_TOKENS
- * cdef object _IDENTIFIER_PATTERN = _schemas_constants.SQLITE_IDENTIFIER_PATTERN             # <<<<<<<<<<<<<<
- * cdef object _FUNCTION_CALL_PATTERN = _schemas_constants.FUNCTION_CALL_PATTERN
- * cdef tuple _DEFAULT_DISALLOWED_TOKENS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_TOKENS
- */
-  __Pyx_INCREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_PATTERN);
-  __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__IDENTIFIER_PATTERN);
-  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__IDENTIFIER_PATTERN, __pyx_v_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_PATTERN);
-  __Pyx_GIVEREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_SQLITE_IDENTIFIER_PATTERN);
-
-  /* "sqliteplus/core/schemas_cy.pyx":15
- * cdef tuple _DISALLOWED_TOKENS = _schemas_constants.SQLITE_IDENTIFIER_DISALLOWED_TOKENS
- * cdef object _IDENTIFIER_PATTERN = _schemas_constants.SQLITE_IDENTIFIER_PATTERN
- * cdef object _FUNCTION_CALL_PATTERN = _schemas_constants.FUNCTION_CALL_PATTERN             # <<<<<<<<<<<<<<
- * cdef tuple _DEFAULT_DISALLOWED_TOKENS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_TOKENS
- * cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_KEYWORDS
- */
-  __Pyx_INCREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_FUNCTION_CALL_PATTERN);
-  __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__FUNCTION_CALL_PATTERN);
-  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__FUNCTION_CALL_PATTERN, __pyx_v_10sqliteplus_4core_18_schemas_constants_FUNCTION_CALL_PATTERN);
-  __Pyx_GIVEREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_FUNCTION_CALL_PATTERN);
-
-  /* "sqliteplus/core/schemas_cy.pyx":16
- * cdef object _IDENTIFIER_PATTERN = _schemas_constants.SQLITE_IDENTIFIER_PATTERN
- * cdef object _FUNCTION_CALL_PATTERN = _schemas_constants.FUNCTION_CALL_PATTERN
- * cdef tuple _DEFAULT_DISALLOWED_TOKENS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_TOKENS             # <<<<<<<<<<<<<<
- * cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_KEYWORDS
- * cdef object _DEFAULT_NUMERIC_PATTERN = _schemas_constants.DEFAULT_EXPR_NUMERIC_PATTERN
- */
-  if (!(likely(PyTuple_CheckExact(__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_TOKENS))||((__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_TOKENS) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_TOKENS)->tp_name), 0))) __PYX_ERR(0, 16, __pyx_L1_error)
-  __pyx_t_1 = __pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_TOKENS;
-  __Pyx_INCREF(__pyx_t_1);
-  __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_DISALLOWED_TOKENS);
-  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_DISALLOWED_TOKENS, ((PyObject*)__pyx_t_1));
+  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DISALLOWED_TOKENS, ((PyObject*)__pyx_t_1));
   __Pyx_GIVEREF(__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":17
- * cdef object _FUNCTION_CALL_PATTERN = _schemas_constants.FUNCTION_CALL_PATTERN
- * cdef tuple _DEFAULT_DISALLOWED_TOKENS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_TOKENS
- * cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_KEYWORDS             # <<<<<<<<<<<<<<
- * cdef object _DEFAULT_NUMERIC_PATTERN = _schemas_constants.DEFAULT_EXPR_NUMERIC_PATTERN
- * cdef object _DEFAULT_STRING_PATTERN = _schemas_constants.DEFAULT_EXPR_STRING_PATTERN
+  /* "sqliteplus/core/schemas_cy.pyx":13
+ * 
+ * cdef tuple _DISALLOWED_TOKENS = _const.SQLITE_IDENTIFIER_DISALLOWED_TOKENS
+ * cdef object _IDENTIFIER_PATTERN = _const.SQLITE_IDENTIFIER_PATTERN             # <<<<<<<<<<<<<<
+ * cdef object _FUNCTION_CALL_PATTERN = _const.FUNCTION_CALL_PATTERN
+ * cdef tuple _DEFAULT_DISALLOWED_TOKENS = _const.DEFAULT_EXPR_DISALLOWED_TOKENS
  */
-  if (!(likely(PyTuple_CheckExact(__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_KEYWORDS))||((__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_KEYWORDS) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_KEYWORDS)->tp_name), 0))) __PYX_ERR(0, 17, __pyx_L1_error)
-  __pyx_t_1 = __pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_DISALLOWED_KEYWORDS;
-  __Pyx_INCREF(__pyx_t_1);
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_const); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_SQLITE_IDENTIFIER_PATTERN); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__IDENTIFIER_PATTERN);
+  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__IDENTIFIER_PATTERN, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
+
+  /* "sqliteplus/core/schemas_cy.pyx":14
+ * cdef tuple _DISALLOWED_TOKENS = _const.SQLITE_IDENTIFIER_DISALLOWED_TOKENS
+ * cdef object _IDENTIFIER_PATTERN = _const.SQLITE_IDENTIFIER_PATTERN
+ * cdef object _FUNCTION_CALL_PATTERN = _const.FUNCTION_CALL_PATTERN             # <<<<<<<<<<<<<<
+ * cdef tuple _DEFAULT_DISALLOWED_TOKENS = _const.DEFAULT_EXPR_DISALLOWED_TOKENS
+ * cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _const.DEFAULT_EXPR_DISALLOWED_KEYWORDS
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_const); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 14, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_FUNCTION_CALL_PATTERN); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 14, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__FUNCTION_CALL_PATTERN);
+  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__FUNCTION_CALL_PATTERN, __pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "sqliteplus/core/schemas_cy.pyx":15
+ * cdef object _IDENTIFIER_PATTERN = _const.SQLITE_IDENTIFIER_PATTERN
+ * cdef object _FUNCTION_CALL_PATTERN = _const.FUNCTION_CALL_PATTERN
+ * cdef tuple _DEFAULT_DISALLOWED_TOKENS = _const.DEFAULT_EXPR_DISALLOWED_TOKENS             # <<<<<<<<<<<<<<
+ * cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _const.DEFAULT_EXPR_DISALLOWED_KEYWORDS
+ * cdef object _DEFAULT_NUMERIC_PATTERN = _const.DEFAULT_EXPR_NUMERIC_PATTERN
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_const); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 15, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_DEFAULT_EXPR_DISALLOWED_TOKENS); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 15, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (!(likely(PyTuple_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_2)->tp_name), 0))) __PYX_ERR(0, 15, __pyx_L1_error)
+  __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_DISALLOWED_TOKENS);
+  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_DISALLOWED_TOKENS, ((PyObject*)__pyx_t_2));
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
+
+  /* "sqliteplus/core/schemas_cy.pyx":16
+ * cdef object _FUNCTION_CALL_PATTERN = _const.FUNCTION_CALL_PATTERN
+ * cdef tuple _DEFAULT_DISALLOWED_TOKENS = _const.DEFAULT_EXPR_DISALLOWED_TOKENS
+ * cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _const.DEFAULT_EXPR_DISALLOWED_KEYWORDS             # <<<<<<<<<<<<<<
+ * cdef object _DEFAULT_NUMERIC_PATTERN = _const.DEFAULT_EXPR_NUMERIC_PATTERN
+ * cdef object _DEFAULT_STRING_PATTERN = _const.DEFAULT_EXPR_STRING_PATTERN
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_const); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 16, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_DEFAULT_EXPR_DISALLOWED_KEYWORDS); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 16, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  if (!(likely(PyTuple_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||((void)PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_1)->tp_name), 0))) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_DISALLOWED_KEYWORDS);
   __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_DISALLOWED_KEYWORDS, ((PyObject*)__pyx_t_1));
   __Pyx_GIVEREF(__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":18
- * cdef tuple _DEFAULT_DISALLOWED_TOKENS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_TOKENS
- * cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_KEYWORDS
- * cdef object _DEFAULT_NUMERIC_PATTERN = _schemas_constants.DEFAULT_EXPR_NUMERIC_PATTERN             # <<<<<<<<<<<<<<
- * cdef object _DEFAULT_STRING_PATTERN = _schemas_constants.DEFAULT_EXPR_STRING_PATTERN
- * cdef object _DEFAULT_LITERALS = _schemas_constants.DEFAULT_EXPR_ALLOWED_LITERALS
+  /* "sqliteplus/core/schemas_cy.pyx":17
+ * cdef tuple _DEFAULT_DISALLOWED_TOKENS = _const.DEFAULT_EXPR_DISALLOWED_TOKENS
+ * cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _const.DEFAULT_EXPR_DISALLOWED_KEYWORDS
+ * cdef object _DEFAULT_NUMERIC_PATTERN = _const.DEFAULT_EXPR_NUMERIC_PATTERN             # <<<<<<<<<<<<<<
+ * cdef object _DEFAULT_STRING_PATTERN = _const.DEFAULT_EXPR_STRING_PATTERN
+ * cdef object _DEFAULT_LITERALS = _const.DEFAULT_EXPR_ALLOWED_LITERALS
  */
-  __Pyx_INCREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_NUMERIC_PATTERN);
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_const); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 17, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_DEFAULT_EXPR_NUMERIC_PATTERN); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 17, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_NUMERIC_PATTERN);
-  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_NUMERIC_PATTERN, __pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_NUMERIC_PATTERN);
-  __Pyx_GIVEREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_NUMERIC_PATTERN);
+  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_NUMERIC_PATTERN, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
+
+  /* "sqliteplus/core/schemas_cy.pyx":18
+ * cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _const.DEFAULT_EXPR_DISALLOWED_KEYWORDS
+ * cdef object _DEFAULT_NUMERIC_PATTERN = _const.DEFAULT_EXPR_NUMERIC_PATTERN
+ * cdef object _DEFAULT_STRING_PATTERN = _const.DEFAULT_EXPR_STRING_PATTERN             # <<<<<<<<<<<<<<
+ * cdef object _DEFAULT_LITERALS = _const.DEFAULT_EXPR_ALLOWED_LITERALS
+ * cdef object _DEFAULT_FUNCTIONS = _const.DEFAULT_EXPR_ALLOWED_FUNCTIONS
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_const); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 18, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_DEFAULT_EXPR_STRING_PATTERN); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_STRING_PATTERN);
+  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_STRING_PATTERN, __pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_1);
+  __pyx_t_1 = 0;
 
   /* "sqliteplus/core/schemas_cy.pyx":19
- * cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_KEYWORDS
- * cdef object _DEFAULT_NUMERIC_PATTERN = _schemas_constants.DEFAULT_EXPR_NUMERIC_PATTERN
- * cdef object _DEFAULT_STRING_PATTERN = _schemas_constants.DEFAULT_EXPR_STRING_PATTERN             # <<<<<<<<<<<<<<
- * cdef object _DEFAULT_LITERALS = _schemas_constants.DEFAULT_EXPR_ALLOWED_LITERALS
- * cdef object _DEFAULT_FUNCTIONS = _schemas_constants.DEFAULT_EXPR_ALLOWED_FUNCTIONS
+ * cdef object _DEFAULT_NUMERIC_PATTERN = _const.DEFAULT_EXPR_NUMERIC_PATTERN
+ * cdef object _DEFAULT_STRING_PATTERN = _const.DEFAULT_EXPR_STRING_PATTERN
+ * cdef object _DEFAULT_LITERALS = _const.DEFAULT_EXPR_ALLOWED_LITERALS             # <<<<<<<<<<<<<<
+ * cdef object _DEFAULT_FUNCTIONS = _const.DEFAULT_EXPR_ALLOWED_FUNCTIONS
+ * cdef object _ALLOWED_BASE_TYPES = _const.ALLOWED_BASE_TYPES
  */
-  __Pyx_INCREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_STRING_PATTERN);
-  __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_STRING_PATTERN);
-  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_STRING_PATTERN, __pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_STRING_PATTERN);
-  __Pyx_GIVEREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_STRING_PATTERN);
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_const); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 19, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_DEFAULT_EXPR_ALLOWED_LITERALS); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 19, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_LITERALS);
+  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_LITERALS, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
 
   /* "sqliteplus/core/schemas_cy.pyx":20
- * cdef object _DEFAULT_NUMERIC_PATTERN = _schemas_constants.DEFAULT_EXPR_NUMERIC_PATTERN
- * cdef object _DEFAULT_STRING_PATTERN = _schemas_constants.DEFAULT_EXPR_STRING_PATTERN
- * cdef object _DEFAULT_LITERALS = _schemas_constants.DEFAULT_EXPR_ALLOWED_LITERALS             # <<<<<<<<<<<<<<
- * cdef object _DEFAULT_FUNCTIONS = _schemas_constants.DEFAULT_EXPR_ALLOWED_FUNCTIONS
- * cdef object _ALLOWED_BASE_TYPES = _schemas_constants.ALLOWED_BASE_TYPES
+ * cdef object _DEFAULT_STRING_PATTERN = _const.DEFAULT_EXPR_STRING_PATTERN
+ * cdef object _DEFAULT_LITERALS = _const.DEFAULT_EXPR_ALLOWED_LITERALS
+ * cdef object _DEFAULT_FUNCTIONS = _const.DEFAULT_EXPR_ALLOWED_FUNCTIONS             # <<<<<<<<<<<<<<
+ * cdef object _ALLOWED_BASE_TYPES = _const.ALLOWED_BASE_TYPES
+ * 
  */
-  __Pyx_INCREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_LITERALS);
-  __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_LITERALS);
-  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_LITERALS, __pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_LITERALS);
-  __Pyx_GIVEREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_LITERALS);
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_const); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 20, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_DEFAULT_EXPR_ALLOWED_FUNCTIONS); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 20, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_FUNCTIONS);
+  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_FUNCTIONS, __pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_1);
+  __pyx_t_1 = 0;
 
   /* "sqliteplus/core/schemas_cy.pyx":21
- * cdef object _DEFAULT_STRING_PATTERN = _schemas_constants.DEFAULT_EXPR_STRING_PATTERN
- * cdef object _DEFAULT_LITERALS = _schemas_constants.DEFAULT_EXPR_ALLOWED_LITERALS
- * cdef object _DEFAULT_FUNCTIONS = _schemas_constants.DEFAULT_EXPR_ALLOWED_FUNCTIONS             # <<<<<<<<<<<<<<
- * cdef object _ALLOWED_BASE_TYPES = _schemas_constants.ALLOWED_BASE_TYPES
- * 
- */
-  __Pyx_INCREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_FUNCTIONS);
-  __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_FUNCTIONS);
-  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__DEFAULT_FUNCTIONS, __pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_FUNCTIONS);
-  __Pyx_GIVEREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_DEFAULT_EXPR_ALLOWED_FUNCTIONS);
-
-  /* "sqliteplus/core/schemas_cy.pyx":22
- * cdef object _DEFAULT_LITERALS = _schemas_constants.DEFAULT_EXPR_ALLOWED_LITERALS
- * cdef object _DEFAULT_FUNCTIONS = _schemas_constants.DEFAULT_EXPR_ALLOWED_FUNCTIONS
- * cdef object _ALLOWED_BASE_TYPES = _schemas_constants.ALLOWED_BASE_TYPES             # <<<<<<<<<<<<<<
+ * cdef object _DEFAULT_LITERALS = _const.DEFAULT_EXPR_ALLOWED_LITERALS
+ * cdef object _DEFAULT_FUNCTIONS = _const.DEFAULT_EXPR_ALLOWED_FUNCTIONS
+ * cdef object _ALLOWED_BASE_TYPES = _const.ALLOWED_BASE_TYPES             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __Pyx_INCREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_ALLOWED_BASE_TYPES);
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_const); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 21, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ALLOWED_BASE_TYPES); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 21, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_XGOTREF(__pyx_v_10sqliteplus_4core_10schemas_cy__ALLOWED_BASE_TYPES);
-  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__ALLOWED_BASE_TYPES, __pyx_v_10sqliteplus_4core_18_schemas_constants_ALLOWED_BASE_TYPES);
-  __Pyx_GIVEREF(__pyx_v_10sqliteplus_4core_18_schemas_constants_ALLOWED_BASE_TYPES);
+  __Pyx_DECREF_SET(__pyx_v_10sqliteplus_4core_10schemas_cy__ALLOWED_BASE_TYPES, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":25
+  /* "sqliteplus/core/schemas_cy.pyx":24
  * 
  * 
  * def _py_is_valid_sqlite_identifier(identifier):             # <<<<<<<<<<<<<<
  *     if not isinstance(identifier, str):
  *         return False
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_10sqliteplus_4core_10schemas_cy_1_py_is_valid_sqlite_identifier, NULL, __pyx_n_s_sqliteplus_core_schemas_cy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 25, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_py_is_valid_sqlite_identifier, __pyx_t_1) < 0) __PYX_ERR(0, 25, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_10sqliteplus_4core_10schemas_cy_1_py_is_valid_sqlite_identifier, NULL, __pyx_n_s_sqliteplus_core_schemas_cy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 24, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_py_is_valid_sqlite_identifier, __pyx_t_2) < 0) __PYX_ERR(0, 24, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "sqliteplus/core/schemas_cy.pyx":133
+  /* "sqliteplus/core/schemas_cy.pyx":132
  * 
  * 
  * def _py_normalized_columns(columns):             # <<<<<<<<<<<<<<
  *     if not columns:
  *         raise ValueError("Se requiere al menos una columna para crear la tabla")
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_10sqliteplus_4core_10schemas_cy_11_py_normalized_columns, NULL, __pyx_n_s_sqliteplus_core_schemas_cy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 133, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_py_normalized_columns, __pyx_t_1) < 0) __PYX_ERR(0, 133, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_10sqliteplus_4core_10schemas_cy_11_py_normalized_columns, NULL, __pyx_n_s_sqliteplus_core_schemas_cy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 132, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_py_normalized_columns, __pyx_t_2) < 0) __PYX_ERR(0, 132, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "sqliteplus/core/schemas_cy.pyx":1
  * # cython: language_level=3             # <<<<<<<<<<<<<<
  * # cython: boundscheck=False
  * # cython: wraparound=False
  */
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_test, __pyx_t_1) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_2 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_test, __pyx_t_2) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /*--- Wrapped vars code ---*/
 
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
   if (__pyx_m) {
     if (__pyx_d) {
       __Pyx_AddTraceback("init sqliteplus.core.schemas_cy", __pyx_clineno, __pyx_lineno, __pyx_filename);
@@ -8385,6 +8476,85 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_GenericGetAttrNoDict(PyObject* obj
 }
 #endif
 
+/* Import */
+static PyObject *__Pyx_Import(PyObject *name, PyObject *from_list, int level) {
+    PyObject *empty_list = 0;
+    PyObject *module = 0;
+    PyObject *global_dict = 0;
+    PyObject *empty_dict = 0;
+    PyObject *list;
+    #if PY_MAJOR_VERSION < 3
+    PyObject *py_import;
+    py_import = __Pyx_PyObject_GetAttrStr(__pyx_b, __pyx_n_s_import);
+    if (!py_import)
+        goto bad;
+    #endif
+    if (from_list)
+        list = from_list;
+    else {
+        empty_list = PyList_New(0);
+        if (!empty_list)
+            goto bad;
+        list = empty_list;
+    }
+    global_dict = PyModule_GetDict(__pyx_m);
+    if (!global_dict)
+        goto bad;
+    empty_dict = PyDict_New();
+    if (!empty_dict)
+        goto bad;
+    {
+        #if PY_MAJOR_VERSION >= 3
+        if (level == -1) {
+            if ((1) && (strchr(__Pyx_MODULE_NAME, '.'))) {
+                module = PyImport_ImportModuleLevelObject(
+                    name, global_dict, empty_dict, list, 1);
+                if (!module) {
+                    if (!PyErr_ExceptionMatches(PyExc_ImportError))
+                        goto bad;
+                    PyErr_Clear();
+                }
+            }
+            level = 0;
+        }
+        #endif
+        if (!module) {
+            #if PY_MAJOR_VERSION < 3
+            PyObject *py_level = PyInt_FromLong(level);
+            if (!py_level)
+                goto bad;
+            module = PyObject_CallFunctionObjArgs(py_import,
+                name, global_dict, empty_dict, list, py_level, (PyObject *)NULL);
+            Py_DECREF(py_level);
+            #else
+            module = PyImport_ImportModuleLevelObject(
+                name, global_dict, empty_dict, list, level);
+            #endif
+        }
+    }
+bad:
+    #if PY_MAJOR_VERSION < 3
+    Py_XDECREF(py_import);
+    #endif
+    Py_XDECREF(empty_list);
+    Py_XDECREF(empty_dict);
+    return module;
+}
+
+/* ImportFrom */
+static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name) {
+    PyObject* value = __Pyx_PyObject_GetAttrStr(module, name);
+    if (unlikely(!value) && PyErr_ExceptionMatches(PyExc_AttributeError)) {
+        PyErr_Format(PyExc_ImportError,
+        #if PY_MAJOR_VERSION < 3
+            "cannot import name %.230s", PyString_AS_STRING(name));
+        #else
+            "cannot import name %S", name);
+        #endif
+    }
+    return value;
+}
+
 /* PyDictVersioning */
 #if CYTHON_USE_DICT_VERSIONS && CYTHON_USE_TYPE_SLOTS
 static CYTHON_INLINE PY_UINT64_T __Pyx_get_tp_dict_version(PyObject *obj) {
@@ -8410,6 +8580,41 @@ static CYTHON_INLINE int __Pyx_object_dict_version_matches(PyObject* obj, PY_UIN
     return obj_dict_version == __Pyx_get_object_dict_version(obj);
 }
 #endif
+
+/* GetModuleGlobalName */
+#if CYTHON_USE_DICT_VERSIONS
+static PyObject *__Pyx__GetModuleGlobalName(PyObject *name, PY_UINT64_T *dict_version, PyObject **dict_cached_value)
+#else
+static CYTHON_INLINE PyObject *__Pyx__GetModuleGlobalName(PyObject *name)
+#endif
+{
+    PyObject *result;
+#if !CYTHON_AVOID_BORROWED_REFS
+#if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030500A1
+    result = _PyDict_GetItem_KnownHash(__pyx_d, name, ((PyASCIIObject *) name)->hash);
+    __PYX_UPDATE_DICT_CACHE(__pyx_d, result, *dict_cached_value, *dict_version)
+    if (likely(result)) {
+        return __Pyx_NewRef(result);
+    } else if (unlikely(PyErr_Occurred())) {
+        return NULL;
+    }
+#else
+    result = PyDict_GetItem(__pyx_d, name);
+    __PYX_UPDATE_DICT_CACHE(__pyx_d, result, *dict_cached_value, *dict_version)
+    if (likely(result)) {
+        return __Pyx_NewRef(result);
+    }
+#endif
+#else
+    result = PyObject_GetItem(__pyx_d, name);
+    __PYX_UPDATE_DICT_CACHE(__pyx_d, result, *dict_cached_value, *dict_version)
+    if (likely(result)) {
+        return __Pyx_NewRef(result);
+    }
+    PyErr_Clear();
+#endif
+    return __Pyx_GetBuiltinName(name);
+}
 
 /* CLineInTraceback */
 #ifndef CYTHON_CLINE_IN_TRACEBACK
@@ -10374,55 +10579,6 @@ static int __Pyx_check_binary_version(void) {
     }
     return 0;
 }
-
-/* VoidPtrImport */
-#ifndef __PYX_HAVE_RT_ImportVoidPtr_0_29_36
-#define __PYX_HAVE_RT_ImportVoidPtr_0_29_36
-static int __Pyx_ImportVoidPtr_0_29_36(PyObject *module, const char *name, void **p, const char *sig) {
-    PyObject *d = 0;
-    PyObject *cobj = 0;
-    d = PyObject_GetAttrString(module, (char *)"__pyx_capi__");
-    if (!d)
-        goto bad;
-    cobj = PyDict_GetItemString(d, name);
-    if (!cobj) {
-        PyErr_Format(PyExc_ImportError,
-            "%.200s does not export expected C variable %.200s",
-                PyModule_GetName(module), name);
-        goto bad;
-    }
-#if PY_VERSION_HEX >= 0x02070000
-    if (!PyCapsule_IsValid(cobj, sig)) {
-        PyErr_Format(PyExc_TypeError,
-            "C variable %.200s.%.200s has wrong signature (expected %.500s, got %.500s)",
-             PyModule_GetName(module), name, sig, PyCapsule_GetName(cobj));
-        goto bad;
-    }
-    *p = PyCapsule_GetPointer(cobj, sig);
-#else
-    {const char *desc, *s1, *s2;
-    desc = (const char *)PyCObject_GetDesc(cobj);
-    if (!desc)
-        goto bad;
-    s1 = desc; s2 = sig;
-    while (*s1 != '\0' && *s1 == *s2) { s1++; s2++; }
-    if (*s1 != *s2) {
-        PyErr_Format(PyExc_TypeError,
-            "C variable %.200s.%.200s has wrong signature (expected %.500s, got %.500s)",
-             PyModule_GetName(module), name, sig, desc);
-        goto bad;
-    }
-    *p = PyCObject_AsVoidPtr(cobj);}
-#endif
-    if (!(*p))
-        goto bad;
-    Py_DECREF(d);
-    return 0;
-bad:
-    Py_XDECREF(d);
-    return -1;
-}
-#endif
 
 /* InitStrings */
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t) {

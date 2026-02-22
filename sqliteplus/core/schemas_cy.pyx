@@ -6,20 +6,19 @@
 """Adaptadores y helpers acelerados para ``schemas.py``."""
 
 cimport cython
+from sqliteplus.core import _schemas_constants as _const
 
-from sqliteplus.core cimport _schemas_constants
 
-
-cdef tuple _DISALLOWED_TOKENS = _schemas_constants.SQLITE_IDENTIFIER_DISALLOWED_TOKENS
-cdef object _IDENTIFIER_PATTERN = _schemas_constants.SQLITE_IDENTIFIER_PATTERN
-cdef object _FUNCTION_CALL_PATTERN = _schemas_constants.FUNCTION_CALL_PATTERN
-cdef tuple _DEFAULT_DISALLOWED_TOKENS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_TOKENS
-cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _schemas_constants.DEFAULT_EXPR_DISALLOWED_KEYWORDS
-cdef object _DEFAULT_NUMERIC_PATTERN = _schemas_constants.DEFAULT_EXPR_NUMERIC_PATTERN
-cdef object _DEFAULT_STRING_PATTERN = _schemas_constants.DEFAULT_EXPR_STRING_PATTERN
-cdef object _DEFAULT_LITERALS = _schemas_constants.DEFAULT_EXPR_ALLOWED_LITERALS
-cdef object _DEFAULT_FUNCTIONS = _schemas_constants.DEFAULT_EXPR_ALLOWED_FUNCTIONS
-cdef object _ALLOWED_BASE_TYPES = _schemas_constants.ALLOWED_BASE_TYPES
+cdef tuple _DISALLOWED_TOKENS = _const.SQLITE_IDENTIFIER_DISALLOWED_TOKENS
+cdef object _IDENTIFIER_PATTERN = _const.SQLITE_IDENTIFIER_PATTERN
+cdef object _FUNCTION_CALL_PATTERN = _const.FUNCTION_CALL_PATTERN
+cdef tuple _DEFAULT_DISALLOWED_TOKENS = _const.DEFAULT_EXPR_DISALLOWED_TOKENS
+cdef tuple _DEFAULT_DISALLOWED_KEYWORDS = _const.DEFAULT_EXPR_DISALLOWED_KEYWORDS
+cdef object _DEFAULT_NUMERIC_PATTERN = _const.DEFAULT_EXPR_NUMERIC_PATTERN
+cdef object _DEFAULT_STRING_PATTERN = _const.DEFAULT_EXPR_STRING_PATTERN
+cdef object _DEFAULT_LITERALS = _const.DEFAULT_EXPR_ALLOWED_LITERALS
+cdef object _DEFAULT_FUNCTIONS = _const.DEFAULT_EXPR_ALLOWED_FUNCTIONS
+cdef object _ALLOWED_BASE_TYPES = _const.ALLOWED_BASE_TYPES
 
 
 def _py_is_valid_sqlite_identifier(identifier):
