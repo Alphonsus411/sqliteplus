@@ -250,6 +250,8 @@ Comandos locales equivalentes:
   - python .trae/verify_replication.py
   - python .trae/verify_pure_mode.py
 
+Ambos workflows ejecutan una matriz de Python `3.10`, `3.11` y `3.12` para asegurar compatibilidad.
+
 `setup.py` detecta automáticamente las extensiones a compilar recorriendo `sqliteplus/**/*.pyx` y, salvo que definas `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1`, cruza el resultado con la lista generada en `reports/cython_candidates.json`. El flujo básico es:
 
 1. Ejecuta `tools/generate_cython_twins.py` con un reporte de hotspots para descubrir los módulos Python con más peso.
