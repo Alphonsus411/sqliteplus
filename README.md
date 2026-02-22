@@ -206,6 +206,7 @@ Para comprobaciones locales sin depender de la suite completa de tests:
 
 - Importes y acelerados instalados:
   - Windows PowerShell:
+    - python .trae\\verify_imports.py
     - python .trae\\verify_pure_mode.py
     - python .trae\\verify_replication.py
 
