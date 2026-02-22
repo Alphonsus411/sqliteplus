@@ -7,7 +7,6 @@
 
 
 cimport cython
-from cpython.size_t cimport Py_ssize_t
 
 import csv
 import logging
@@ -23,7 +22,7 @@ from sqliteplus.utils.constants import (
     PACKAGE_DB_PATH,
     resolve_default_db_path,
 )
-from sqliteplus.utils.sqliteplus_sync cimport apply_cipher_key, SQLitePlusCipherError
+from sqliteplus.utils.sqliteplus_sync import apply_cipher_key, SQLitePlusCipherError
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +37,6 @@ def _package_db_path():
 
 cdef class SQLiteReplication:
     """Módulo para exportación y replicación de bases de datos SQLitePlus."""
-
-    cdef public str db_path
-    cdef public object backup_dir
-    cdef public object cipher_key
 
     def __cinit__(
         self,
@@ -66,7 +61,7 @@ cdef class SQLiteReplication:
         Path(self.backup_dir).mkdir(parents=True, exist_ok=True)
 
 
-    def export_to_csv(self, str table_name, str output_file, bint overwrite=False):
+    cpdef str export_to_csv(self, str table_name, str output_file, bint overwrite=False):
         """Exporta los datos de una tabla a un archivo CSV."""
 
         # 🔹 Todas las declaraciones cdef deben ir al inicio
@@ -134,7 +129,7 @@ cdef class SQLiteReplication:
         except SQLitePlusCipherError as exc:
             raise RuntimeError(str(exc)) from exc
 
-    def backup_database(self):
+    cpdef str backup_database(self):
         """Crea una copia de seguridad de la base de datos."""
         cdef object backup_file = Path(self.backup_dir) / f"backup_{self._get_timestamp()}.db"
         try:
@@ -160,16 +155,18 @@ cdef class SQLiteReplication:
                 f"Error al realizar la copia de seguridad: {e}"
             ) from e
 
-    def replicate_database(self, str target_db_path):
+    cpdef str replicate_database(self, str target_db_path):
         """Replica la base de datos en otra ubicación."""
+        cdef object target_path
+        cdef object target_dir
         try:
             if not os.path.exists(self.db_path):
                 raise FileNotFoundError(
                     f"No se encontró la base de datos origen: {self.db_path}"
                 )
 
-            cdef object target_path = Path(target_db_path).expanduser().resolve()
-            cdef object target_dir = target_path.parent
+            target_path = Path(target_db_path).expanduser().resolve()
+            target_dir = target_path.parent
             if target_dir:
                 target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -188,29 +185,29 @@ cdef class SQLiteReplication:
         except Exception as e:
             raise RuntimeError(f"Error en la replicación: {e}") from e
 
-    def _get_timestamp(self):
+    cpdef object _get_timestamp(self):
         """Genera un timestamp para los nombres de archivo."""
         import datetime
         return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     @cython.locals(table_name=object, sanitized=str)
-    def _is_valid_table_name(self, table_name) -> cython.bint:
+    cpdef cython.bint _is_valid_table_name(self, object table_name):
         if not isinstance(table_name, str):
             return False
 
         sanitized = (<str>table_name).strip()
         return bool(sanitized) and is_valid_sqlite_identifier(sanitized)
 
-    def _escape_identifier(self, str identifier) -> str:
+    cpdef str _escape_identifier(self, str identifier):
         cdef str sanitized = identifier.strip()
         cdef str escaped_identifier = sanitized.replace('"', '""')
         return f'"{escaped_identifier}"'
 
-    def _copy_wal_and_shm(
+    cpdef list _copy_wal_and_shm(
         self,
-        source_path: str | os.PathLike[str],
-        target_path: str | os.PathLike[str],
-    ) -> list[str]:
+        object source_path,
+        object target_path,
+    ):
         """Replica los archivos WAL y SHM asociados cuando existen."""
 
         cdef object base_source = Path(source_path)
@@ -239,10 +236,10 @@ cdef class SQLiteReplication:
 
         return copied_files
 
-    def _default_local_db(self) -> Path:
+    cpdef object _default_local_db(self):
         return (Path.cwd() / Path(DEFAULT_DB_PATH)).resolve()
 
-    def _select_writable_path(self, candidate):
+    cpdef object _select_writable_path(self, object candidate):
         cdef object local_default = self._default_local_db()
 
         requires_local_copy = self._is_inside_package(candidate) or not self._can_write_to(
@@ -263,7 +260,7 @@ cdef class SQLiteReplication:
 
         return candidate
 
-    def _copy_database_to_local(self, source, destination) -> None:
+    cpdef object _copy_database_to_local(self, object source, object destination):
         """Replica la base de datos origen y sus archivos asociados al directorio local."""
 
         if not source.exists():
@@ -274,8 +271,9 @@ cdef class SQLiteReplication:
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
         self._copy_wal_and_shm(source, destination)
+        return None
 
-    def _is_inside_package(self, path) -> cython.bint:
+    cpdef cython.bint _is_inside_package(self, object path):
         package_root = _package_db_path().parent.parent
         try:
             path.relative_to(package_root)
@@ -283,7 +281,7 @@ cdef class SQLiteReplication:
             return False
         return True
 
-    def _can_write_to(self, directory) -> cython.bint:
+    cpdef cython.bint _can_write_to(self, object directory):
         probe = directory
         while probe and not probe.exists():
             parent = probe.parent
@@ -293,7 +291,8 @@ cdef class SQLiteReplication:
 
         return os.access(probe, os.W_OK)
 
-    def _ensure_local_database(self, target) -> None:
+    cpdef object _ensure_local_database(self, object target):
         target.parent.mkdir(parents=True, exist_ok=True)
         if not target.exists():
             target.touch()
+        return None

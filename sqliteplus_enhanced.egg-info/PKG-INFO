@@ -1,0 +1,461 @@
+Metadata-Version: 2.4
+Name: sqliteplus-enhanced
+Version: 1.0.11
+Summary: SQLite mejorado con cifrado SQLCipher y API REST asincrónica con FastAPI
+Author-email: Adolfo González Hernández <adolfogonzal@gmail.com>
+License-Expression: MIT
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Framework :: FastAPI
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 5 - Production/Stable
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE.md
+Requires-Dist: aiosqlite
+Requires-Dist: click
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: PyJWT
+Requires-Dist: python-multipart
+Requires-Dist: rich
+Provides-Extra: dev
+Requires-Dist: httpx; extra == "dev"
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-asyncio; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
+Provides-Extra: redis
+Requires-Dist: redis; extra == "redis"
+Provides-Extra: visual
+Requires-Dist: fletplus; extra == "visual"
+Requires-Dist: flet; extra == "visual"
+Provides-Extra: security
+Requires-Dist: bcrypt; extra == "security"
+Provides-Extra: speedups
+Requires-Dist: Cython>=3.0.0; extra == "speedups"
+Dynamic: license-file
+
+# SQLitePlus Enhanced
+
+**SQLitePlus Enhanced** es una caja de herramientas en Python que facilita el trabajo con bases de datos SQLite. Puedes usarla para levantar una API con FastAPI o para gestionar la base desde la línea de comandos sin escribir código adicional.
+
+## ✨ Qué incluye
+
+- 🔄 Manejo seguro de varias bases SQLite desde tareas asíncronas.
+- 🔐 Inicio de sesión mediante JSON Web Tokens con contraseñas hasheadas con `bcrypt`.
+- 🔑 Compatibilidad opcional con SQLCipher tanto en la API como en la consola.
+- 💾 Utilidades sencillas para exportar tablas a CSV y crear copias de seguridad automáticas.
+- 🧰 Comando `sqliteplus` con subcomandos claros para tareas diarias.
+
+---
+
+## 📦 Instalación rápida
+
+1. Asegúrate de tener **Python 3.10 o superior**.
+2. Instala la librería:
+
+```bash
+pip install sqliteplus-enhanced
+```
+
+¿Vas a colaborar con el código? Instálala en modo editable y añade las dependencias de desarrollo:
+
+```bash
+pip install -e '.[dev]'
+```
+
+> **Nota:** Las comillas simples evitan que shells como `zsh` intenten expandir los corchetes, lo que podría provocar errores al instalar los extras.
+
+Si solo quieres experimentar con la librería dentro del repositorio puedes mantener la instalación mínima:
+
+```bash
+pip install -e .
+```
+
+### ▶️ Ejecutar los entry points
+
+Tras la instalación se publican tres comandos en tu `PATH`. El recomendado para el uso diario es `sqliteplus`:
+
+- `sqliteplus`: CLI principal. Usa las opciones `--db-path` y `--cipher-key` (o la variable `SQLITE_DB_KEY`) para elegir la base activa y aplicar claves SQLCipher. Ejemplo rápido para crear la base embebida y consultar su contenido:
+
+  ```bash
+  sqliteplus --db-path ./databases/demo.db --cipher-key "$SQLITE_DB_KEY" init-db
+  sqliteplus --db-path ./databases/demo.db execute "INSERT INTO logs (action) VALUES ('Hola desde CLI')"
+  sqliteplus --db-path ./databases/demo.db fetch "SELECT * FROM logs"
+  ```
+
+- `sqliteplus-sync`: versión mínima de demostración basada en la implementación síncrona. Basta con ejecutarlo para verificar que las importaciones se resuelven desde cualquier ruta y registrar un mensaje inicial en la base predeterminada:
+
+  ```bash
+  sqliteplus-sync
+  ```
+
+  Si la base está cifrada, define `SQLITE_DB_KEY` antes de lanzar el comando.
+
+- `sqliteplus-replication`: genera una copia de seguridad y exporta la tabla `logs` a CSV en tu directorio de trabajo.
+
+  ```bash
+  sqliteplus-replication
+  ls backups  # encontrarás la copia creada
+  cat logs_export.csv
+  ```
+
+> Nota: tras la corrección de importaciones puedes ejecutar la CLI directamente desde el repositorio (`python -m sqliteplus.cli` o `python sqliteplus/cli.py`). Aun así, la ruta preferida es instalar el paquete y usar el comando `sqliteplus` desde cualquier carpeta.
+
+### 🏗️ Construir desde el repositorio
+
+- **Instalación local con Cython:** `pip install .` detecta y compila automáticamente todas las extensiones Cython bajo `sqliteplus/`. Si necesitas asegurar que `Cython` está presente cuando trabajas desde el código fuente, puedes instalar el extra `speedups`: `pip install -e '.[dev,speedups]'`.
+- **Empaquetar para distribución:** ejecuta `python -m build` para generar las salidas `sdist` y `wheel` en `dist/`. Los artefactos incluyen los archivos `.pyx`, `.pxd` y `.pxi` para permitir que otros proyectos realicen `cimport` sin sorpresas.
+- **Desactivar la compilación Cython:** define `SQLITEPLUS_DISABLE_CYTHON=1` antes del comando (`SQLITEPLUS_DISABLE_CYTHON=1 pip install .` o `SQLITEPLUS_DISABLE_CYTHON=1 python -m build`) para forzar el modo puro Python.
+- **Activar la anotación HTML de Cython:** exporta `SQLITEPLUS_CYTHON_ANNOTATE=1` para generar los informes `.html` durante `pip install .` o `python -m build`. Si necesitas trazas para `coverage`, activa `SQLITEPLUS_CYTHON_TRACE=1` (añade los macros `CYTHON_TRACE` y `CYTHON_TRACE_NOGIL`).
+
+### ¿Qué pasa con `bcrypt`?
+
+El paquete incluye una implementación pura en Python que se activa automáticamente si el intérprete no puede importar el módulo oficial. Así, las funciones de autenticación siguen operativas aunque no tengas compiladores o binarios nativos disponibles.
+
+Los hashes generados por el *fallback* llevan el prefijo `compatbcrypt$`. Aunque más adelante instales la extensión oficial, SQLitePlus detecta ese prefijo durante la autenticación y delega la verificación en `sqliteplus._compat.bcrypt`, por lo que puedes mezclar contraseñas nuevas con antiguas sin romper el inicio de sesión.
+
+Si quieres usar la extensión oficial siempre que el entorno lo permita, instala el extra opcional `security`:
+
+```bash
+pip install "sqliteplus-enhanced[security]"
+```
+
+Cuando el intérprete detecta `bcrypt`, automáticamente sustituye el *fallback* por el módulo nativo. Si deseas migrar las contraseñas antiguas al backend oficial basta con recalcular el hash y actualizar el JSON de usuarios. Un script simple podría iterar por cada entrada con `compatbcrypt$`, verificar la contraseña original (por ejemplo solicitándola al usuario) y escribir un nuevo hash con `bcrypt.hashpw(password.encode(), bcrypt.gensalt())`. Mientras tanto, ambas variantes seguirán funcionando de forma transparente.
+
+---
+
+## 🔐 Configuración mínima
+
+Guarda tus claves como variables de entorno para evitar dejarlas en el código.
+
+### Variables obligatorias para la API y la autenticación
+
+| Variable | Para qué sirve |
+| --- | --- |
+| `SECRET_KEY` | Firmar y validar los tokens JWT expuestos por la API. Sin ella no se podrán generar sesiones ni verificar las peticiones entrantes. |
+| `SQLITEPLUS_USERS_FILE` | Ubicación del JSON con usuarios y contraseñas hasheadas con `bcrypt`. Es obligatoria **solo** cuando levantas la API o usas la autenticación integrada. |
+
+### Variables opcionales (API y CLI)
+
+| Variable | Para qué sirve |
+| --- | --- |
+| `SQLITE_DB_KEY` | Clave SQLCipher para abrir bases cifradas desde la API o la CLI. |
+| `SQLITEPLUS_FORCE_RESET` | Valores como `1`, `true` o `on` solicitan el borrado previo **solo** en entornos seguros (`SQLITEPLUS_ENV=test` o `PYTEST_CURRENT_TEST`). En otros casos se ignora y se registra un warning. |
+
+> Los comandos locales de la CLI no dependen de `SQLITEPLUS_USERS_FILE`; puedes ejecutar `sqliteplus` en modo standalone sin definirlo.
+
+Ejemplo rápido para generar valores seguros:
+
+```bash
+export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+export SQLITE_DB_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
+```
+
+Crear un archivo de usuarios con el login `admin`:
+
+```bash
+python - <<'PY'
+from sqliteplus._compat import ensure_bcrypt
+import json, pathlib
+
+bcrypt = ensure_bcrypt()
+password = "admin"
+hash_ = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+path = pathlib.Path("users.json")
+path.write_text(json.dumps({"admin": hash_}, indent=2), encoding="utf-8")
+print(f"Archivo generado en {path.resolve()}")
+PY
+
+export SQLITEPLUS_USERS_FILE="$(pwd)/users.json"
+```
+
+Si prefieres evitar scripts ad hoc puedes delegar la generación del hash en el
+helper integrado, que ya usa internamente `ensure_bcrypt()` y solicita la
+contraseña de forma segura cuando no se proporciona como argumento:
+
+```bash
+python -m sqliteplus.auth.users hash admin
+# o bien (la contraseña se pedirá sin eco):
+python -m sqliteplus.auth.users hash
+```
+
+Si ejecutas los comandos anteriores en una máquina sin compiladores o binarios
+nativos, la importación `ensure_bcrypt()` activará el *fallback* puro Python de
+forma transparente. Cuando quieras forzar el backend nativo instala el extra
+`security` (`pip install "sqliteplus-enhanced[security]"`).
+
+---
+
+## 🚀 Levantar la API
+
+Antes de arrancar el servidor asegúrate de definir dos variables de entorno clave:
+
+- `SECRET_KEY`: se usa para firmar los tokens JWT emitidos por la API **y** para validar los tokens recibidos en cada petición. Sin esta clave no se podrán generar sesiones ni verificar su autenticidad.
+- `SQLITEPLUS_USERS_FILE`: ruta al archivo JSON con usuarios y contraseñas hasheadas con `bcrypt`.
+
+Ejemplo rápido desde el mismo directorio del repositorio. La primera línea genera una clave aleatoria segura lista para la firma y la validación de JWT:
+
+```bash
+export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+export SQLITEPLUS_USERS_FILE="$(pwd)/users.json"
+```
+
+Sin `SECRET_KEY` la API no podrá firmar ni validar sesiones, y sin `SQLITEPLUS_USERS_FILE` no habrá usuarios válidos para iniciarse.
+
+```bash
+uvicorn sqliteplus.main:app --reload
+```
+
+Una vez en marcha tendrás disponible la documentación interactiva en:
+
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+---
+
+## 🧪 Ejecutar las pruebas
+
+Instala primero las dependencias de desarrollo para disponer de todas las herramientas usadas en la suite:
+
+```bash
+pip install -e '.[dev]'
+pytest -v
+```
+
+### Aceleradores Cython y benchmarks
+
+Las validaciones de esquemas y el saneamiento de identificadores usan extensiones Cython opcionales ubicadas en `sqliteplus/core`. Se compilan automáticamente al instalar el paquete desde el código fuente (`pip install .` o `pip install -e .`).
+
+- **Forzar el modo puro Python:** define `SQLITEPLUS_DISABLE_CYTHON=1` antes de importar la librería o durante la instalación/compilación para desactivar las extensiones y probar la ruta de *fallback*.
+- **Volver a activarlas:** elimina la variable (`unset SQLITEPLUS_DISABLE_CYTHON`) y vuelve a importar el módulo. Si las extensiones no están compiladas, la librería seguirá funcionando en modo puro Python.
+- **Ajustar el umbral de mejora:** los benchmarks exigen que la variante con Cython sea un `20%` más rápida por defecto. Puedes modificar el umbral con `SQLITEPLUS_MIN_SPEEDUP` (por ejemplo `0.1` para un 10%).
+- **Benchmarks de DML:** las rutas críticas `SQLitePlus.execute_query`/`fetch_query` y `SQLiteReplication.export_to_csv` se validan con `pytest-benchmark`. Para las operaciones DML, el umbral se ajusta con `SQLITEPLUS_DML_MIN_SPEEDUP` (por defecto `0.05`, es decir, 5 % de mejora esperada). Si el entorno CI es inestable, sube ese valor o usa `--benchmark-disable` para omitirlos.
+- **Lista dinámica de módulos a compilar:** `setup.py` lee `reports/cython_candidates.json` (o la ruta definida en `SQLITEPLUS_CYTHON_TARGETS`) y solo cythoniza los módulos listados. Usa `SQLITEPLUS_FORCE_CYTHON=1` para compilar todos los `.pyx` disponibles u `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1` para ignorar la lista y dejar el comportamiento tradicional.
+
+### Descubrimiento automático y pipeline Cython
+
+`setup.py` detecta automáticamente las extensiones a compilar recorriendo `sqliteplus/**/*.pyx` y, salvo que definas `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1`, cruza el resultado con la lista generada en `reports/cython_candidates.json`. El flujo básico es:
+
+1. Ejecuta `tools/generate_cython_twins.py` con un reporte de hotspots para descubrir los módulos Python con más peso.
+2. El script guarda el inventario en `reports/cython_candidates.json` (o la ruta indicada en `--output`) y crea un gemelo `.pyx` por cada módulo detectado.
+3. Durante `pip install .` o `python -m build`, `setup.py` solo cythoniza los módulos presentes en ese JSON, salvo que fuerces lo contrario con `SQLITEPLUS_FORCE_CYTHON=1`.
+
+Variables relevantes para controlar el pipeline:
+
+- `SQLITEPLUS_DISABLE_CYTHON=1`: desactiva por completo la compilación (modo puro Python).
+- `SQLITEPLUS_FORCE_CYTHON=1`: cythoniza todos los `.pyx` encontrados, ignorando la lista generada.
+- `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1`: omite el filtro por `reports/cython_candidates.json` pero sigue respetando `SQLITEPLUS_DISABLE_CYTHON`.
+- `SQLITEPLUS_CYTHON_TARGETS=/ruta/a/lista.json`: indica un archivo alternativo con los módulos permitidos.
+- `SQLITEPLUS_CYTHON_ANNOTATE=1` y `SQLITEPLUS_CYTHON_TRACE=1`: generan reportes HTML y macros de trazado en los binarios.
+
+Para lanzar el descubrimiento sobre el reporte por defecto (`reports/hotspots.json`) y limitarlo a tres módulos:
+
+```bash
+python tools/generate_cython_twins.py reports/hotspots.json --limit 3
+```
+
+El comando crea los gemelos `.pyx` junto al `.py` original (por ejemplo `sqliteplus/core/validators.py` → `sqliteplus/core/validators.pyx`) y rellena `reports/cython_candidates.json` con los módulos aceptados. Si los `.pyx` ya existen y quieres regenerarlos, añade `--overwrite`. Para usar un reporte personalizado y escribir la lista en otra ruta:
+
+```bash
+python tools/generate_cython_twins.py /tmp/perfil_hotspots.json --output reports/mis_candidatos.json --limit 5
+SQLITEPLUS_CYTHON_TARGETS=reports/mis_candidatos.json python -m build
+```
+
+### Añadir manualmente un módulo al pipeline
+
+1. Crea o mantén el módulo original en Python puro (por ejemplo `sqliteplus/core/nuevo_modulo.py`).
+2. Añade un gemelo `nuevo_modulo.pyx` en la misma carpeta que importe el `.py` como *fallback*. Los gemelos generados por `tools/generate_cython_twins.py` sirven de plantilla porque reexportan funciones y clases para conservar la API binaria y los envoltorios `.py`.
+3. Si el módulo expone tipos o constantes para `cimport`, declara un `nuevo_modulo.pxd` en el mismo paquete con las firmas que deban ser compartidas.
+4. Incluye el módulo en `reports/cython_candidates.json` (o en la ruta fijada por `SQLITEPLUS_CYTHON_TARGETS`) si quieres que se cythonice automáticamente; si prefieres un único build manual, ejecuta con `SQLITEPLUS_FORCE_CYTHON=1`.
+
+Los artefactos generados siguen siendo distribuidos en ambos formatos: `python -m build` empaqueta los `.py`, `.pyx` y `.pxd` en el `sdist`, y el `wheel` incluye los binarios compilados cuando Cython está activo. Así, los consumidores pueden seguir importando los envoltorios `.py` sin romper compatibilidad binaria y otros paquetes pueden hacer `cimport` desde las cabeceras publicadas.
+
+Para ejecutar las pruebas de rendimiento con `pytest-benchmark`:
+
+```bash
+pytest tests/test_speedups_benchmarks.py --benchmark-only -q
+pytest tests/test_high_use_api_benchmarks.py --benchmark-only -q
+```
+
+Los caminos de mayor uso (`SQLitePlus.execute_query`, `SQLitePlus.fetch_query` y `SQLiteReplication.export_to_csv`) cuentan con pruebas de equivalencia entre el modo compilado y el modo puro Python. Lanza ambos caminos así:
+
+```bash
+# Camino acelerado por defecto
+pytest tests/test_speedups_equivalence.py -k "execute_and_fetch or replication_exports" -q
+pytest tests/test_high_use_api_equivalence.py -q
+
+# Camino puro Python forzado con SQLITEPLUS_DISABLE_CYTHON=1
+SQLITEPLUS_DISABLE_CYTHON=1 pytest tests/test_speedups_equivalence.py -k "execute_and_fetch or replication_exports" -q
+SQLITEPLUS_DISABLE_CYTHON=1 pytest tests/test_high_use_api_equivalence.py -q
+```
+
+`tests/test_high_use_api_equivalence.py` crea bases pequeñas y compara salidas de `execute_query`/`fetch_query` y `export_to_csv` entre ambos modos en el mismo proceso, forzando el *fallback* con `SQLITEPLUS_DISABLE_CYTHON=1`. `tests/test_high_use_api_benchmarks.py` repite los mismos escenarios con `pytest-benchmark` para detectar regresiones: si el tiempo con Cython no mejora al menos el umbral `SQLITEPLUS_DML_MIN_SPEEDUP` (5 % por defecto), la prueba falla.
+
+Para interpretar los benchmarks:
+
+- Usa `pytest --benchmark-only` para omitir los asserts funcionales y centrarte en el rendimiento.
+- Los umbrales (`SQLITEPLUS_MIN_SPEEDUP` y `SQLITEPLUS_DML_MIN_SPEEDUP`) comparan los tiempos medio/total de la ruta *fallback* frente a la ruta Cython. Si el tiempo con Cython no baja al menos el porcentaje indicado, la prueba falla.
+- En CI puedes fijar umbrales más conservadores si la carga de la máquina es variable, por ejemplo `SQLITEPLUS_MIN_SPEEDUP=0.1 SQLITEPLUS_DML_MIN_SPEEDUP=0.02`.
+
+Los validadores de esquemas cuentan con pruebas específicas que comparan la ruta Cython frente al *fallback* y miden que la versión compilada siga siendo sensiblemente más rápida. En entornos CI puedes ejecutar ambos modos con:
+
+```bash
+# Camino acelerado (espera mejoras de ~20 % o el valor definido en SQLITEPLUS_MIN_SPEEDUP)
+pytest tests/test_schema_validators_variants.py --benchmark-only -q
+
+# Camino puro Python forzado para validar que los resultados coinciden
+SQLITEPLUS_DISABLE_CYTHON=1 pytest tests/test_schema_validators_variants.py -q
+```
+
+Los casos específicos de `schemas` se pueden lanzar rápidamente para comparar el modo Cython y el *fallback* puro Python:
+
+```bash
+# Con Cython activo (por defecto)
+pytest -k schemas -v
+
+# Forzando la ruta pura Python
+SQLITEPLUS_DISABLE_CYTHON=1 pytest -k schemas -v
+```
+
+El conjunto de pruebas incluye verificaciones que comparan los resultados del modo Cython y el modo *fallback* para garantizar que ambos caminos producen las mismas salidas en `schemas`, `sqliteplus_sync` y `replication_sync`.
+
+Cuando detecta pytest, `AsyncDatabaseManager` borra y recrea las bases ubicadas en `databases/` antes de abrirlas en lugar de moverlas a carpetas temporales. La detección es **perezosa**: en cada `get_connection()` vuelve a comprobar `PYTEST_CURRENT_TEST`, `SQLITEPLUS_ENV` y `SQLITEPLUS_FORCE_RESET`, por lo que puedes pedir un reinicio incluso si el gestor global ya se creó (por ejemplo, desde la app FastAPI). `SQLITEPLUS_FORCE_RESET` solo se aplica en entorno seguro (`SQLITEPLUS_ENV=test` o pytest activo); fuera de ese contexto se ignora y se registra un warning para evitar borrados accidentales en producción. Si necesitas un override manual, usa `reset_on_init=True` únicamente en pruebas o migraciones controladas. Revisa la [reinicialización automática en pruebas](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/docs/uso_avanzado.md#reinicialización-automática-en-pruebas) o el código correspondiente en [`sqliteplus/core/db.py`](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/sqliteplus/core/db.py).
+
+### Perfilado de hotspots para priorizar Cython
+
+El script `tools/profile_hotspots.py` ejecuta los escenarios críticos (CLI y API) con datos realistas y guarda un ranking JSON en `reports/hotspots.json`. Úsalo para detectar cuellos de botella y decidir qué módulos portar a Cython.
+
+```bash
+# Ejecuta todos los escenarios y guarda los 25 símbolos más costosos
+make profile-hotspots PROFILE_TOP=25
+
+# Limita los escenarios y fuerza a incluir funciones de E/S en el ranking
+HOTSPOT_SCENARIOS="list_tables api_crud" HOTSPOT_INCLUDE_IO=1 make profile-hotspots
+```
+
+El archivo `reports/hotspots.json` incluye:
+
+- `by_scenario`: los `hotspots` principales de cada escenario con `ncalls`, `tottime` y `cumtime` (segundos acumulados) para cada función.
+- `overall_hotspots`: agregado de todos los escenarios ordenado por `cumtime` total; el campo `scenarios` indica dónde apareció cada símbolo.
+- `is_python`: se marca en `true` cuando la función proviene de un archivo `.py`, una buena pista para priorizar migraciones a Cython.
+- `is_io`: señala llamadas relacionadas con disco/red; suelen ser menos rentables para Cython y conviene filtrarlas salvo que bloqueen el throughput.
+
+#### Activar perfilado rápido en los entrypoints
+
+- **CLI:** exporta `SQLITEPLUS_PROFILE_ENTRYPOINT=cprofile` (o `pyinstrument`) y luego ejecuta `sqliteplus ...`. Los perfiles se guardan en `reports/profile/entrypoints` por defecto; cambia la carpeta con `SQLITEPLUS_PROFILE_OUTPUT`.
+- **API FastAPI:** define `SQLITEPLUS_PROFILE_API=pyinstrument` para añadir un *middleware* que vuelca un HTML y un TXT por petición en `reports/profile/api` (o en la ruta indicada por `SQLITEPLUS_PROFILE_API_OUTPUT`).
+
+#### Generar gemelos `.pyx` desde el perfil
+
+El comando `python tools/generate_cython_twins.py` lee `reports/hotspots.json`, selecciona los módulos Python con más tiempo de CPU y genera:
+
+- Un JSON con la lista final en `reports/cython_candidates.json` (personalizable con `--output`).
+- Archivos `.pyx` que replican la API y delegan en el `.py` original como *fallback* si falta Cython. Usa `--limit` para acotar el número de módulos y `--overwrite` para regenerar los gemelos.
+
+Una estrategia rápida es fijarse primero en los elementos de `overall_hotspots` con `is_python=true` y alto `cumtime`, especialmente si aparecen en varios escenarios. Si el cuello de botella es puro Python y no está dominado por E/S, convertirlo en extensión Cython suele ofrecer mejoras inmediatas.
+
+---
+
+## 🛠️ Usar la CLI `sqliteplus`
+
+El comando principal admite dos opciones globales:
+
+- `--cipher-key` o la variable `SQLITE_DB_KEY` para abrir bases cifradas.
+- `--db-path` para indicar el archivo de base de datos que usarán todos los subcomandos.
+
+> Nota: Los subcomandos locales no consultan `SQLITEPLUS_USERS_FILE`. Este archivo solo es necesario cuando expones la API protegida con JWT.
+
+Si no se especifica `--db-path`, la CLI crea (o reutiliza) automáticamente el archivo
+`sqliteplus/databases/database.db` dentro del directorio de trabajo actual, de modo
+que no se modifica la base distribuida con el paquete.
+
+Comandos disponibles:
+
+- `sqliteplus init-db` crea la base y deja constancia en la tabla `logs`.
+- `sqliteplus execute INSERT ...` ejecuta instrucciones de escritura y muestra el último ID insertado cuando aplica.
+- `sqliteplus fetch SELECT ...` muestra los resultados fila por fila, avisando si no hay datos.
+- `sqliteplus list-tables` presenta en una tabla rica todas las tablas disponibles y sus recuentos de filas.
+- `sqliteplus describe-table <tabla>` resume las columnas, índices y relaciones de la tabla indicada.
+- `sqliteplus db-info` muestra un resumen del archivo activo (ruta, tamaño, tablas, vistas y filas totales).
+- `sqliteplus export-query ...` ejecuta una consulta de lectura y guarda el resultado en JSON o CSV; consulta la [guía detallada](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/docs/cli.md#exportar-resultados-de-una-consulta).
+- `sqliteplus export-csv <tabla> <archivo.csv>` guarda la tabla en un CSV con encabezados y, por defecto, protege archivos existentes a menos que añadas `--overwrite`.
+- `sqliteplus backup` genera un respaldo fechado en la carpeta `backups/`. Puedes especificar otra ruta con `--db-path`.
+- `sqliteplus visual-dashboard` abre el panel interactivo de FletPlus para explorar tablas, consultas y resultados en modo gráfico; admite banderas como `--theme`, `--max-rows`, `--accent-color` y `--read-only/--allow-write` para personalizar el visor.
+
+Todos los subcomandos y sus opciones se documentan en [`docs/cli.md`](docs/cli.md); úsalo como índice de referencia rápida cuando necesites repasar los `--flags` disponibles.
+
+Los subcomandos `export-csv` y `backup` muestran los resultados de forma visual con Rich, mientras que las utilidades internas solo devuelven la ruta generada. Así puedes reutilizar la API desde scripts externos sin producir mensajes duplicados: toda la salida visible procede de la CLI.
+
+### Script standalone de replicación
+
+Si prefieres evitar la CLI y solo necesitas verificar las importaciones relativas del paquete, puedes ejecutar directamente el script de replicación desde cualquier directorio:
+
+```bash
+python -m sqliteplus.utils.replication_sync
+# o
+python sqliteplus/utils/replication_sync.py
+```
+
+El módulo creará una base mínima en `./sqliteplus/databases/database.db` (sin modificar los datos distribuidos con el paquete), generará una copia en `./backups/` y exportará la tabla `logs` a `./logs_export.csv` usando las rutas relativas al directorio actual. Esto facilita comprobar que las dependencias internas funcionan aunque ejecutes el script fuera del repositorio o de un entorno virtual.
+
+Para un caso manual rápido puedes probarlo desde un directorio temporal completamente vacío, apuntando al script del repositorio:
+
+```bash
+tmpdir=$(mktemp -d)
+cd "$tmpdir"
+python /ruta/a/tu/checkout/sqliteplus/utils/replication_sync.py
+ls -1
+```
+
+Tras la ejecución deberías ver las carpetas `backups/` y `sqliteplus/` junto con el archivo `logs_export.csv`, demostrando que la exportación y la replicación funcionan desde rutas arbitrarias.
+
+### Activar el visor visual (extra opcional)
+
+El paquete base evita instalar dependencias gráficas para mantener una huella ligera. Si deseas abrir el visor accesible de los subcomandos `fetch` o `list-tables` (`--viewer`) o aprovechar `sqliteplus visual-dashboard`, instala el extra opcional `visual`:
+
+```bash
+pip install "sqliteplus-enhanced[visual]"
+```
+
+Este extra añade Flet y FletPlus. Puedes instalarlo de forma combinada con otros extras (`pip install sqliteplus-enhanced[dev,visual]`).
+
+Gracias a la integración con [Rich](https://rich.readthedocs.io/en/stable/) todos los mensajes de la CLI se muestran con colores, paneles y tablas que facilitan su lectura y accesibilidad.
+
+Ejemplo combinando opciones:
+
+```bash
+sqliteplus --db-path databases/demo.db --cipher-key "$SQLITE_DB_KEY" backup
+```
+
+---
+
+## 🗂️ Estructura del proyecto
+
+```text
+.
+├── sqliteplus/            # Paquete instalable
+│   ├── main.py            # Punto de entrada FastAPI
+│   ├── cli.py             # Implementación del comando `sqliteplus`
+│   ├── api/               # Endpoints REST protegidos
+│   ├── auth/              # Gestión JWT y validaciones
+│   ├── core/              # Servicios asincrónicos y modelos
+│   └── utils/             # Herramientas sincrónicas, replicación y helpers CLI
+├── tests/                 # Suite de pytest (fuera del paquete)
+├── docs/                  # Guías y tutoriales en Markdown
+├── databases/             # Bases de ejemplo usadas en demos/pruebas manuales
+└── requirements*.txt      # Listados de dependencias para instalación rápida
+```
+
+El árbol anterior refleja la jerarquía real tras ejecutar `git clean -fdx`: el paquete Python vive en `sqliteplus/` y todo el
+código de producción (por ej., `sqliteplus/cli.py` o `sqliteplus/main.py`) reside allí. Los directorios `tests/`, `docs/`,
+`databases/` y el resto de archivos de soporte permanecen en la raíz del repositorio, fuera del paquete publicado. Si ejecutas
+`mkdocs build`, MkDocs (configurado en [`mkdocs.yml`](mkdocs.yml)) generará la carpeta `site/` con la documentación estática,
+pero no forma parte del repositorio limpio.
+
+---
+
+## 📝 Licencia
+
+MIT License © Adolfo González Hernández

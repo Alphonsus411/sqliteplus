@@ -5,10 +5,7 @@
 # cython: cdivision=True
 """Rutinas en Cython para normalizar columnas y validar expresiones DEFAULT."""
 
-from __future__ import annotations
-
 cimport cython
-from cpython.size_t cimport Py_ssize_t
 
 from sqliteplus.core cimport _schemas_fast
 

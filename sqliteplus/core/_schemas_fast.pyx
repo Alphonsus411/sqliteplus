@@ -5,10 +5,7 @@
 # cython: cdivision=True
 """Implementaciones aceleradas en Cython para validación y parsing de esquemas."""
 
-from __future__ import annotations
-
 cimport cython
-from cpython.size_t cimport Py_ssize_t
 
 cdef tuple SQLITE_IDENTIFIER_DISALLOWED_TOKENS = (";", "--", "/*", "*/")
 
@@ -46,7 +43,6 @@ def _has_balanced_parentheses_impl(expr: str) -> cython.bint:
     return depth == 0
 
 
-@cython.cfunc
 def _strip_enclosing_parentheses_impl(expr: str) -> str:
     cdef str sanitized = expr
     cdef str inner
@@ -59,7 +55,6 @@ def _strip_enclosing_parentheses_impl(expr: str) -> str:
     return sanitized
 
 
-@cython.cfunc
 def _parse_function_call_impl(expr: str):
     cdef Py_ssize_t length = len(expr)
     if length == 0:

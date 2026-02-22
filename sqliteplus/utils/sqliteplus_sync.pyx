@@ -1,13 +1,10 @@
 # cython: language_level=3
-from __future__ import annotations
 
 import os
 import sqlite3
 import threading
 from datetime import datetime
 from pathlib import Path
-
-from cpython.size_t cimport Py_ssize_t
 
 from sqliteplus.core.schemas import is_valid_sqlite_identifier
 from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
@@ -21,20 +18,20 @@ cdef public tuple SQLITEPLUS_PUBLIC_API = (
 __all__ = SQLITEPLUS_PUBLIC_API
 
 
-cdef class SQLitePlusQueryError(RuntimeError):
+class SQLitePlusQueryError(RuntimeError):
     """Excepción personalizada para errores en consultas SQL."""
 
-    def __init__(self, str query, sqlite3.Error original_exception):
+    def __init__(self, query, original_exception):
         self.query = query
         self.original_exception = original_exception
         message = f"Error al ejecutar la consulta SQL '{query}': {original_exception}"
         super().__init__(message)
 
 
-cdef class SQLitePlusCipherError(RuntimeError):
+class SQLitePlusCipherError(RuntimeError):
     """Excepción para errores al aplicar la clave SQLCipher."""
 
-    def __init__(self, sqlite3.Error original_exception):
+    def __init__(self, original_exception):
         self.original_exception = original_exception
         message = (
             "No se pudo aplicar la clave SQLCipher. Asegúrate de que tu intérprete "
@@ -51,7 +48,7 @@ cpdef void apply_cipher_key(object connection, object cipher_key):
     cdef str escaped_key = (<str>cipher_key).replace("'", "''")
     cdef bytes encoded_key = escaped_key.encode("utf-8")
     cdef const char* encoded_key_ptr = encoded_key
-    cdef Py_ssize_t encoded_length = len(encoded_key)
+    cdef int encoded_length = len(encoded_key)
     if encoded_length == 0 or encoded_key_ptr is NULL:
         return
 
@@ -151,7 +148,7 @@ cdef class SQLitePlus:
 
     cpdef object list_tables(self, bint include_views=False, bint include_row_counts=True):
         """Obtiene las tablas y vistas definidas en la base de datos."""
-
+        cdef int idx
         with self.lock:
             with self.get_connection() as conn:
                 cursor = conn.cursor()
@@ -170,7 +167,6 @@ cdef class SQLitePlus:
                     raise SQLitePlusQueryError("LIST_TABLES", e) from e
 
                 results = []
-                cdef Py_ssize_t idx
                 for idx in range(len(entries)):
                     name, obj_type = entries[idx]
                     if obj_type == "view" and not include_views:
@@ -304,10 +300,10 @@ cdef class SQLitePlus:
             else None
         )
 
-        cdef Py_ssize_t table_count = 0
-        cdef Py_ssize_t view_count = 0
-        cdef Py_ssize_t idx
-        cdef Py_ssize_t total_rows = 0
+        cdef int table_count = 0
+        cdef int view_count = 0
+        cdef int idx
+        cdef int total_rows = 0
 
         for idx in range(len(tables)):
             item = tables[idx]
