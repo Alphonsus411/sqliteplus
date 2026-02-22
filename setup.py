@@ -7,7 +7,6 @@ from pathlib import Path
 from Cython.Build import cythonize
 from setuptools import Extension, setup
 
-
 def strtobool_env(name: str, *, default: bool = False) -> bool:
     value = os.environ.get(name)
     if value is None:
