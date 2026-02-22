@@ -30,8 +30,7 @@ logger = logging.getLogger(__name__)
 __all__ = ["SQLiteReplication", "PACKAGE_DB_PATH", "DEFAULT_DB_PATH"]
 
 
-@cython.cfunc
-def _package_db_path() -> Path:
+def _package_db_path():
     wrapper = sys.modules.get("sqliteplus.utils.replication_sync")
     candidate = getattr(wrapper, "PACKAGE_DB_PATH", PACKAGE_DB_PATH)
     return Path(candidate)

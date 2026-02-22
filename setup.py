@@ -4,7 +4,6 @@ import json
 import os
 from pathlib import Path
 
-from Cython.Build import cythonize
 from setuptools import Extension, setup
 
 def strtobool_env(name: str, *, default: bool = False) -> bool:
@@ -82,17 +81,23 @@ def discover_extensions() -> list[Extension]:
 extensions = discover_extensions()
 ext_modules = []
 if extensions:
-    ext_modules = cythonize(
-        extensions,
-        language_level="3",
-        annotate=strtobool_env("SQLITEPLUS_CYTHON_ANNOTATE"),
-        compiler_directives={
-            "boundscheck": False,
-            "wraparound": False,
-            "initializedcheck": False,
-            "cdivision": True,
-        },
-    )
+    try:
+        from Cython.Build import cythonize
+    except Exception:
+        # Sin Cython disponible: omite la compilación y continúa en modo puro Python
+        ext_modules = []
+    else:
+        ext_modules = cythonize(
+            extensions,
+            language_level="3",
+            annotate=strtobool_env("SQLITEPLUS_CYTHON_ANNOTATE"),
+            compiler_directives={
+                "boundscheck": False,
+                "wraparound": False,
+                "initializedcheck": False,
+                "cdivision": True,
+            },
+        )
 
 
 setup(ext_modules=ext_modules)
