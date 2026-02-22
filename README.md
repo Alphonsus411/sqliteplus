@@ -67,7 +67,7 @@ Tras la instalación se publican tres comandos en tu `PATH`. El recomendado para
 
 ### 🏗️ Construir desde el repositorio
 
-- **Instalación local con Cython:** `pip install .` detecta y compila automáticamente todas las extensiones Cython bajo `sqliteplus/`. Si necesitas asegurar que `Cython` está presente cuando trabajas desde el código fuente, puedes instalar el extra `speedups`: `pip install -e '.[dev,speedups]'`.
+- **Instalación local con Cython:** `pip install .` detecta y compila automáticamente todas las extensiones Cython bajo `sqliteplus/`. Si necesitas asegurar que `Cython` esté disponible al trabajar desde el código fuente, instala el extra `speedups` (provisiona la versión compatible con el proyecto): `pip install -e '.[dev,speedups]'`.
 - **Empaquetar para distribución:** ejecuta `python -m build` para generar las salidas `sdist` y `wheel` en `dist/`. Los artefactos incluyen los archivos `.pyx`, `.pxd` y `.pxi` para permitir que otros proyectos realicen `cimport` sin sorpresas.
 - **Desactivar la compilación Cython:** define `SQLITEPLUS_DISABLE_CYTHON=1` antes del comando (`SQLITEPLUS_DISABLE_CYTHON=1 pip install .` o `SQLITEPLUS_DISABLE_CYTHON=1 python -m build`) para forzar el modo puro Python.
 - **Activar la anotación HTML de Cython:** exporta `SQLITEPLUS_CYTHON_ANNOTATE=1` para generar los informes `.html` durante `pip install .` o `python -m build`. Si necesitas trazas para `coverage`, activa `SQLITEPLUS_CYTHON_TRACE=1` (añade los macros `CYTHON_TRACE` y `CYTHON_TRACE_NOGIL`).

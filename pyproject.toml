@@ -54,7 +54,7 @@ security = [
 ]
 
 speedups = [
-    "Cython>=3.0.0"
+    "Cython==0.29.36"
 ]
 
 [project.scripts]
