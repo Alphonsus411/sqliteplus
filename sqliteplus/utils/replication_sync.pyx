@@ -50,7 +50,7 @@ cdef class SQLiteReplication:
         backup_dir="backups",
         cipher_key: str | None = None,
     ):
-        cdef Path resolved_path
+        cdef object resolved_path
         if db_path is None:
             resolved_path = resolve_default_db_path(prefer_package=False)
         else:
@@ -64,16 +64,16 @@ cdef class SQLiteReplication:
 
         self.backup_dir = Path(backup_dir).expanduser().resolve()
         self.cipher_key = cipher_key if cipher_key is not None else os.getenv("SQLITE_DB_KEY")
-        (<Path>self.backup_dir).mkdir(parents=True, exist_ok=True)
+        Path(self.backup_dir).mkdir(parents=True, exist_ok=True)
 
 
     def export_to_csv(self, str table_name, str output_file, bint overwrite=False):
         """Exporta los datos de una tabla a un archivo CSV."""
 
         # 🔹 Todas las declaraciones cdef deben ir al inicio
-        cdef Path db_path
+        cdef object db_path
         cdef str query
-        cdef Path output_path
+        cdef object output_path
         cdef int col_count
         cdef list column_names
         cdef int col_idx
@@ -130,15 +130,14 @@ cdef class SQLiteReplication:
                         for row_idx in range(chunk_len):
                             writer.writerow(rows[row_idx])
 
-        logger.info("Datos exportados correctamente a %s", output_path)
-        return str(output_path)
-
-    except SQLitePlusCipherError as exc:
-        raise RuntimeError(str(exc)) from exc
+            logger.info("Datos exportados correctamente a %s", output_path)
+            return str(output_path)
+        except SQLitePlusCipherError as exc:
+            raise RuntimeError(str(exc)) from exc
 
     def backup_database(self):
         """Crea una copia de seguridad de la base de datos."""
-        cdef Path backup_file = (<Path>self.backup_dir) / f"backup_{self._get_timestamp()}.db"
+        cdef object backup_file = Path(self.backup_dir) / f"backup_{self._get_timestamp()}.db"
         try:
             if not os.path.exists(self.db_path):
                 raise FileNotFoundError(
@@ -170,8 +169,8 @@ cdef class SQLiteReplication:
                     f"No se encontró la base de datos origen: {self.db_path}"
                 )
 
-            cdef Path target_path = Path(target_db_path).expanduser().resolve()
-            cdef Path target_dir = target_path.parent
+            cdef object target_path = Path(target_db_path).expanduser().resolve()
+            cdef object target_dir = target_path.parent
             if target_dir:
                 target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -195,7 +194,6 @@ cdef class SQLiteReplication:
         import datetime
         return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    @cython.cfunc
     @cython.locals(table_name=object, sanitized=str)
     def _is_valid_table_name(self, table_name) -> cython.bint:
         if not isinstance(table_name, str):
@@ -216,8 +214,8 @@ cdef class SQLiteReplication:
     ) -> list[str]:
         """Replica los archivos WAL y SHM asociados cuando existen."""
 
-        cdef Path base_source = Path(source_path)
-        cdef Path base_target = Path(target_path)
+        cdef object base_source = Path(source_path)
+        cdef object base_target = Path(target_path)
         cdef list copied_files = []
         cdef str suffix
         cdef Py_ssize_t read_bytes
@@ -246,7 +244,7 @@ cdef class SQLiteReplication:
         return (Path.cwd() / Path(DEFAULT_DB_PATH)).resolve()
 
     def _select_writable_path(self, Path candidate):
-        cdef Path local_default = self._default_local_db()
+        cdef object local_default = self._default_local_db()
 
         requires_local_copy = self._is_inside_package(candidate) or not self._can_write_to(
             candidate.parent

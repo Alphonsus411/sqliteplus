@@ -6,6 +6,7 @@
 """Adaptadores y helpers acelerados para ``schemas.py``."""
 
 cimport cython
+from cpython.size_t cimport Py_ssize_t
 
 from sqliteplus.core cimport _schemas_constants
 

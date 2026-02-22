@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 cimport cython
+from cpython.size_t cimport Py_ssize_t
 
 from sqliteplus.core cimport _schemas_fast
 
