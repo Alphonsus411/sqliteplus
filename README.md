@@ -104,7 +104,7 @@ Guarda tus claves como variables de entorno para evitar dejarlas en el código.
 | Variable | Para qué sirve |
 | --- | --- |
 | `SQLITE_DB_KEY` | Clave SQLCipher para abrir bases cifradas desde la API o la CLI. |
-| `SQLITEPLUS_FORCE_RESET` | Valores como `1`, `true` o `on` fuerzan el borrado del archivo SQLite antes de recrear la conexión. |
+| `SQLITEPLUS_FORCE_RESET` | Valores como `1`, `true` o `on` solicitan el borrado previo **solo** en entornos seguros (`SQLITEPLUS_ENV=test` o `PYTEST_CURRENT_TEST`). En otros casos se ignora y se registra un warning. |
 
 > Los comandos locales de la CLI no dependen de `SQLITEPLUS_USERS_FILE`; puedes ejecutar `sqliteplus` en modo standalone sin definirlo.
 
@@ -283,7 +283,7 @@ SQLITEPLUS_DISABLE_CYTHON=1 pytest -k schemas -v
 
 El conjunto de pruebas incluye verificaciones que comparan los resultados del modo Cython y el modo *fallback* para garantizar que ambos caminos producen las mismas salidas en `schemas`, `sqliteplus_sync` y `replication_sync`.
 
-Cuando detecta pytest, `AsyncDatabaseManager` borra y recrea las bases ubicadas en `databases/` antes de abrirlas en lugar de moverlas a carpetas temporales. La detección es **perezosa**: en cada `get_connection()` vuelve a comprobar `PYTEST_CURRENT_TEST` y la nueva variable `SQLITEPLUS_FORCE_RESET`, por lo que puedes pedir un reinicio incluso si el gestor global ya se creó (por ejemplo, desde la app FastAPI). Si activas `SQLITEPLUS_FORCE_RESET` mientras una conexión sigue abierta en el mismo bucle de eventos, el gestor la cierra, elimina el archivo `.db` y lo vuelve a crear antes de devolverte la conexión limpia. Revisa la [reinicialización automática en pruebas](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/docs/uso_avanzado.md#reinicialización-automática-en-pruebas) o el código correspondiente en [`sqliteplus/core/db.py`](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/sqliteplus/core/db.py).
+Cuando detecta pytest, `AsyncDatabaseManager` borra y recrea las bases ubicadas en `databases/` antes de abrirlas en lugar de moverlas a carpetas temporales. La detección es **perezosa**: en cada `get_connection()` vuelve a comprobar `PYTEST_CURRENT_TEST`, `SQLITEPLUS_ENV` y `SQLITEPLUS_FORCE_RESET`, por lo que puedes pedir un reinicio incluso si el gestor global ya se creó (por ejemplo, desde la app FastAPI). `SQLITEPLUS_FORCE_RESET` solo se aplica en entorno seguro (`SQLITEPLUS_ENV=test` o pytest activo); fuera de ese contexto se ignora y se registra un warning para evitar borrados accidentales en producción. Si necesitas un override manual, usa `reset_on_init=True` únicamente en pruebas o migraciones controladas. Revisa la [reinicialización automática en pruebas](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/docs/uso_avanzado.md#reinicialización-automática-en-pruebas) o el código correspondiente en [`sqliteplus/core/db.py`](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/sqliteplus/core/db.py).
 
 ### Perfilado de hotspots para priorizar Cython
 
