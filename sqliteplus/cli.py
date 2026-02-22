@@ -15,6 +15,7 @@ import csv
 import importlib
 import importlib.metadata
 import json
+import logging
 import math
 import sqlite3
 import webbrowser
@@ -24,6 +25,8 @@ from itertools import islice
 from numbers import Number
 from pathlib import Path
 from typing import Iterable
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
 
 import click
 import urllib.request
@@ -46,6 +49,10 @@ _VISUAL_EXTRA_MESSAGE = (
     "La funcionalidad visual requiere instalar el extra opcional 'visual'. "
     f"Ejecuta '{_VISUAL_EXTRA_INSTALL_COMMAND}' antes de volver a intentarlo."
 )
+
+_PYPI_FLETPLUS_URL = "https://pypi.org/pypi/fletplus/json"
+_MAX_PYPI_PAYLOAD_BYTES = 1024 * 1024
+_LOGGER = logging.getLogger(__name__)
 
 
 def _import_visual_viewer_dependencies():
@@ -95,13 +102,48 @@ def _resolve_fletplus_versions() -> dict[str, str | None]:
         return version_info
 
     try:
-        with urllib.request.urlopen("https://pypi.org/pypi/fletplus/json", timeout=5) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-            version_info["latest"] = str(payload.get("info", {}).get("version"))
-    except Exception:  # pragma: no cover - se degrada silenciosamente en modo offline
+        version_info["latest"] = _fetch_latest_fletplus_version()
+    except (URLError, TimeoutError, HTTPError) as exc:
+        _LOGGER.debug("Fallo de red consultando versión de fletplus en PyPI: %s", exc)
+        version_info["error"] = "No se pudo comprobar la última versión en PyPI."
+    except (ValueError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        _LOGGER.debug("Respuesta inválida de PyPI al consultar fletplus: %s", exc)
         version_info["error"] = "No se pudo comprobar la última versión en PyPI."
 
     return version_info
+
+
+def _fetch_latest_fletplus_version(
+    url: str = _PYPI_FLETPLUS_URL,
+    *,
+    timeout: int = 5,
+    expected_status: int = 200,
+    max_payload_bytes: int = _MAX_PYPI_PAYLOAD_BYTES,
+) -> str | None:
+    parsed_url = urlparse(url)
+    if parsed_url.scheme.lower() != "https":
+        raise ValueError("El endpoint de PyPI debe usar HTTPS.")
+
+    with urllib.request.urlopen(url, timeout=timeout) as response:
+        status_code = response.getcode()
+        if status_code != expected_status:
+            raise ValueError(
+                f"Código HTTP inesperado al consultar PyPI: {status_code}."
+            )
+
+        content_type = response.headers.get_content_type()
+        if content_type != "application/json":
+            raise ValueError(
+                f"Content-Type inesperado al consultar PyPI: {content_type}."
+            )
+
+        raw_payload = response.read(max_payload_bytes + 1)
+        if len(raw_payload) > max_payload_bytes:
+            raise ValueError("El payload de PyPI excede el tamaño máximo permitido.")
+
+    payload = json.loads(raw_payload.decode("utf-8"))
+    latest_version = payload.get("info", {}).get("version")
+    return str(latest_version) if latest_version is not None else None
 
 
 def _fetch_rows_respecting_limit(
