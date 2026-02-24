@@ -100,3 +100,53 @@ def test_rate_limiter_preserves_progressive_blocking_behavior():
     state = limiter._ip_states["127.0.0.1"]
     assert state.blocked_until == 19.0
     assert state.penalty_level == 2
+
+
+def test_rate_limiter_caps_metrics_cardinality_and_counts_drops():
+    limiter = LoginRateLimiter(
+        max_attempts=10,
+        window_seconds=60,
+        base_block_seconds=1,
+        max_block_seconds=2,
+        state_ttl_seconds=600,
+        metrics_ttl_seconds=600,
+        prune_every_ops=100,
+        max_metrics_keys=50,
+    )
+
+    for idx in range(200):
+        limiter.register_failure(
+            ip=f"192.168.1.{idx}",
+            username=f"user-{idx}",
+            now=float(idx + 1),
+        )
+
+    metrics = limiter.metrics_snapshot()
+    assert metrics["metrics_ip_size"] == 50
+    assert metrics["metrics_user_size"] == 50
+    assert metrics["metrics_dropped_total"] == 300
+
+
+def test_rate_limiter_prunes_metrics_by_ttl_on_amortized_prune_schedule():
+    limiter = LoginRateLimiter(
+        max_attempts=10,
+        window_seconds=60,
+        base_block_seconds=1,
+        max_block_seconds=2,
+        state_ttl_seconds=600,
+        metrics_ttl_seconds=10,
+        prune_every_ops=3,
+        max_metrics_keys=100,
+    )
+
+    limiter.register_failure(ip="10.10.0.1", username="alice", now=1.0)
+    metrics = limiter.metrics_snapshot()
+    assert metrics["metrics_ip_size"] == 1
+    assert metrics["metrics_user_size"] == 1
+
+    limiter.is_blocked(ip="noise", username=None, now=20.0)
+    limiter.is_blocked(ip="noise", username=None, now=20.1)
+
+    metrics = limiter.metrics_snapshot()
+    assert metrics["metrics_ip_size"] == 0
+    assert metrics["metrics_user_size"] == 0
