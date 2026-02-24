@@ -122,9 +122,20 @@ def test_rate_limiter_caps_metrics_cardinality_and_counts_drops():
         )
 
     metrics = limiter.metrics_snapshot()
+    assert metrics["failed_attempts_total"] == 200
+    assert metrics["failed_attempts_ip_total"] == 200
+    assert metrics["failed_attempts_user_total"] == 200
     assert metrics["metrics_ip_size"] == 50
     assert metrics["metrics_user_size"] == 50
     assert metrics["metrics_dropped_total"] == 300
+    retained_ips = metrics["retained_failed_by_ip"]
+    retained_users = metrics["retained_failed_by_user"]
+    assert len(retained_ips) == 50
+    assert len(retained_users) == 50
+    assert "192.168.1.0" not in retained_ips
+    assert "user-0" not in retained_users
+    assert "192.168.1.199" in retained_ips
+    assert "user-199" in retained_users
 
 
 def test_rate_limiter_prunes_metrics_by_ttl_on_amortized_prune_schedule():
