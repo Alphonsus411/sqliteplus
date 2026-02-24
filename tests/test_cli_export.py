@@ -471,3 +471,96 @@ def test_export_to_csv_accepts_spaces_and_dash(tmp_path):
 
     assert output_spaces.exists()
     assert output_dash.exists()
+
+
+class _MockResponse:
+    def __init__(self, *, status=200, content_type="application/json", body=b"{}"):
+        self.status = status
+        self.headers = {"Content-Type": content_type}
+        self._body = body
+
+    def getcode(self):
+        return self.status
+
+    def read(self, size=-1):
+        if size is None or size < 0:
+            return self._body
+        return self._body[:size]
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+
+def test_resolve_fletplus_versions_ok(monkeypatch):
+    from sqliteplus import cli as cli_module
+
+    payload = json.dumps({"info": {"version": "9.9.9"}}).encode("utf-8")
+
+    monkeypatch.setattr(cli_module.importlib.metadata, "version", lambda _: "1.0.0")
+    monkeypatch.setattr(
+        cli_module.urllib.request,
+        "urlopen",
+        lambda *args, **kwargs: _MockResponse(body=payload),
+    )
+
+    info = cli_module._resolve_fletplus_versions()
+
+    assert info["installed"] == "1.0.0"
+    assert info["latest"] == "9.9.9"
+    assert info["error"] is None
+
+
+def test_resolve_fletplus_versions_handles_invalid_content_type(monkeypatch):
+    from sqliteplus import cli as cli_module
+
+    payload = json.dumps({"info": {"version": "9.9.9"}}).encode("utf-8")
+
+    monkeypatch.setattr(cli_module.importlib.metadata, "version", lambda _: "1.0.0")
+    monkeypatch.setattr(
+        cli_module.urllib.request,
+        "urlopen",
+        lambda *args, **kwargs: _MockResponse(content_type="text/html", body=payload),
+    )
+
+    info = cli_module._resolve_fletplus_versions()
+
+    assert info["installed"] == "1.0.0"
+    assert info["latest"] is None
+    assert info["error"] == "No se pudo comprobar la última versión en PyPI."
+
+
+def test_resolve_fletplus_versions_handles_large_payload(monkeypatch):
+    from sqliteplus import cli as cli_module
+
+    monkeypatch.setattr(cli_module.importlib.metadata, "version", lambda _: "1.0.0")
+    oversized_payload = b"{" + (b"x" * (cli_module._MAX_PYPI_PAYLOAD_BYTES + 5)) + b"}"
+    monkeypatch.setattr(
+        cli_module.urllib.request,
+        "urlopen",
+        lambda *args, **kwargs: _MockResponse(body=oversized_payload),
+    )
+
+    info = cli_module._resolve_fletplus_versions()
+
+    assert info["latest"] is None
+    assert info["error"] == "No se pudo comprobar la última versión en PyPI."
+
+
+def test_resolve_fletplus_versions_handles_urlerror(monkeypatch):
+    from urllib.error import URLError
+    from sqliteplus import cli as cli_module
+
+    monkeypatch.setattr(cli_module.importlib.metadata, "version", lambda _: "1.0.0")
+
+    def _raise_urlerror(*args, **kwargs):
+        raise URLError("offline")
+
+    monkeypatch.setattr(cli_module.urllib.request, "urlopen", _raise_urlerror)
+
+    info = cli_module._resolve_fletplus_versions()
+
+    assert info["latest"] is None
+    assert info["error"] == "No se pudo comprobar la última versión en PyPI."

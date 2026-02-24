@@ -15,6 +15,7 @@ import csv
 import importlib
 import importlib.metadata
 import json
+import logging
 import math
 import sqlite3
 import webbrowser
@@ -24,6 +25,8 @@ from itertools import islice
 from numbers import Number
 from pathlib import Path
 from typing import Iterable
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
 
 import click
 import urllib.request
@@ -46,6 +49,11 @@ _VISUAL_EXTRA_MESSAGE = (
     "La funcionalidad visual requiere instalar el extra opcional 'visual'. "
     f"Ejecuta '{_VISUAL_EXTRA_INSTALL_COMMAND}' antes de volver a intentarlo."
 )
+_FLETPLUS_PYPI_URL = "https://pypi.org/pypi/fletplus/json"
+_EXPECTED_PYPI_STATUS = 200
+_MAX_PYPI_PAYLOAD_BYTES = 1_000_000
+
+logger = logging.getLogger(__name__)
 
 
 def _import_visual_viewer_dependencies():
@@ -95,13 +103,61 @@ def _resolve_fletplus_versions() -> dict[str, str | None]:
         return version_info
 
     try:
-        with urllib.request.urlopen("https://pypi.org/pypi/fletplus/json", timeout=5) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-            version_info["latest"] = str(payload.get("info", {}).get("version"))
-    except Exception:  # pragma: no cover - se degrada silenciosamente en modo offline
+        version_info["latest"] = _fetch_latest_fletplus_version()
+    except URLError as exc:  # pragma: no cover - depende de red
+        logger.debug("No se pudo conectar con PyPI para fletplus: %s", exc)
+        version_info["error"] = "No se pudo comprobar la última versión en PyPI."
+    except TimeoutError as exc:  # pragma: no cover - depende de red
+        logger.debug("Timeout consultando PyPI para fletplus: %s", exc)
+        version_info["error"] = "No se pudo comprobar la última versión en PyPI."
+    except HTTPError as exc:  # pragma: no cover - depende de red
+        logger.debug("Respuesta HTTP inválida de PyPI para fletplus: %s", exc)
+        version_info["error"] = "No se pudo comprobar la última versión en PyPI."
+    except json.JSONDecodeError as exc:  # pragma: no cover - depende de red
+        logger.debug("JSON inválido desde PyPI para fletplus: %s", exc)
+        version_info["error"] = "No se pudo comprobar la última versión en PyPI."
+    except ValueError as exc:  # pragma: no cover - validación defensiva
+        logger.debug("Respuesta de PyPI para fletplus no válida: %s", exc)
         version_info["error"] = "No se pudo comprobar la última versión en PyPI."
 
     return version_info
+
+
+def _fetch_latest_fletplus_version() -> str:
+    parsed_url = urlparse(_FLETPLUS_PYPI_URL)
+    if parsed_url.scheme != "https":
+        raise ValueError("La URL de PyPI debe usar https.")
+
+    with urllib.request.urlopen(_FLETPLUS_PYPI_URL, timeout=5) as response:
+        status_code = getattr(response, "status", response.getcode())
+        if status_code != _EXPECTED_PYPI_STATUS:
+            raise HTTPError(
+                _FLETPLUS_PYPI_URL,
+                status_code,
+                f"Se esperaba HTTP {_EXPECTED_PYPI_STATUS} y se recibió {status_code}.",
+                response.headers,
+                None,
+            )
+
+        content_type = response.headers.get("Content-Type", "")
+        media_type = content_type.split(";", 1)[0].strip().lower()
+        if media_type != "application/json":
+            raise ValueError(
+                f"Content-Type inesperado en PyPI: {content_type or 'vacío'}."
+            )
+
+        payload = response.read(_MAX_PYPI_PAYLOAD_BYTES + 1)
+        if len(payload) > _MAX_PYPI_PAYLOAD_BYTES:
+            raise ValueError(
+                f"Payload de PyPI excede {_MAX_PYPI_PAYLOAD_BYTES} bytes permitidos."
+            )
+
+    decoded_payload = json.loads(payload.decode("utf-8"))
+    latest_version = decoded_payload.get("info", {}).get("version")
+    if latest_version is None:
+        raise ValueError("La respuesta de PyPI no incluye info.version.")
+
+    return str(latest_version)
 
 
 def _fetch_rows_respecting_limit(
