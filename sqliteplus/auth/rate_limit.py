@@ -59,10 +59,12 @@ class LoginRateLimiter:
         self._ops_since_prune = 0
 
         self.failed_attempts_total = 0
+        self.failed_attempts_ip_total = 0
+        self.failed_attempts_user_total = 0
         self.blocked_requests_total = 0
         self.rate_limit_triggered_total = 0
-        self.failed_by_ip: OrderedDict[str, MetricState] = OrderedDict()
-        self.failed_by_user: OrderedDict[str, MetricState] = OrderedDict()
+        self._metrics_by_ip: OrderedDict[str, MetricState] = OrderedDict()
+        self._metrics_by_user: OrderedDict[str, MetricState] = OrderedDict()
         self.metrics_dropped_total = 0
 
     def _record_metric_failure(
@@ -125,8 +127,8 @@ class LoginRateLimiter:
 
     def _prune_metrics(self, now: float) -> None:
         ttl_cutoff = now - self.metrics_ttl_seconds
-        self._prune_metric_dict(self.failed_by_ip, ttl_cutoff)
-        self._prune_metric_dict(self.failed_by_user, ttl_cutoff)
+        self._prune_metric_dict(self._metrics_by_ip, ttl_cutoff)
+        self._prune_metric_dict(self._metrics_by_user, ttl_cutoff)
 
     def _prune_metric_dict(
         self,
@@ -205,9 +207,11 @@ class LoginRateLimiter:
         current = now if now is not None else time.time()
         self._maybe_prune_states(current)
         self.failed_attempts_total += 1
-        self._record_metric_failure(self.failed_by_ip, ip, current)
+        self.failed_attempts_ip_total += 1
+        self._record_metric_failure(self._metrics_by_ip, ip, current)
         if username:
-            self._record_metric_failure(self.failed_by_user, username, current)
+            self.failed_attempts_user_total += 1
+            self._record_metric_failure(self._metrics_by_user, username, current)
 
         ip_state = self._ip_states.setdefault(ip, AttemptState())
         ip_limited = self._register_failure_state(ip_state, current)
@@ -244,18 +248,20 @@ class LoginRateLimiter:
     def metrics_snapshot(self) -> dict[str, object]:
         return {
             "failed_attempts_total": self.failed_attempts_total,
+            "failed_attempts_ip_total": self.failed_attempts_ip_total,
+            "failed_attempts_user_total": self.failed_attempts_user_total,
             "blocked_requests_total": self.blocked_requests_total,
             "rate_limit_triggered_total": self.rate_limit_triggered_total,
             "ip_states_size": len(self._ip_states),
             "user_states_size": len(self._user_states),
-            "failed_by_ip": {
-                key: state.failures for key, state in self.failed_by_ip.items()
+            "retained_failed_by_ip": {
+                key: state.failures for key, state in self._metrics_by_ip.items()
             },
-            "failed_by_user": {
-                key: state.failures for key, state in self.failed_by_user.items()
+            "retained_failed_by_user": {
+                key: state.failures for key, state in self._metrics_by_user.items()
             },
-            "metrics_ip_size": len(self.failed_by_ip),
-            "metrics_user_size": len(self.failed_by_user),
+            "metrics_ip_size": len(self._metrics_by_ip),
+            "metrics_user_size": len(self._metrics_by_user),
             "metrics_dropped_total": self.metrics_dropped_total,
         }
 
@@ -295,10 +301,12 @@ class LoginRateLimiter:
         self._ip_states.clear()
         self._user_states.clear()
         self.failed_attempts_total = 0
+        self.failed_attempts_ip_total = 0
+        self.failed_attempts_user_total = 0
         self.blocked_requests_total = 0
         self.rate_limit_triggered_total = 0
-        self.failed_by_ip.clear()
-        self.failed_by_user.clear()
+        self._metrics_by_ip.clear()
+        self._metrics_by_user.clear()
         self.metrics_dropped_total = 0
         self._ops_since_prune = 0
 
