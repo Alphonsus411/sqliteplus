@@ -144,6 +144,29 @@ def _map_sql_error(exc: Exception, table_name: str) -> HTTPException:
         table_name=table_name,
     )
 
+
+def _map_insert_integrity_error(exc: Exception, table_name: str) -> HTTPException:
+    """Mapea violaciones de integridad en inserciones a mensajes seguros."""
+
+    normalized = str(exc).lower()
+
+    if "unique" in normalized:
+        public_detail = "No se pudo insertar por restricción de unicidad"
+    elif "foreign key" in normalized:
+        public_detail = "No se pudo insertar por restricción de referencia"
+    elif "not null" in normalized:
+        public_detail = "No se pudo insertar por campos obligatorios faltantes"
+    else:
+        public_detail = "No se pudo insertar por restricción de datos"
+
+    return build_safe_http_error(
+        status_code=409,
+        public_detail=public_detail,
+        log_message="Error de integridad al insertar en tabla '%s'" % table_name,
+        exc=exc,
+        table_name=table_name,
+    )
+
 @router.post("/token", tags=["Autenticación"], summary="Obtener un token de autenticación", description="Genera un token JWT válido por 1 hora.")
 async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     client_ip = request.client.host if request.client else "unknown"
@@ -251,10 +274,7 @@ async def insert_data(db_name: str, table_name: str, schema: InsertDataSchema, u
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except aiosqlite.IntegrityError as exc:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Violación de restricción: {exc}",
-        ) from exc
+        raise _map_insert_integrity_error(exc, table_name) from exc
     except (OperationalError, aiosqlite.OperationalError) as exc:
         raise _map_sql_error(exc, table_name) from exc
     return {"message": "Datos insertados", "row_id": row_id}
