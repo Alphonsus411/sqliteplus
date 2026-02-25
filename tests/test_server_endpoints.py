@@ -1,4 +1,5 @@
 import pytest
+import aiosqlite
 from sqlite3 import OperationalError
 
 
@@ -233,3 +234,27 @@ async def test_create_table_error_detail_hides_sql_and_paths(client, auth_header
     assert "/abs/private" not in detail
     assert "select *" not in detail.lower()
     assert "traceback" not in detail.lower()
+
+
+@pytest.mark.asyncio
+async def test_insert_integrity_error_hides_sql_and_schema_details(client, auth_headers, monkeypatch):
+    async def _failing_execute_query(_db_name, _query, _params=None):
+        raise aiosqlite.IntegrityError(
+            "UNIQUE constraint failed: users.email; index ux_users_email; SQL: INSERT INTO users(email) VALUES('a@x.com')"
+        )
+
+    monkeypatch.setattr("sqliteplus.api.endpoints.db_manager.execute_query", _failing_execute_query)
+
+    response = await client.post(
+        "/databases/test_db_api/insert",
+        params={"table_name": "users"},
+        json={"values": {"email": "a@x.com"}},
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 409
+    detail = response.json()["detail"]
+    assert detail == "No se pudo insertar por restricción de unicidad"
+    assert "users" not in detail.lower()
+    assert "index" not in detail.lower()
+    assert "insert into" not in detail.lower()
