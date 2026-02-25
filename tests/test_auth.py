@@ -11,12 +11,13 @@ from types import ModuleType
 from datetime import datetime, timedelta, timezone
 
 import pytest
+from fastapi import HTTPException
 from httpx import AsyncClient, ASGITransport
 import jwt
 import bcrypt
 
 from sqliteplus.main import app
-from sqliteplus.auth.jwt import ALGORITHM, get_secret_key
+from sqliteplus.auth.jwt import ALGORITHM, generate_jwt, get_secret_key, verify_jwt
 from sqliteplus.auth.rate_limit import (
     get_login_rate_limit_metrics,
     reset_login_rate_limiter,
@@ -116,7 +117,7 @@ async def test_protected_endpoint_requires_subject_claim():
         )
 
     assert response.status_code == 401
-    assert response.json()["detail"] == "Token inválido: sujeto no disponible"
+    assert response.json()["detail"] == "Token inválido"
 
 
 def test_jwt_requires_secret_key(monkeypatch):
@@ -141,6 +142,77 @@ def test_jwt_requires_secret_key(monkeypatch):
 
     module = importlib.import_module(module_name)
     assert module.get_secret_key() == restored_secret
+
+
+def test_verify_jwt_rejects_missing_issuer_audience_when_strict(monkeypatch):
+    monkeypatch.setenv("SECRET_KEY", secrets.token_urlsafe(32))
+    monkeypatch.setenv("JWT_STRICT_CLAIMS", "1")
+    monkeypatch.setenv("JWT_ISSUER", "sqliteplus")
+    monkeypatch.setenv("JWT_AUDIENCE", "sqliteplus-api")
+
+    token_without_iss_aud = jwt.encode(
+        {
+            "sub": "admin",
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+            "iat": datetime.now(timezone.utc),
+            "nbf": datetime.now(timezone.utc),
+        },
+        get_secret_key(),
+        algorithm=ALGORITHM,
+    )
+
+    with pytest.raises(HTTPException) as excinfo:
+        verify_jwt(token_without_iss_aud)
+
+    assert excinfo.value.status_code == 401
+    assert excinfo.value.detail == "Token inválido"
+
+
+def test_verify_jwt_rejects_wrong_audience_when_strict(monkeypatch):
+    monkeypatch.setenv("SECRET_KEY", secrets.token_urlsafe(32))
+    monkeypatch.setenv("JWT_STRICT_CLAIMS", "1")
+    monkeypatch.setenv("JWT_ISSUER", "sqliteplus")
+    monkeypatch.setenv("JWT_AUDIENCE", "sqliteplus-api")
+
+    token_wrong_aud = jwt.encode(
+        {
+            "sub": "admin",
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+            "iat": datetime.now(timezone.utc),
+            "nbf": datetime.now(timezone.utc),
+            "iss": "sqliteplus",
+            "aud": "otro-audience",
+        },
+        get_secret_key(),
+        algorithm=ALGORITHM,
+    )
+
+    with pytest.raises(HTTPException) as excinfo:
+        verify_jwt(token_wrong_aud)
+
+    assert excinfo.value.status_code == 401
+    assert excinfo.value.detail == "Token inválido"
+
+
+def test_jwt_rejects_short_secret(monkeypatch):
+    monkeypatch.setenv("SECRET_KEY", "demasiado-corta")
+
+    with pytest.raises(RuntimeError) as excinfo:
+        get_secret_key()
+
+    assert "al menos 32 caracteres" in str(excinfo.value)
+
+
+def test_jwt_valid_token_with_strict_claims(monkeypatch):
+    monkeypatch.setenv("SECRET_KEY", secrets.token_urlsafe(32))
+    monkeypatch.setenv("JWT_STRICT_CLAIMS", "1")
+    monkeypatch.setenv("JWT_ISSUER", "sqliteplus")
+    monkeypatch.setenv("JWT_AUDIENCE", "sqliteplus-api")
+
+    token = generate_jwt("admin")
+    subject = verify_jwt(token)
+
+    assert subject == "admin"
 
 
 def _write_users_file(path, password: str, *, timestamp_offset: float = 0.0) -> None:
