@@ -481,6 +481,76 @@ class TestAsyncDatabaseManagerResetSafety(unittest.IsolatedAsyncioTestCase):
                     os.environ.pop("SQLITEPLUS_FORCE_RESET", None)
                     await manager.close_connections()
 
+    async def test_no_reset_keeps_wal_and_shm_files(self):
+        """Sin reset explícito no se deben eliminar archivos auxiliares WAL/SHM."""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_dir = Path(tmpdir)
+            db_name = "keep_aux_files"
+            db_path = (base_dir / f"{db_name}.db").resolve()
+            wal_path = Path(f"{db_path}-wal")
+            shm_path = Path(f"{db_path}-shm")
+
+            db_path.write_bytes(b"sqlite-content")
+            wal_path.write_bytes(b"wal-content")
+            shm_path.write_bytes(b"shm-content")
+
+            fake_connection = mock.AsyncMock()
+            fake_connection.execute = mock.AsyncMock(return_value=mock.AsyncMock())
+            fake_connection.commit = mock.AsyncMock()
+            fake_connection.close = mock.AsyncMock()
+
+            with mock.patch("sqliteplus.core.db.aiosqlite.connect", new=mock.AsyncMock(return_value=fake_connection)):
+                manager = AsyncDatabaseManager(
+                    base_dir=base_dir,
+                    require_encryption=False,
+                    reset_on_init=False,
+                )
+                try:
+                    await manager.get_connection(db_name)
+                finally:
+                    await manager.close_connections()
+
+            self.assertTrue(db_path.exists())
+            self.assertTrue(wal_path.exists())
+            self.assertTrue(shm_path.exists())
+            self.assertEqual(wal_path.read_bytes(), b"wal-content")
+            self.assertEqual(shm_path.read_bytes(), b"shm-content")
+
+    async def test_reset_enabled_removes_database_and_auxiliary_files(self):
+        """Con reset habilitado se deben limpiar base y archivos WAL/SHM."""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_dir = Path(tmpdir)
+            db_name = "reset_aux_files"
+            db_path = (base_dir / f"{db_name}.db").resolve()
+            wal_path = Path(f"{db_path}-wal")
+            shm_path = Path(f"{db_path}-shm")
+
+            db_path.write_bytes(b"db-content")
+            wal_path.write_bytes(b"wal-content")
+            shm_path.write_bytes(b"shm-content")
+
+            fake_connection = mock.AsyncMock()
+            fake_connection.execute = mock.AsyncMock(return_value=mock.AsyncMock())
+            fake_connection.commit = mock.AsyncMock()
+            fake_connection.close = mock.AsyncMock()
+
+            with mock.patch("sqliteplus.core.db.aiosqlite.connect", new=mock.AsyncMock(return_value=fake_connection)):
+                manager = AsyncDatabaseManager(
+                    base_dir=base_dir,
+                    require_encryption=False,
+                    reset_on_init=True,
+                )
+                try:
+                    await manager.get_connection(db_name)
+                finally:
+                    await manager.close_connections()
+
+            self.assertFalse(db_path.exists())
+            self.assertFalse(wal_path.exists())
+            self.assertFalse(shm_path.exists())
+
     async def test_force_reset_recreates_connection_in_test_mode(self):
         """`SQLITEPLUS_FORCE_RESET` debe reinicializar la base en modo seguro de pruebas."""
 
