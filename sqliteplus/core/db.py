@@ -164,19 +164,20 @@ class AsyncDatabaseManager:
                                 canonical_name,
                                 exc,
                             )
-                    wal_shm_paths = [Path(f"{db_path}{suffix}") for suffix in ("-wal", "-shm")]
-                    for extra_path in wal_shm_paths:
-                        try:
-                            extra_path.unlink()
-                        except FileNotFoundError:
-                            continue
-                        except OSError as exc:
-                            logger.warning(
-                                "No se pudo eliminar el archivo auxiliar '%s' para la base '%s': %s",
-                                extra_path,
-                                canonical_name,
-                                exc,
-                            )
+                    if should_reset:
+                        wal_shm_paths = [Path(f"{db_path}{suffix}") for suffix in ("-wal", "-shm")]
+                        for extra_path in wal_shm_paths:
+                            try:
+                                extra_path.unlink()
+                            except FileNotFoundError:
+                                continue
+                            except OSError as exc:
+                                logger.warning(
+                                    "No se pudo eliminar el archivo auxiliar '%s' para la base '%s': %s",
+                                    extra_path,
+                                    canonical_name,
+                                    exc,
+                                )
                 raw_encryption_key = os.getenv("SQLITE_DB_KEY")
                 stripped_encryption_key = None
                 if raw_encryption_key is not None:
