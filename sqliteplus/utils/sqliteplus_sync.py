@@ -87,12 +87,16 @@ else:
         if not isinstance(cipher_key, str):
             raise SQLitePlusCipherError(message=GENERIC_SECURITY_ERROR_MESSAGE)
 
-        escaped_key = cipher_key.replace("'", "''")
+        stripped_cipher_key = cipher_key.strip()
+        if not stripped_cipher_key:
+            return
+
+        escaped_key = stripped_cipher_key.replace("'", "''")
         try:
             connection.execute(f"PRAGMA key = '{escaped_key}';")
             cipher_version_row = connection.execute("PRAGMA cipher_version;").fetchone()
             verify_cipher_support(
-                cipher_key=cipher_key,
+                cipher_key=stripped_cipher_key,
                 cipher_version_row=cipher_version_row,
                 exception_factory=lambda message: SQLitePlusCipherError(message=message),
                 security_message=GENERIC_SECURITY_ERROR_MESSAGE,
@@ -116,7 +120,8 @@ else:
 
             normalized_path = Path(resolved_db_path).expanduser().resolve()
             self.db_path = str(normalized_path)
-            self.cipher_key = cipher_key if cipher_key is not None else os.getenv("SQLITE_DB_KEY")
+            resolved_cipher_key = cipher_key if cipher_key is not None else os.getenv("SQLITE_DB_KEY")
+            self.cipher_key = resolved_cipher_key.strip() if isinstance(resolved_cipher_key, str) else None
             directory = os.path.dirname(self.db_path)
             if directory:
                 os.makedirs(directory, exist_ok=True)
