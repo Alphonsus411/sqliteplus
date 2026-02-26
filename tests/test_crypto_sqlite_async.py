@@ -54,7 +54,7 @@ async def test_async_manager_rejects_when_cipher_pragma_is_empty(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_async_manager_rejects_blank_cipher_key_even_if_not_required(tmp_path):
+async def test_async_manager_allows_blank_cipher_key_when_not_required(tmp_path):
     fake_connection = mock.AsyncMock()
     fake_connection.execute = mock.AsyncMock(return_value=mock.AsyncMock())
     fake_connection.commit = mock.AsyncMock()
@@ -63,8 +63,27 @@ async def test_async_manager_rejects_blank_cipher_key_even_if_not_required(tmp_p
     with mock.patch("sqliteplus.core.db.aiosqlite.connect", new=mock.AsyncMock(return_value=fake_connection)):
         with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": "   "}, clear=False):
             manager = AsyncDatabaseManager(base_dir=tmp_path, require_encryption=False)
-            with pytest.raises(HTTPException, match="políticas de seguridad") as exc:
-                await manager.get_connection("blank_key_async")
+            connection = await manager.get_connection("blank_key_async")
+
+    assert connection is fake_connection
+    executed_commands = [call.args[0] for call in fake_connection.execute.await_args_list]
+    assert "PRAGMA key = '';" not in executed_commands
+    assert all(not command.startswith("PRAGMA key =") for command in executed_commands)
+    await manager.close_connections()
+
+
+@pytest.mark.asyncio
+async def test_async_manager_rejects_blank_cipher_key_when_required(tmp_path):
+    fake_connection = mock.AsyncMock()
+    fake_connection.execute = mock.AsyncMock(return_value=mock.AsyncMock())
+    fake_connection.commit = mock.AsyncMock()
+    fake_connection.close = mock.AsyncMock()
+
+    with mock.patch("sqliteplus.core.db.aiosqlite.connect", new=mock.AsyncMock(return_value=fake_connection)):
+        with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": "   "}, clear=False):
+            manager = AsyncDatabaseManager(base_dir=tmp_path, require_encryption=True)
+            with pytest.raises(HTTPException, match="no puede estar vacía") as exc:
+                await manager.get_connection("blank_key_required_async")
 
     assert exc.value.status_code == 503
-    fake_connection.close.assert_awaited_once()
+    fake_connection.close.assert_not_awaited()

@@ -183,28 +183,33 @@ class AsyncDatabaseManager:
                 if raw_encryption_key is not None:
                     stripped_encryption_key = raw_encryption_key.strip()
 
-                if self.require_encryption and (
-                    stripped_encryption_key is None or stripped_encryption_key == ""
-                ):
+                encryption_key = stripped_encryption_key
+                if encryption_key == "" and not self.require_encryption:
+                    encryption_key = None
+
+                if self.require_encryption and (encryption_key is None or encryption_key == ""):
                     logger.error(
                         "Clave de cifrado ausente o vacía en la variable de entorno 'SQLITE_DB_KEY'"
                     )
                     raise HTTPException(
                         status_code=503,
-                        detail="Base de datos no disponible: falta la clave de cifrado requerida",
+                        detail=(
+                            "Base de datos no disponible: SQLITE_DB_KEY es obligatoria "
+                            "y no puede estar vacía"
+                        ),
                     )
 
                 connection = None
                 try:
                     connection = await aiosqlite.connect(str(db_path))
-                    if raw_encryption_key is not None:
-                        escaped_key = raw_encryption_key.replace("'", "''")
+                    if encryption_key is not None:
+                        escaped_key = encryption_key.replace("'", "''")
                         try:
                             await connection.execute(f"PRAGMA key = '{escaped_key}';")
                             cipher_version_cursor = await connection.execute("PRAGMA cipher_version;")
                             cipher_version_row = await cipher_version_cursor.fetchone()
                             verify_cipher_support(
-                                cipher_key=raw_encryption_key,
+                                cipher_key=encryption_key,
                                 cipher_version_row=cipher_version_row,
                                 exception_factory=lambda message: HTTPException(
                                     status_code=503,
