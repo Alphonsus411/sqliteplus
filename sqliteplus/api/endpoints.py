@@ -27,11 +27,16 @@ from sqliteplus.core.schemas import (
 )
 from sqliteplus.auth.jwt import generate_jwt, verify_jwt
 from sqliteplus.auth.users import get_user_service, UserSourceError
-from sqliteplus.auth.rate_limit import login_rate_limiter
+from sqliteplus.auth.rate_limit import LoginRateLimiter, login_rate_limiter
 from sqliteplus.utils.json_serialization import normalize_json_value
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+def get_login_rate_limiter() -> LoginRateLimiter:
+    return login_rate_limiter
+
 
 
 def build_safe_http_error(
@@ -168,11 +173,15 @@ def _map_insert_integrity_error(exc: Exception, table_name: str) -> HTTPExceptio
     )
 
 @router.post("/token", tags=["Autenticación"], summary="Obtener un token de autenticación", description="Genera un token JWT válido por 1 hora.")
-async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(
+    request: Request,
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    rate_limiter: LoginRateLimiter = Depends(get_login_rate_limiter),
+):
     client_ip = request.client.host if request.client else "unknown"
     username = form_data.username or None
 
-    if login_rate_limiter.is_blocked(ip=client_ip, username=username):
+    if rate_limiter.is_blocked(ip=client_ip, username=username):
         logger.warning(
             "Intento de autenticación bloqueado por rate limit",
             extra={"context": {"username": username, "client_ip": client_ip}},
@@ -205,7 +214,7 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
                     exc=exc,
                     username=form_data.username,
                 ) from exc
-            login_rate_limiter.register_success(ip=client_ip, username=username)
+            rate_limiter.register_success(ip=client_ip, username=username)
             return {"access_token": token, "token_type": "bearer"}
     except UserSourceError as exc:
         raise build_safe_http_error(
@@ -216,7 +225,7 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
             username=form_data.username,
         ) from exc
 
-    login_rate_limiter.register_failure(ip=client_ip, username=username)
+    rate_limiter.register_failure(ip=client_ip, username=username)
     logger.warning(
         "Intento de autenticación fallido",
         extra={"context": {"username": username, "client_ip": client_ip}},
