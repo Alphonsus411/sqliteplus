@@ -29,6 +29,7 @@ from sqliteplus.auth.jwt import generate_jwt, verify_jwt
 from sqliteplus.auth.users import get_user_service, UserSourceError
 from sqliteplus.auth.rate_limit import LoginRateLimiter, login_rate_limiter
 from sqliteplus.utils.json_serialization import normalize_json_value
+from sqliteplus.api.client_ip import get_client_ip
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -178,7 +179,7 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     rate_limiter: LoginRateLimiter = Depends(get_login_rate_limiter),
 ):
-    client_ip = request.client.host if request.client else "unknown"
+    client_ip = get_client_ip(request)
     username = form_data.username or None
 
     if rate_limiter.is_blocked(ip=client_ip, username=username):
