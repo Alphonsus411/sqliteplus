@@ -72,6 +72,13 @@ def _try_decode_ascii(value) -> str | None:
 bcrypt = _build_bcrypt_adapter()
 logger = logging.getLogger(__name__)
 
+# Hash bcrypt válido precomputado para ejecutar una verificación señuelo cuando
+# el usuario no existe y así mantener un coste computacional similar.
+_DUMMY_BCRYPT_HASH = (
+    "compatbcrypt$-xX2q82qpzgjY5QPepN0Tw$"
+    "PyYjiRJAzz0TDudvbO3ArTvNn7ac4iOvvvhm2ig2KTg"
+)
+
 
 class UserSourceError(RuntimeError):
     """Señala problemas para cargar la fuente de usuarios."""
@@ -110,11 +117,13 @@ class UserCredentialsService:
         """Valida que el usuario exista y que la contraseña coincida."""
 
         stored_hash = self.users.get(username)
-        if not stored_hash:
-            return False
+        user_exists = bool(stored_hash)
+        hash_to_check = stored_hash or _DUMMY_BCRYPT_HASH
 
         try:
-            return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
+            password_matches = bcrypt.checkpw(
+                password.encode("utf-8"), hash_to_check.encode("utf-8")
+            )
         except ValueError as exc:
             # ``bcrypt`` eleva ``ValueError`` cuando el hash almacenado tiene un
             # formato incompatible (por ejemplo, si fue generado con la versión
@@ -122,10 +131,12 @@ class UserCredentialsService:
             # Python).  En lugar de tratarlo como credenciales inválidas,
             # exponemos un error descriptivo para guiar al usuario.
             raise UserSourceError(
-                "El hash de la contraseña almacenado no es compatible con la "
+                "El hash de la contraseña configurado no es compatible con la "
                 "implementación disponible de bcrypt. Instala la dependencia "
-                "'bcrypt' oficial para validar credenciales existentes."
+                "'bcrypt' oficial para validar credenciales."
             ) from exc
+
+        return user_exists and password_matches
 
 
 _cached_service: UserCredentialsService | None = None

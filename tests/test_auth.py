@@ -330,6 +330,38 @@ def test_verify_credentials_reports_incompatible_hash(tmp_path, monkeypatch):
     assert "bcrypt" in str(excinfo.value)
 
 
+def test_verify_credentials_executes_checkpw_when_user_missing(monkeypatch):
+    service = users_module.UserCredentialsService(users={})
+    calls = []
+
+    def checkpw_spy(password: bytes, stored: bytes) -> bool:
+        calls.append((password, stored))
+        return False
+
+    monkeypatch.setattr("sqliteplus.auth.users.bcrypt.checkpw", checkpw_spy)
+
+    assert service.verify_credentials("ghost", "secret") is False
+    assert len(calls) == 1
+    assert calls[0][0] == b"secret"
+    assert calls[0][1] == users_module._DUMMY_BCRYPT_HASH.encode("utf-8")
+
+
+def test_verify_credentials_executes_checkpw_when_user_exists(monkeypatch):
+    service = users_module.UserCredentialsService(users={"admin": "stored-hash"})
+    calls = []
+
+    def checkpw_spy(password: bytes, stored: bytes) -> bool:
+        calls.append((password, stored))
+        return True
+
+    monkeypatch.setattr("sqliteplus.auth.users.bcrypt.checkpw", checkpw_spy)
+
+    assert service.verify_credentials("admin", "secret") is True
+    assert len(calls) == 1
+    assert calls[0][0] == b"secret"
+    assert calls[0][1] == b"stored-hash"
+
+
 def test_verify_credentials_accepts_compat_hash_with_native_backend(tmp_path, monkeypatch):
     compat_bcrypt = importlib.import_module("sqliteplus._compat.bcrypt")
     compat_hash = compat_bcrypt.hashpw(b"bridge-pass", compat_bcrypt.gensalt()).decode("ascii")
