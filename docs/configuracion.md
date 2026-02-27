@@ -13,7 +13,20 @@
 | `SQLITEPLUS_FORCE_RESET` | Solicita la reinicialización de las bases (valores `1`, `true` o `on`) **solo** cuando el entorno es seguro (`SQLITEPLUS_ENV=test` o `PYTEST_CURRENT_TEST`). Fuera de ese contexto se ignora y se emite un warning en logs. |
 | `SQLITEPLUS_ALLOW_WEAK_USERS_FILE_PERMS` | Permite cargar archivos `SQLITEPLUS_USERS_FILE` con permisos POSIX débiles (grupo/otros). Úsalo solo para compatibilidad legacy (`1`) y con warnings explícitos en logs. |
 | `SQLITEPLUS_USERS_FILE` | Ruta (admite `~`) del archivo JSON con usuarios y hashes `bcrypt`. Solo es obligatorio al exponer la API/autenticación. |
+| `TRUSTED_PROXIES` | Lista separada por comas de IPs o CIDRs de proxies confiables (ej. `127.0.0.1,10.0.0.0/8`). **Por defecto está vacía** y no se confía en `Forwarded`/`X-Forwarded-For`. |
 | `SQLITE_DB_KEY` | Clave SQLCipher opcional. Si no existe, se omite el cifrado. |
+
+## Resolución de IP cliente detrás de proxy
+
+El endpoint `POST /token` usa `REMOTE_ADDR` como fuente principal de IP cliente.
+
+- Si `TRUSTED_PROXIES` **no** está definida (comportamiento por defecto), se ignoran
+  las cabeceras `Forwarded` y `X-Forwarded-For`.
+- Si `REMOTE_ADDR` coincide con alguna IP/red en `TRUSTED_PROXIES`, se permite usar
+  `Forwarded` (prioridad) o `X-Forwarded-For` para identificar la IP original.
+
+Esto evita que clientes externos falseen su IP cuando el servidor no está detrás de
+un proxy explícitamente confiable.
 
 ## Directorios de trabajo
 

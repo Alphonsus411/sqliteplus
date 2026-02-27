@@ -2,6 +2,8 @@ import pytest
 import aiosqlite
 from sqlite3 import OperationalError
 
+from sqliteplus.auth.rate_limit import login_rate_limiter
+
 
 DB_NAME = "test_db_api"
 TABLE_NAME = "logs"
@@ -258,3 +260,40 @@ async def test_insert_integrity_error_hides_sql_and_schema_details(client, auth_
     assert "users" not in detail.lower()
     assert "index" not in detail.lower()
     assert "insert into" not in detail.lower()
+
+
+@pytest.mark.asyncio
+async def test_login_rate_limit_uses_remote_addr_when_proxy_not_trusted(client, monkeypatch):
+    monkeypatch.delenv("TRUSTED_PROXIES", raising=False)
+
+    for idx in range(5):
+        response = await client.post(
+            "/token",
+            data={"username": f"no-proxy-{idx}", "password": "invalid"},
+            headers={"X-Forwarded-For": f"198.51.100.{idx}"},
+        )
+        assert response.status_code == 401
+
+    metrics = login_rate_limiter.metrics_snapshot()
+    retained = metrics["retained_failed_by_ip"]
+    assert retained.get("127.0.0.1") == 5
+    assert "198.51.100.1" not in retained
+
+
+@pytest.mark.asyncio
+async def test_login_rate_limit_uses_forwarded_ip_when_proxy_is_trusted(client, monkeypatch):
+    monkeypatch.setenv("TRUSTED_PROXIES", "127.0.0.1")
+
+    for idx in range(5):
+        response = await client.post(
+            "/token",
+            data={"username": f"trusted-proxy-{idx}", "password": "invalid"},
+            headers={"X-Forwarded-For": f"198.51.100.{idx}"},
+        )
+        assert response.status_code == 401
+
+    metrics = login_rate_limiter.metrics_snapshot()
+    retained = metrics["retained_failed_by_ip"]
+    assert retained.get("198.51.100.0") == 1
+    assert retained.get("198.51.100.4") == 1
+    assert "127.0.0.1" not in retained

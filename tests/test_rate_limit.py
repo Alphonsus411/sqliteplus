@@ -1,3 +1,6 @@
+from starlette.requests import Request
+
+from sqliteplus.api.client_ip import get_client_ip
 from sqliteplus.auth.rate_limit import LoginRateLimiter
 from sqliteplus.auth.rate_limit_store import InMemoryRateLimitStore
 
@@ -145,3 +148,52 @@ def test_shared_store_exposes_consistent_metrics_snapshot():
     assert metrics["failed_attempts_ip_total"] == 1
     assert metrics["failed_attempts_user_total"] == 1
     assert metrics["blocked_requests_total"] == 0
+
+
+def _build_request(*, client_host: str, headers: list[tuple[bytes, bytes]] | None = None) -> Request:
+    scope = {
+        "type": "http",
+        "http_version": "1.1",
+        "method": "POST",
+        "path": "/token",
+        "raw_path": b"/token",
+        "query_string": b"",
+        "headers": headers or [],
+        "client": (client_host, 4242),
+        "server": ("testserver", 80),
+        "scheme": "http",
+    }
+    return Request(scope)
+
+
+def test_client_ip_ignores_forwarding_headers_without_trusted_proxy(monkeypatch):
+    monkeypatch.delenv("TRUSTED_PROXIES", raising=False)
+    request = _build_request(
+        client_host="203.0.113.10",
+        headers=[(b"x-forwarded-for", b"198.51.100.7")],
+    )
+
+    assert get_client_ip(request) == "203.0.113.10"
+
+
+def test_client_ip_uses_forwarding_headers_with_trusted_proxy(monkeypatch):
+    monkeypatch.setenv("TRUSTED_PROXIES", "203.0.113.10")
+    request = _build_request(
+        client_host="203.0.113.10",
+        headers=[(b"x-forwarded-for", b"198.51.100.7, 203.0.113.10")],
+    )
+
+    assert get_client_ip(request) == "198.51.100.7"
+
+
+def test_client_ip_prioritizes_forwarded_header_over_xff(monkeypatch):
+    monkeypatch.setenv("TRUSTED_PROXIES", "203.0.113.10")
+    request = _build_request(
+        client_host="203.0.113.10",
+        headers=[
+            (b"forwarded", b'for="198.51.100.9";proto=https;by=proxy'),
+            (b"x-forwarded-for", b"198.51.100.7"),
+        ],
+    )
+
+    assert get_client_ip(request) == "198.51.100.9"

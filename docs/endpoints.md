@@ -7,6 +7,9 @@ ruta de autenticación `token` (que se publicará respetando el `root_path`).
 
 - `POST /token` – genera un JWT firmado con `SECRET_KEY`. Usa el archivo `SQLITEPLUS_USERS_FILE` y se
   mostrará como `<prefijo>/token` cuando la app se monte bajo un prefijo.
+- La IP cliente para rate-limit se obtiene de `REMOTE_ADDR` por defecto. Solo si
+  `TRUSTED_PROXIES` contiene la IP/red del proxy remoto se evalúan cabeceras
+  `Forwarded`/`X-Forwarded-For`.
 
 ## Gestión de bases y tablas
 
