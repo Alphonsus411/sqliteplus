@@ -141,3 +141,4 @@ Respuesta de ejemplo:
 - Todos los endpoints (excepto `token`) exigen `Authorization: Bearer <token>`.
 - Los nombres de base de datos se normalizan y deben terminar en `.db` o se añade el sufijo.
 - Los gestores asincrónico y síncrono fuerzan `PRAGMA journal_mode=WAL` para mejorar la concurrencia.
+- Si `SQLITE_DB_KEY` está definida pero vacía, la API devolverá `503 Service Unavailable` en todas las operaciones de base de datos.

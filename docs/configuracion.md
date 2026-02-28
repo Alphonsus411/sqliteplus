@@ -14,7 +14,7 @@
 | `SQLITEPLUS_ALLOW_WEAK_USERS_FILE_PERMS` | Permite cargar archivos `SQLITEPLUS_USERS_FILE` con permisos POSIX débiles (grupo/otros). Úsalo solo para compatibilidad legacy (`1`) y con warnings explícitos en logs. |
 | `SQLITEPLUS_USERS_FILE` | Ruta (admite `~`) del archivo JSON con usuarios y hashes `bcrypt`. Solo es obligatorio al exponer la API/autenticación. |
 | `TRUSTED_PROXIES` | Lista separada por comas de IPs o CIDRs de proxies confiables (ej. `127.0.0.1,10.0.0.0/8`). **Por defecto está vacía** y no se confía en `Forwarded`/`X-Forwarded-For`. |
-| `SQLITE_DB_KEY` | Clave SQLCipher opcional. Si no existe, se omite el cifrado. |
+| `SQLITE_DB_KEY` | Clave SQLCipher. Si no se define, se usa modo texto plano. Si se define vacía, la API devuelve error 503 por seguridad. |
 
 ## Resolución de IP cliente detrás de proxy
 

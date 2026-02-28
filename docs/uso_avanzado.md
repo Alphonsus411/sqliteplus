@@ -25,8 +25,8 @@ Cuando se reutiliza el mismo nombre de base en distintos bucles de eventos (por 
 errores de "conexión ligada a otro loop".
 
 ## Aplicar SQLCipher solo si existe clave
-
-Si `SQLITE_DB_KEY` está vacío, la API trabaja sin cifrado. Al definir la variable se ejecuta
+Si `SQLITE_DB_KEY` no está definida, la API trabaja sin cifrado. Si se define como una cadena vacía,
+se devuelve un error 503 por seguridad. Al definir la variable con un valor no vacío se ejecuta
 `PRAGMA key` y se propagan los posibles errores de SQLCipher en los logs.
 
 ## Replicación y exportaciones automatizadas
