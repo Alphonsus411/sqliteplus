@@ -12,6 +12,7 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     raise SystemExit()
 
 import logging
+import os
 from typing import Sequence
 
 import aiosqlite
@@ -33,6 +34,21 @@ from sqliteplus.api.client_ip import get_client_ip
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+DEFAULT_FETCH_LIMIT = 100
+DEFAULT_FETCH_MAX_LIMIT = 500
+
+
+def _resolve_fetch_max_limit() -> int:
+    raw_max_limit = os.getenv("SQLITEPLUS_FETCH_MAX_LIMIT", str(DEFAULT_FETCH_MAX_LIMIT)).strip()
+    try:
+        max_limit = int(raw_max_limit)
+    except ValueError as exc:
+        raise RuntimeError("SQLITEPLUS_FETCH_MAX_LIMIT debe ser un entero positivo") from exc
+
+    if max_limit <= 0:
+        raise RuntimeError("SQLITEPLUS_FETCH_MAX_LIMIT debe ser mayor que 0")
+    return max_limit
 
 
 def get_login_rate_limiter() -> LoginRateLimiter:
@@ -291,14 +307,47 @@ async def insert_data(db_name: str, table_name: str, schema: InsertDataSchema, u
 
 
 
-@router.get("/databases/{db_name:path}/fetch", tags=["Operaciones CRUD"], summary="Consultar datos", description="Recupera todos los registros de una tabla.")
-async def fetch_data(db_name: str, table_name: str, user: str = Depends(verify_jwt)):
+@router.get("/databases/{db_name:path}/fetch", tags=["Operaciones CRUD"], summary="Consultar datos", description="Recupera registros paginados de una tabla.")
+async def fetch_data(
+    db_name: str,
+    table_name: str,
+    limit: int = DEFAULT_FETCH_LIMIT,
+    offset: int = 0,
+    user: str = Depends(verify_jwt),
+):
     if not is_valid_sqlite_identifier(table_name):
         raise HTTPException(status_code=400, detail="Nombre de tabla inválido")
 
-    query = f"SELECT * FROM {_escape_identifier(table_name)}"
+    if offset < 0:
+        raise HTTPException(status_code=400, detail="El parámetro 'offset' debe ser mayor o igual a 0")
+
+    if limit <= 0:
+        raise HTTPException(status_code=400, detail="El parámetro 'limit' debe ser mayor que 0")
+
     try:
-        column_names, rows = await db_manager.fetch_query_with_columns(db_name, query)
+        max_limit = _resolve_fetch_max_limit()
+    except RuntimeError as exc:
+        raise build_safe_http_error(
+            status_code=500,
+            public_detail="Configuración inválida del límite de paginación",
+            log_message=str(exc),
+            exc=exc,
+        ) from exc
+
+    if limit > max_limit:
+        raise HTTPException(
+            status_code=400,
+            detail=f"El parámetro 'limit' excede el máximo permitido ({max_limit})",
+        )
+
+    query = f"SELECT * FROM {_escape_identifier(table_name)} LIMIT ? OFFSET ?"
+    try:
+        column_names, rows = await db_manager.fetch_query_with_columns_paginated(
+            db_name,
+            query,
+            (limit, offset),
+            limit=limit,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except (OperationalError, aiosqlite.OperationalError) as exc:
