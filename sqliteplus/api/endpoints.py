@@ -12,11 +12,15 @@ if __name__ == "__main__" and __package__ in {None, ""}:
     raise SystemExit()
 
 import logging
+import os
 from typing import Sequence
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 import aiosqlite
 from sqlite3 import OperationalError
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends, Request, BackgroundTasks
+from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
 from sqliteplus.core.db import db_manager
@@ -30,6 +34,7 @@ from sqliteplus.auth.users import get_user_service, UserSourceError
 from sqliteplus.auth.rate_limit import LoginRateLimiter, login_rate_limiter
 from sqliteplus.utils.json_serialization import normalize_json_value
 from sqliteplus.api.client_ip import get_client_ip
+from sqliteplus.utils.replication_sync import SQLiteReplication
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -37,7 +42,6 @@ logger = logging.getLogger(__name__)
 
 def get_login_rate_limiter() -> LoginRateLimiter:
     return login_rate_limiter
-
 
 
 def build_safe_http_error(
@@ -290,7 +294,6 @@ async def insert_data(db_name: str, table_name: str, schema: InsertDataSchema, u
     return {"message": "Datos insertados", "row_id": row_id}
 
 
-
 @router.get("/databases/{db_name:path}/fetch", tags=["Operaciones CRUD"], summary="Consultar datos", description="Recupera todos los registros de una tabla.")
 async def fetch_data(db_name: str, table_name: str, user: str = Depends(verify_jwt)):
     if not is_valid_sqlite_identifier(table_name):
@@ -320,3 +323,92 @@ async def drop_table(db_name: str, table_name: str, user: str = Depends(verify_j
     except (OperationalError, aiosqlite.OperationalError) as exc:
         raise _map_sql_error(exc, table_name) from exc
     return {"message": f"Tabla '{table_name}' eliminada de la base '{db_name}'."}
+
+
+def _cleanup_temp_file(path: str):
+    """Elimina el archivo temporal después de enviarlo."""
+    try:
+        os.unlink(path)
+    except OSError as exc:
+        logger.warning(f"No se pudo eliminar el archivo temporal '{path}': {exc}")
+
+
+@router.post("/databases/{db_name:path}/backup", tags=["Herramientas"], summary="Generar respaldo", description="Crea un archivo de respaldo (.db) y lo devuelve.")
+async def backup_database(
+    db_name: str,
+    background_tasks: BackgroundTasks,
+    user: str = Depends(verify_jwt),
+):
+    try:
+        db_path = db_manager.get_database_path(db_name)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    # Usamos ThreadPoolExecutor para no bloquear el loop principal con operaciones de I/O síncronas
+    loop = asyncio.get_running_loop()
+    try:
+        backup_file = await loop.run_in_executor(
+            None,
+            lambda: SQLiteReplication(db_path=db_path).backup_database()
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"Base de datos '{db_name}' no encontrada") from exc
+
+    background_tasks.add_task(_cleanup_temp_file, backup_file)
+    return FileResponse(
+        backup_file,
+        media_type="application/x-sqlite3",
+        filename=os.path.basename(backup_file)
+    )
+
+
+@router.get("/databases/{db_name:path}/export/{table_name}", tags=["Herramientas"], summary="Exportar tabla a CSV", description="Exporta el contenido de una tabla a formato CSV.")
+async def export_table_csv(
+    db_name: str,
+    table_name: str,
+    background_tasks: BackgroundTasks,
+    user: str = Depends(verify_jwt),
+):
+    if not is_valid_sqlite_identifier(table_name):
+        raise HTTPException(status_code=400, detail="Nombre de tabla inválido")
+
+    try:
+        db_path = db_manager.get_database_path(db_name)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    # Definimos una ruta temporal para el CSV
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tmp:
+        output_file = tmp.name
+
+    loop = asyncio.get_running_loop()
+    try:
+        # Reutilizamos la lógica robusta de exportación de SQLiteReplication
+        await loop.run_in_executor(
+            None,
+            lambda: SQLiteReplication(db_path=db_path).export_to_csv(
+                table_name, output_file, overwrite=True
+            )
+        )
+    except RuntimeError as exc:
+        _cleanup_temp_file(output_file)
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        _cleanup_temp_file(output_file)
+        raise HTTPException(status_code=404, detail=f"Base de datos '{db_name}' no encontrada") from exc
+    except ValueError as exc:
+        _cleanup_temp_file(output_file)
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        _cleanup_temp_file(output_file)
+        raise _map_sql_error(exc, table_name) from exc
+
+    background_tasks.add_task(_cleanup_temp_file, output_file)
+    return FileResponse(
+        output_file,
+        media_type="text/csv",
+        filename=f"{table_name}.csv"
+    )

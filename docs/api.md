@@ -136,6 +136,43 @@ Respuesta de ejemplo:
 
 ---
 
+## Herramientas y Utilidades
+
+### `POST /databases/{db_name}/backup`
+
+Genera una copia de seguridad completa de la base de datos (incluyendo archivos WAL/SHM si existen) y la devuelve como un archivo descargable.
+
+- **Respuesta**: Archivo binario (`application/x-sqlite3`) con el nombre `backup_YYYYMMDD_HHMMSS.db`.
+- **Errores**:
+  - `404 Not Found`: Si la base de datos no existe.
+  - `500 Internal Server Error`: Si falla la generación del respaldo.
+
+```bash
+curl -X POST "http://127.0.0.1:8000/databases/demo/backup" \
+     -H "Authorization: Bearer <TOKEN>" \
+     --output mi_respaldo.db
+```
+
+### `GET /databases/{db_name}/export/{table_name}`
+
+Exporta el contenido completo de una tabla a formato CSV.
+
+- **Parámetros de ruta**:
+  - `db_name`: Nombre de la base de datos.
+  - `table_name`: Nombre de la tabla a exportar.
+- **Respuesta**: Archivo CSV (`text/csv`) descargable.
+- **Errores**:
+  - `404 Not Found`: Si la base o la tabla no existen.
+  - `400 Bad Request`: Si el nombre de la tabla es inválido.
+
+```bash
+curl -X GET "http://127.0.0.1:8000/databases/demo/export/users" \
+     -H "Authorization: Bearer <TOKEN>" \
+     --output users.csv
+```
+
+---
+
 ## Reglas generales
 
 - Todos los endpoints (excepto `token`) exigen `Authorization: Bearer <token>`.

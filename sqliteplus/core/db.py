@@ -118,6 +118,11 @@ class AsyncDatabaseManager:
 
         return db_path.stem, db_path
 
+    def get_database_path(self, db_name: str) -> Path:
+        """Devuelve la ruta absoluta al archivo de la base de datos."""
+        _, db_path = self._normalize_db_name(db_name)
+        return db_path
+
     async def get_connection(self, db_name, *, _normalized: tuple[str, Path] | None = None):
         """
         Obtiene una conexión asíncrona a la base de datos especificada.
