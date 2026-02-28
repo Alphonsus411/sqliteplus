@@ -13,6 +13,7 @@ setup.py
 ./sqliteplus/api/endpoints.py
 ./sqliteplus/auth/__init__.py
 ./sqliteplus/auth/jwt.py
+./sqliteplus/auth/providers.py
 ./sqliteplus/auth/rate_limit.py
 ./sqliteplus/auth/rate_limit_store.py
 ./sqliteplus/auth/users.py
@@ -54,6 +55,7 @@ sqliteplus/api/client_ip.py
 sqliteplus/api/endpoints.py
 sqliteplus/auth/__init__.py
 sqliteplus/auth/jwt.py
+sqliteplus/auth/providers.py
 sqliteplus/auth/rate_limit.py
 sqliteplus/auth/rate_limit_store.py
 sqliteplus/auth/users.py

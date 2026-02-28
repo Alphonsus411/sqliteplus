@@ -1,9 +1,12 @@
 import io
+import os
 import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from unittest import mock
 
+from sqliteplus.utils.crypto_sqlite import SQLitePlusCipherError
 from sqliteplus.utils.database_manager_sync import DatabaseManager, DatabaseQueryError
 
 
@@ -28,6 +31,18 @@ class TestDatabaseManager(unittest.TestCase):
         self.assertIsInstance(result, list)
         self.assertTrue(len(result) > 0)
         self.assertEqual(result[-1][1], action)  # Última inserción debe coincidir
+
+    def test_fetch_query_with_columns(self):
+        """Prueba fetch_query_with_columns devuelve nombres de columna y filas."""
+        action = "Test columnas"
+        self.manager.execute_query(self.db_name, "INSERT INTO logs (action) VALUES (?)", (action,))
+        
+        columns, rows = self.manager.fetch_query_with_columns(self.db_name, "SELECT id, action FROM logs LIMIT 1")
+        
+        self.assertEqual(columns, ["id", "action"])
+        self.assertIsInstance(rows, list)
+        if rows:
+            self.assertEqual(len(rows[0]), 2)
 
     def test_multiple_databases(self):
         """ Prueba la gestión de múltiples bases de datos """
@@ -80,6 +95,39 @@ class TestDatabaseManager(unittest.TestCase):
                 self.manager.execute_query(self.db_name, invalid_query, ("Test",))
 
         self.assertEqual(capture.getvalue(), "")
+
+    def test_encryption_key_required_but_missing(self):
+        """Si require_encryption es True y no hay clave, debe fallar."""
+        with mock.patch.dict(os.environ, {}, clear=True):
+            manager = DatabaseManager(require_encryption=True)
+            with self.assertRaises(SQLitePlusCipherError):
+                manager.get_connection("test_encrypted_missing_key")
+
+    def test_encryption_key_empty_raises_error(self):
+        """Si la clave está vacía y se requiere cifrado, debe fallar."""
+        with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": ""}, clear=True):
+            manager = DatabaseManager(require_encryption=True)
+            with self.assertRaises(SQLitePlusCipherError):
+                manager.get_connection("test_encrypted_empty_key")
+
+    def test_encryption_applied(self):
+        """Verifica que se aplica PRAGMA key si hay clave."""
+        with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": "secret"}, clear=True):
+            # Mock sqlite3.connect to verify calls
+            with mock.patch("sqlite3.connect") as mock_connect:
+                mock_conn = mock.Mock()
+                mock_connect.return_value = mock_conn
+                # Mock PRAGMA cipher_version to return something valid
+                mock_conn.execute.return_value.fetchone.return_value = ("4.x.x",)
+
+                manager = DatabaseManager(require_encryption=True)
+                manager.get_connection("test_encrypted")
+
+                # Verify PRAGMA key was executed
+                # Note: apply_cipher_key executes "PRAGMA key = '...'"
+                # We check if execute was called with something containing PRAGMA key
+                calls = [call for call in mock_conn.execute.call_args_list if "PRAGMA key" in call[0][0]]
+                self.assertTrue(calls, "PRAGMA key should have been called")
 
     @classmethod
     def tearDownClass(cls):

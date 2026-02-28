@@ -25,8 +25,8 @@ from typing import Any
 from sqliteplus.core.schemas import is_valid_sqlite_identifier
 from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
 from sqliteplus.utils.crypto_sqlite import (
-    GENERIC_SECURITY_ERROR_MESSAGE,
-    verify_cipher_support,
+    SQLitePlusCipherError,
+    apply_cipher_key,
 )
 
 SQLITEPLUS_PUBLIC_API = (
@@ -42,6 +42,9 @@ def _load_cython_variant() -> ModuleType | None:
     """Carga el módulo C si está disponible junto a este archivo."""
 
     if __name__ == "__main__":
+        return None
+
+    if os.getenv("SQLITEPLUS_DISABLE_CYTHON"):
         return None
 
     module_path = Path(__file__)
@@ -69,40 +72,6 @@ else:
             self.original_exception = original_exception
             message = f"Error al ejecutar la consulta SQL '{query}': {original_exception}"
             super().__init__(message)
-
-    class SQLitePlusCipherError(RuntimeError):
-        """Excepción para errores al aplicar la clave SQLCipher."""
-
-        def __init__(self, original_exception: Exception | None = None, message: str | None = None):
-            self.original_exception = original_exception
-            detail = message or GENERIC_SECURITY_ERROR_MESSAGE
-            super().__init__(detail)
-
-    def apply_cipher_key(connection: sqlite3.Connection, cipher_key: str | None) -> None:
-        """Aplica la clave de cifrado a una conexión abierta y valida soporte SQLCipher."""
-
-        if cipher_key is None:
-            return
-
-        if not isinstance(cipher_key, str):
-            raise SQLitePlusCipherError(message=GENERIC_SECURITY_ERROR_MESSAGE)
-
-        stripped_cipher_key = cipher_key.strip()
-        if not stripped_cipher_key:
-            return
-
-        escaped_key = stripped_cipher_key.replace("'", "''")
-        try:
-            connection.execute(f"PRAGMA key = '{escaped_key}';")
-            cipher_version_row = connection.execute("PRAGMA cipher_version;").fetchone()
-            verify_cipher_support(
-                cipher_key=stripped_cipher_key,
-                cipher_version_row=cipher_version_row,
-                exception_factory=lambda message: SQLitePlusCipherError(message=message),
-                security_message=GENERIC_SECURITY_ERROR_MESSAGE,
-            )
-        except sqlite3.DatabaseError as exc:  # pragma: no cover - depende de SQLCipher
-            raise SQLitePlusCipherError(exc) from exc
 
     class SQLitePlus:
         """Manejador de SQLite con soporte para cifrado y concurrencia."""
