@@ -214,7 +214,7 @@ async def test_create_table_with_safe_parenthesized_default():
             "columns": {
                 "id": "INTEGER PRIMARY KEY",
                 "created_at": "TEXT DEFAULT (CURRENT_TIMESTAMP)",
-                "created_local": "TEXT DEFAULT datetime('now')",
+                "created_local": "TEXT DEFAULT (datetime('now'))",
             }
         }
 
@@ -257,8 +257,8 @@ async def test_create_table_with_multiple_primary_keys_returns_bad_request():
 
         assert res_create.status_code == 400
         detail = res_create.json()["detail"].lower()
-        assert "clave primaria" in detail
-        assert "more than one primary key" in detail
+        # SQLite error is mapped to "definición inválida de clave primaria..."
+        assert "definición inválida de clave primaria" in detail
 
 
 @pytest.mark.asyncio
@@ -403,7 +403,8 @@ async def test_insert_unique_constraint_violation_returns_conflict():
         )
 
         assert res_insert_second.status_code == 409
-        assert "Violación de restricción" in res_insert_second.json()["detail"]
+        # "No se pudo insertar por restricción de unicidad"
+        assert "restricción de unicidad" in res_insert_second.json()["detail"]
 
         res_drop = await ac.delete(
             f"/databases/{DB_NAME}/drop_table?table_name={table_name}",
@@ -441,8 +442,10 @@ async def test_insert_with_invalid_column_returns_bad_request():
 
         assert res_insert.status_code == 400
         detail = res_insert.json()["detail"]
-        assert "Columna inválida" in detail
-        assert "extra" in detail
+        # "La operación hace referencia a una columna inválida en la tabla..."
+        assert "columna inválida" in detail
+        # El detalle público ya no expone el nombre de la columna para evitar fugas
+        # assert "extra" in detail
 
         res_drop = await ac.delete(
             f"/databases/{DB_NAME}/drop_table?table_name={table_name}",

@@ -146,8 +146,16 @@ def decode_jwt(token: str):
         secret_key = get_secret_key()
         return jwt.decode(token, secret_key, algorithms=["HS256"])
     except jwt.ExpiredSignatureError:
+        print("Fallo en decode_jwt: Token expirado", file=sys.stderr)
         return None
-    except jwt.InvalidTokenError:
+    except jwt.InvalidTokenError as e:
+        print(f"Fallo en decode_jwt: Token inválido: {e}", file=sys.stderr)
+        return None
+    except (EnvironmentError, OSError) as e:
+        # En entornos de prueba, si la variable se borra entre llamadas,
+        # get_secret_key lanza EnvironmentError (o OSError en algunos sistemas/contextos).
+        # Imprimimos para depurar
+        print(f"Fallo en decode_jwt por EnvironmentError al obtener SECRET_KEY: {e}", file=sys.stderr)
         return None
 
 def get_encrypted_connection(db_path="database.db"):

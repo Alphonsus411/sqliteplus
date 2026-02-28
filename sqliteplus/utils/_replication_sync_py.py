@@ -76,8 +76,11 @@ class SQLiteReplication:
             )
 
         try:
+            # Filtrar clave vacía o espacios
+            source_key = self.cipher_key if self.cipher_key and self.cipher_key.strip() else None
+
             with sqlite3.connect(self.db_path) as conn:
-                apply_cipher_key(conn, self.cipher_key)
+                apply_cipher_key(conn, source_key)
                 cursor = conn.cursor()
                 cursor.execute(query)
                 column_names = [desc[0] for desc in cursor.description]
@@ -112,10 +115,25 @@ class SQLiteReplication:
                     f"No se encontró la base de datos origen: {self.db_path}"
                 )
 
+            # Si la clave es solo espacios o vacía, la ignoramos al abrir la conexión
+            # Esto evita errores si se pasó una clave "basura" pero la DB no está cifrada
+            source_key = self.cipher_key if self.cipher_key and self.cipher_key.strip() else None
+
             with sqlite3.connect(self.db_path) as source_conn:
-                apply_cipher_key(source_conn, self.cipher_key)
+                # Usamos sqliteplus_sync.apply_cipher_key directamente para que sea parcheable en tests
+                # Importante: usar import relativo o desde el paquete para que el mock funcione
+                # Si en el test se parchea "sqliteplus.utils.replication_sync.apply_cipher_key",
+                # entonces debemos usar esa referencia que fue importada al inicio del archivo.
+                # El problema es que si importamos dentro de la función, podríamos estar bypassing el mock
+                # si el mock se aplicó al módulo y no a sys.modules globalmente de forma efectiva para
+                # importaciones diferidas.
+                
+                # Volvemos a usar la función importada globalmente apply_cipher_key
+                # El test debe asegurarse de parchear donde se usa.
+                apply_cipher_key(source_conn, source_key)
+                
                 with sqlite3.connect(str(backup_file)) as backup_conn:
-                    apply_cipher_key(backup_conn, self.cipher_key)
+                    apply_cipher_key(backup_conn, source_key)
                     source_conn.backup(backup_conn)
 
             self._copy_wal_and_shm(self.db_path, backup_file)
@@ -142,10 +160,13 @@ class SQLiteReplication:
             if target_dir:
                 target_dir.mkdir(parents=True, exist_ok=True)
 
+            # Filtrar clave vacía o espacios
+            source_key = self.cipher_key if self.cipher_key and self.cipher_key.strip() else None
+
             with sqlite3.connect(self.db_path) as source_conn:
-                apply_cipher_key(source_conn, self.cipher_key)
+                apply_cipher_key(source_conn, source_key)
                 with sqlite3.connect(str(target_path)) as target_conn:
-                    apply_cipher_key(target_conn, self.cipher_key)
+                    apply_cipher_key(target_conn, source_key)
                     source_conn.backup(target_conn)
 
             self._copy_wal_and_shm(self.db_path, target_path)

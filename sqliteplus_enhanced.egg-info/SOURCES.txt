@@ -98,6 +98,7 @@ sqliteplus_enhanced.egg-info/entry_points.txt
 sqliteplus_enhanced.egg-info/requires.txt
 sqliteplus_enhanced.egg-info/top_level.txt
 tests/test3.py
+tests/test_api_tools.py
 tests/test_auth.py
 tests/test_bcrypt_fallback.py
 tests/test_cli_export.py

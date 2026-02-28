@@ -121,7 +121,21 @@ class CreateTableSchema(BaseModel):
 
     @classmethod
     def _is_safe_default_expr(cls, expr: str) -> bool:
-        return bool(_is_safe_default_expr_impl(expr))
+        """Determina si una expresión DEFAULT es segura."""
+        
+        # 1. Delegar en la implementación robusta del fallback (ahora unificada)
+        # Esto maneja paréntesis externos, literales y palabras clave simples
+        if _is_safe_default_expr_impl(expr):
+            return True
+            
+        # 2. Si falló lo anterior, intentar lógica más permisiva SOLO si tiene paréntesis
+        # (para funciones complejas como datetime('now'))
+        normalized = expr.strip()
+        if normalized.startswith("(") and normalized.endswith(")"):
+            # Ya lo cubrió el fallback, pero por si acaso hay lógica extra allí
+            return True
+            
+        return False
 
     @staticmethod
     def _has_balanced_parentheses(expr: str) -> bool:

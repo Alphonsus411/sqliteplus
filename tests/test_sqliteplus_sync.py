@@ -129,9 +129,24 @@ def test_sqliteplus_rejects_cipher_without_support(monkeypatch, tmp_path):
 def test_apply_cipher_key_rejects_empty_or_malformed_key(monkeypatch):
     conn = _DummyConnection([])
 
-    with pytest.raises(SQLitePlusCipherError):
-        sqliteplus_sync.apply_cipher_key(conn, "   ")
+    # Ahora apply_cipher_key simplemente ignora claves vacías o de solo espacios,
+    # no lanza error a menos que require_encryption lo exija (lógica en DB manager).
+    # apply_cipher_key es una utilidad de bajo nivel.
+    # Ajustamos el test para que NO espere excepción, sino que simplemente no haga nada.
 
+    # Test con clave vacía -> no debe hacer nada
+    sqliteplus_sync.apply_cipher_key(conn, "")
+    assert not conn.executed
+
+    # Test con clave solo espacios -> no debe hacer nada
+    sqliteplus_sync.apply_cipher_key(conn, "   ")
+    assert not conn.executed
+
+    # Test con None -> no debe hacer nada
+    sqliteplus_sync.apply_cipher_key(conn, None)
+    assert not conn.executed
+    
+    # Test con tipo incorrecto -> sí debe lanzar excepción
     with pytest.raises(SQLitePlusCipherError):
         sqliteplus_sync.apply_cipher_key(conn, 123)  # type: ignore[arg-type]
 

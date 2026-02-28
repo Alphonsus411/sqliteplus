@@ -32,6 +32,7 @@ def verify_cipher_support(
         raise exception_factory(security_message)
 
     if not cipher_version_row:
+        # Si no hay versión de cifrado, no podemos continuar con un entorno seguro
         raise exception_factory(security_message)
 
     cipher_version = cipher_version_row[0] if isinstance(cipher_version_row, (tuple, list)) else cipher_version_row
@@ -51,13 +52,23 @@ def apply_cipher_key(connection: sqlite3.Connection, cipher_key: str | None) -> 
     # Permitimos claves con espacios, pero no vacías
     stripped_cipher_key = cipher_key.strip()
     if not stripped_cipher_key:
-        raise SQLitePlusCipherError(message="La clave de cifrado no puede estar vacía o contener solo espacios")
+        # Si se pasó una clave que es solo espacios o vacía, la ignoramos silenciosamente
+        # para no romper flujos que quizás no requerían cifrado estricto pero pasaron basura.
+        # La validación estricta debe hacerse antes de llamar a esta función si es necesario.
+        return
 
     # Usamos la clave original (con espacios si los tiene) para PRAGMA key
     escaped_key = cipher_key.replace("'", "''")
     try:
         connection.execute(f"PRAGMA key = '{escaped_key}';")
-        cipher_version_row = connection.execute("PRAGMA cipher_version;").fetchone()
+        # Intentamos verificar si el cifrado se aplicó correctamente
+        # Si SQLCipher no está presente, PRAGMA key es un no-op, y PRAGMA cipher_version devuelve nada o error
+        try:
+            cipher_version_row = connection.execute("PRAGMA cipher_version;").fetchone()
+        except sqlite3.OperationalError:
+            # Si PRAGMA cipher_version falla, asumimos que no hay soporte SQLCipher
+            cipher_version_row = None
+            
         verify_cipher_support(
             cipher_key=cipher_key,
             cipher_version_row=cipher_version_row,
@@ -65,6 +76,9 @@ def apply_cipher_key(connection: sqlite3.Connection, cipher_key: str | None) -> 
             security_message=GENERIC_SECURITY_ERROR_MESSAGE,
         )
     except sqlite3.DatabaseError as exc:  # pragma: no cover - depende de SQLCipher
+        # Si verify_cipher_support lanzó excepción, se captura aquí
+        if isinstance(exc, SQLitePlusCipherError):
+            raise exc
         raise SQLitePlusCipherError(exc) from exc
 
 

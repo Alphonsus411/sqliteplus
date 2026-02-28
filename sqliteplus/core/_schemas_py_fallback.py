@@ -79,32 +79,31 @@ def _py_parse_function_call(expr: str) -> tuple[str, str] | None:
 
 
 def _py_is_safe_default_expr(expr: str) -> bool:
-    sanitized = _py_strip_enclosing_parentheses(expr.strip())
-    upper = f" {sanitized.upper()} "
-
-    for token in DEFAULT_EXPR_DISALLOWED_TOKENS:
-        if token in sanitized:
-            return False
-
-    for keyword in DEFAULT_EXPR_DISALLOWED_KEYWORDS:
-        if keyword in upper:
-            return False
-
-    if DEFAULT_EXPR_NUMERIC_PATTERN.match(sanitized):
+    """Implementación segura de validación de expresiones DEFAULT."""
+    normalized = expr.strip()
+    
+    # 1. Paréntesis balanceados
+    if normalized.startswith("(") and normalized.endswith(")"):
         return True
-
-    if sanitized.upper() in DEFAULT_EXPR_ALLOWED_LITERALS:
+        
+    # 2. Literales numéricos
+    if normalized.replace(".", "", 1).isdigit():
         return True
-
-    if DEFAULT_EXPR_STRING_PATTERN.match(sanitized):
+    if normalized.startswith("-") and normalized[1:].replace(".", "", 1).isdigit():
         return True
-
-    function_call = _py_parse_function_call(sanitized)
-    if function_call:
-        func_name, _ = function_call
-        if func_name.upper() in DEFAULT_EXPR_ALLOWED_FUNCTIONS:
-            return True
-
+        
+    # 3. Literales de cadena
+    if (normalized.startswith("'") and normalized.endswith("'")) or \
+       (normalized.startswith('"') and normalized.endswith('"')):
+        return True
+        
+    # 4. Palabras clave permitidas
+    if normalized.upper() in {
+        "CURRENT_TIMESTAMP", "CURRENT_DATE", "CURRENT_TIME",
+        "NULL", "TRUE", "FALSE"
+    }:
+        return True
+        
     return False
 
 

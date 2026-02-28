@@ -228,10 +228,18 @@ def test_user_service_expands_home_in_env_path(tmp_path, monkeypatch):
     home_dir = tmp_path / "home"
     home_dir.mkdir()
 
+    # En Windows, HOME no siempre se usa para expanduser, se usa USERPROFILE.
+    # Monkeypatch ambos para asegurar comportamiento consistente.
     monkeypatch.setenv("HOME", str(home_dir))
-
-    users_file = home_dir / "users.json"
-    _write_users_file(users_file, "home-secret", timestamp_offset=1)
+    monkeypatch.setenv("USERPROFILE", str(home_dir))
+    
+    from pathlib import Path
+    
+    # Expandir manualmente ~ en el test para que os.path.exists funcione
+    # JsonFileUserProvider hace esto internamente, pero aquí necesitamos crear el archivo primero.
+    expanded_path = Path(str(home_dir / "users.json")).expanduser().resolve()
+    # Usamos _write_users_file helper que ya existe en el test
+    _write_users_file(expanded_path, "home-secret", timestamp_offset=1)
 
     monkeypatch.setenv("SQLITEPLUS_USERS_FILE", "~/users.json")
     reset_user_service_cache()
@@ -240,7 +248,9 @@ def test_user_service_expands_home_in_env_path(tmp_path, monkeypatch):
     try:
         assert service.verify_credentials("admin", "home-secret")
     finally:
-        reset_user_service_cache()
+        # Limpiar
+        if expanded_path.exists():
+            expanded_path.unlink()
 
 
 def test_user_service_reloads_when_file_changes(tmp_path, monkeypatch):

@@ -946,6 +946,12 @@ def export_query(ctx, export_format, limit, overwrite, output_file, query):
 def backup(ctx, db_path):
     """Crea un respaldo de la base de datos."""
     resolved_db_path = db_path or ctx.obj.get("db_path")
+
+    # Validar que la base de datos origen existe antes de intentar backup
+    if not Path(resolved_db_path).exists():
+        console.print(f"[bold red]Error:[/bold red] No se encontró la base de datos origen: {resolved_db_path}")
+        ctx.exit(1)
+
     replicator = SQLiteReplication(
         db_path=resolved_db_path,
         cipher_key=ctx.obj.get("cipher_key"),
