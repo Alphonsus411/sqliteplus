@@ -9,10 +9,12 @@ setup.py
 ./sqliteplus/_compat/bcrypt.py
 ./sqliteplus/_compat/bootstrap.py
 ./sqliteplus/api/__init__.py
+./sqliteplus/api/client_ip.py
 ./sqliteplus/api/endpoints.py
 ./sqliteplus/auth/__init__.py
 ./sqliteplus/auth/jwt.py
 ./sqliteplus/auth/rate_limit.py
+./sqliteplus/auth/rate_limit_store.py
 ./sqliteplus/auth/users.py
 ./sqliteplus/core/__init__.py
 ./sqliteplus/core/_schemas_columns.pxd
@@ -48,10 +50,12 @@ sqliteplus/_compat/__init__.py
 sqliteplus/_compat/bcrypt.py
 sqliteplus/_compat/bootstrap.py
 sqliteplus/api/__init__.py
+sqliteplus/api/client_ip.py
 sqliteplus/api/endpoints.py
 sqliteplus/auth/__init__.py
 sqliteplus/auth/jwt.py
 sqliteplus/auth/rate_limit.py
+sqliteplus/auth/rate_limit_store.py
 sqliteplus/auth/users.py
 sqliteplus/core/__init__.py
 sqliteplus/core/_schemas_columns.c

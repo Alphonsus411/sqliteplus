@@ -33,7 +33,7 @@ Requires-Dist: flet; extra == "visual"
 Provides-Extra: security
 Requires-Dist: bcrypt; extra == "security"
 Provides-Extra: speedups
-Requires-Dist: Cython>=3.0.0; extra == "speedups"
+Requires-Dist: Cython==0.29.36; extra == "speedups"
 Dynamic: license-file
 
 # SQLitePlus Enhanced
@@ -105,7 +105,7 @@ Tras la instalación se publican tres comandos en tu `PATH`. El recomendado para
 
 ### 🏗️ Construir desde el repositorio
 
-- **Instalación local con Cython:** `pip install .` detecta y compila automáticamente todas las extensiones Cython bajo `sqliteplus/`. Si necesitas asegurar que `Cython` está presente cuando trabajas desde el código fuente, puedes instalar el extra `speedups`: `pip install -e '.[dev,speedups]'`.
+- **Instalación local con Cython:** `pip install .` detecta y compila automáticamente todas las extensiones Cython bajo `sqliteplus/`. Si necesitas asegurar que `Cython` esté disponible al trabajar desde el código fuente, instala el extra `speedups` (provisiona la versión compatible con el proyecto): `pip install -e '.[dev,speedups]'`.
 - **Empaquetar para distribución:** ejecuta `python -m build` para generar las salidas `sdist` y `wheel` en `dist/`. Los artefactos incluyen los archivos `.pyx`, `.pxd` y `.pxi` para permitir que otros proyectos realicen `cimport` sin sorpresas.
 - **Desactivar la compilación Cython:** define `SQLITEPLUS_DISABLE_CYTHON=1` antes del comando (`SQLITEPLUS_DISABLE_CYTHON=1 pip install .` o `SQLITEPLUS_DISABLE_CYTHON=1 python -m build`) para forzar el modo puro Python.
 - **Activar la anotación HTML de Cython:** exporta `SQLITEPLUS_CYTHON_ANNOTATE=1` para generar los informes `.html` durante `pip install .` o `python -m build`. Si necesitas trazas para `coverage`, activa `SQLITEPLUS_CYTHON_TRACE=1` (añade los macros `CYTHON_TRACE` y `CYTHON_TRACE_NOGIL`).
@@ -235,6 +235,60 @@ Las validaciones de esquemas y el saneamiento de identificadores usan extensione
 - **Lista dinámica de módulos a compilar:** `setup.py` lee `reports/cython_candidates.json` (o la ruta definida en `SQLITEPLUS_CYTHON_TARGETS`) y solo cythoniza los módulos listados. Usa `SQLITEPLUS_FORCE_CYTHON=1` para compilar todos los `.pyx` disponibles u `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1` para ignorar la lista y dejar el comportamiento tradicional.
 
 ### Descubrimiento automático y pipeline Cython
+
+---
+
+## 🧪 Scripts de verificación rápida
+
+Para comprobaciones locales sin depender de la suite completa de tests:
+
+- Importes y acelerados instalados:
+  - Windows PowerShell:
+    - python .trae\\verify_imports.py
+    - python .trae\\verify_pure_mode.py
+    - python .trae\\verify_replication.py
+
+Descripción breve:
+- verify_pure_mode.py
+  - Fuerza SQLITEPLUS_DISABLE_CYTHON=1 y valida la equivalencia entre el fallback puro y la API pública de schemas.
+- verify_replication.py
+  - Crea una base temporal, inserta filas, hace backup y replica a otra ruta comprobando el resultado.
+
+Build/instalación útiles:
+- Fuente C + Wheel con Cython:
+  - $env:SQLITEPLUS_FORCE_CYTHON=1; python -m build -s
+  - $env:SQLITEPLUS_FORCE_CYTHON=1; python -m build -w
+- Instalar el wheel local:
+  - pip install --force-reinstall --no-deps dist\\sqliteplus_enhanced-<VERSION>-cp311-cp311-win_amd64.whl
+
+### CI de humo en Windows
+
+El repositorio incluye un workflow de GitHub Actions que compila el wheel con Cython en `windows-latest` e inspecciona que
+los módulos acelerados se importen correctamente. Luego ejecuta pruebas de humo:
+
+- .trae\\verify_imports.py
+- .trae\\verify_replication.py
+- .trae\\verify_pure_mode.py
+
+Archivo del workflow: [.github/workflows/smoke-windows.yml](.github/workflows/smoke-windows.yml).
+
+### CI de humo en Linux/macOS
+
+También se incluye un workflow matricial para `ubuntu-latest` y `macos-latest` que realiza los mismos pasos (build del wheel con Cython, instalación y ejecución de los scripts de verificación):
+
+- .trae/verify_imports.py
+- .trae/verify_replication.py
+- .trae/verify_pure_mode.py
+
+Archivo del workflow: [.github/workflows/smoke-unix.yml](.github/workflows/smoke-unix.yml).
+
+Comandos locales equivalentes:
+- Linux/macOS:
+  - python .trae/verify_imports.py
+  - python .trae/verify_replication.py
+  - python .trae/verify_pure_mode.py
+
+Ambos workflows ejecutan una matriz de Python `3.10`, `3.11` y `3.12` para asegurar compatibilidad.
 
 `setup.py` detecta automáticamente las extensiones a compilar recorriendo `sqliteplus/**/*.pyx` y, salvo que definas `SQLITEPLUS_IGNORE_CYTHON_TARGETS=1`, cruza el resultado con la lista generada en `reports/cython_candidates.json`. El flujo básico es:
 
