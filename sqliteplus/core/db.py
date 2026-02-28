@@ -281,6 +281,20 @@ class AsyncDatabaseManager:
             column_names = [column[0] for column in cursor.description or []]
             return column_names, rows
 
+    async def fetch_query_with_columns_paginated(self, db_name, query, params=(), *, limit: int):
+        """Ejecuta una lectura paginada usando ``fetchmany`` para no materializar más filas de las necesarias."""
+
+        normalized = self._normalize_db_name(db_name)
+        conn = await self.get_connection(db_name, _normalized=normalized)
+        canonical_name, _ = normalized
+        lock = self.locks[canonical_name]
+
+        async with lock:
+            cursor = await conn.execute(query, params)
+            rows = await cursor.fetchmany(limit)
+            column_names = [column[0] for column in cursor.description or []]
+            return column_names, rows
+
     async def fetch_query(self, db_name, query, params=()):
         """
         Ejecuta una consulta de lectura en la base de datos especificada.

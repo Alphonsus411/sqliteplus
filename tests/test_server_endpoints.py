@@ -48,6 +48,109 @@ async def test_full_data_flow(client, auth_headers):
 
 
 @pytest.mark.asyncio
+async def test_fetch_supports_pagination_and_response_aliases(client, auth_headers, monkeypatch):
+    db_name = "test_db_fetch_pagination"
+    table_name = "logs_page"
+
+    monkeypatch.setattr("sqliteplus.api.endpoints.db_manager._reset_on_init", False)
+    monkeypatch.setattr("sqliteplus.api.endpoints.db_manager._auto_reset_detection", False)
+
+    await client.delete(
+        f"/databases/{db_name}/drop_table?table_name={table_name}",
+        headers=auth_headers,
+    )
+
+    try:
+        res_create = await client.post(
+            f"/databases/{db_name}/create_table",
+            params={"table_name": table_name},
+            json={"columns": {"id": "INTEGER PRIMARY KEY", "msg": "TEXT NOT NULL"}},
+            headers=auth_headers,
+        )
+        assert res_create.status_code == 200
+
+        for idx in range(1, 6):
+            res_insert = await client.post(
+                f"/databases/{db_name}/insert?table_name={table_name}",
+                json={"values": {"msg": f"log-{idx}"}},
+                headers=auth_headers,
+            )
+            assert res_insert.status_code == 200
+
+        res_fetch = await client.get(
+            f"/databases/{db_name}/fetch?table_name={table_name}&limit=2&offset=1",
+            headers=auth_headers,
+        )
+        assert res_fetch.status_code == 200
+
+        payload = res_fetch.json()
+        assert set(payload.keys()) == {"columns", "rows", "data"}
+        assert payload["rows"] == payload["data"]
+
+        columns = payload["columns"]
+        rows = payload["rows"]
+        msg_index = columns.index("msg")
+        assert len(rows) == 2
+        assert [row[msg_index] for row in rows] == ["log-2", "log-3"]
+    finally:
+        await client.delete(
+            f"/databases/{db_name}/drop_table?table_name={table_name}",
+            headers=auth_headers,
+        )
+
+
+@pytest.mark.asyncio
+async def test_fetch_rejects_invalid_or_excessive_limits(client, auth_headers, monkeypatch):
+    db_name = "test_db_fetch_limit_validation"
+    table_name = "logs_page"
+
+    monkeypatch.setattr("sqliteplus.api.endpoints.db_manager._reset_on_init", False)
+    monkeypatch.setattr("sqliteplus.api.endpoints.db_manager._auto_reset_detection", False)
+
+    await client.delete(
+        f"/databases/{db_name}/drop_table?table_name={table_name}",
+        headers=auth_headers,
+    )
+
+    try:
+        res_create = await client.post(
+            f"/databases/{db_name}/create_table",
+            params={"table_name": table_name},
+            json={"columns": {"id": "INTEGER PRIMARY KEY", "msg": "TEXT"}},
+            headers=auth_headers,
+        )
+        assert res_create.status_code == 200
+
+        monkeypatch.setenv("SQLITEPLUS_FETCH_MAX_LIMIT", "3")
+
+        too_high = await client.get(
+            f"/databases/{db_name}/fetch?table_name={table_name}&limit=4",
+            headers=auth_headers,
+        )
+        assert too_high.status_code == 400
+        assert "máximo permitido (3)" in too_high.json()["detail"]
+
+        invalid_zero = await client.get(
+            f"/databases/{db_name}/fetch?table_name={table_name}&limit=0",
+            headers=auth_headers,
+        )
+        assert invalid_zero.status_code == 400
+        assert "mayor que 0" in invalid_zero.json()["detail"]
+
+        invalid_offset = await client.get(
+            f"/databases/{db_name}/fetch?table_name={table_name}&offset=-1",
+            headers=auth_headers,
+        )
+        assert invalid_offset.status_code == 400
+        assert "offset" in invalid_offset.json()["detail"].lower()
+    finally:
+        await client.delete(
+            f"/databases/{db_name}/drop_table?table_name={table_name}",
+            headers=auth_headers,
+        )
+
+
+@pytest.mark.asyncio
 async def test_fetch_nonexistent_table(client, auth_headers):
     res = await client.get(
         f"/databases/{DB_NAME}/fetch?table_name=tabla_inexistente",
