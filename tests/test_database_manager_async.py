@@ -21,8 +21,6 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
 
     async def asyncSetUp(self):
         """ Configuración inicial antes de cada prueba """
-        self.key_patch = mock.patch.dict(os.environ, {"SQLITE_DB_KEY": "clave-de-prueba"}, clear=False)
-        self.key_patch.start()
         self.manager = AsyncDatabaseManager(require_encryption=False)
         self.db_name = "test_db_async"
         await self.manager.execute_query(self.db_name,
@@ -112,6 +110,7 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
             manager.connections.pop(db_name, None)
             manager._connection_loops.pop(db_name, None)
             manager.locks.pop(db_name, None)
+            manager._initialized_keys.pop(db_name, None)  # Ensure reset happens
 
             db_path = (base_dir / f"{db_name}.db").resolve()
             db_path.write_text("contenido_residual", encoding="utf-8")
@@ -134,8 +133,8 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
 
     async def asyncTearDown(self):
         """ Limpieza después de cada prueba """
-        await self.manager.close_connections()
-        self.key_patch.stop()
+        if self.manager:
+            await self.manager.close_connections()
         self.manager = None
 
     async def test_missing_encryption_key_raises_http_exception(self):
@@ -143,14 +142,26 @@ class TestAsyncDatabaseManager(unittest.IsolatedAsyncioTestCase):
         await self.manager.close_connections()
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("SQLITE_DB_KEY", None)
+            
+            # Use a new manager that explicitly requires encryption
+            manager = AsyncDatabaseManager(require_encryption=True)
             with self.assertRaises(HTTPException) as exc_info:
-                await self.manager.get_connection("test_db_async_missing_key")
+                await manager.get_connection("test_db_async_missing_key")
 
-        self.assertEqual(exc_info.exception.status_code, 503)
+            self.assertEqual(exc_info.exception.status_code, 503)
+            self.assertIn("clave de cifrado", exc_info.exception.detail)
 
 
 class TestGlobalDBManagerEmptyKey(unittest.IsolatedAsyncioTestCase):
     """Escenarios específicos del gestor global instanciado en el módulo."""
+
+    async def asyncSetUp(self):
+        self.manager = AsyncDatabaseManager(require_encryption=False)
+
+    async def asyncTearDown(self):
+        if self.manager:
+            await self.manager.close_connections()
+        self.manager = None
 
     async def test_db_manager_with_empty_key_raises_http_exception(self):
         """El gestor global debe rechazar claves vacías en cada conexión."""
@@ -307,19 +318,22 @@ class TestGlobalDBManagerEmptyKey(unittest.IsolatedAsyncioTestCase):
 
             connect_mock = mock.AsyncMock(side_effect=[first_connection, second_connection])
 
-            manager = AsyncDatabaseManager(base_dir=base_dir)
+            manager = AsyncDatabaseManager(base_dir=base_dir, require_encryption=True)
             try:
                 with mock.patch("sqliteplus.core.db.aiosqlite.connect", new=connect_mock):
-                    with self.assertRaises(HTTPException):
-                        await manager.get_connection(db_name)
+                    with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": "dummy"}, clear=False):
+                        with self.assertRaises(HTTPException):
+                            await manager.get_connection(db_name)
 
                     self.assertNotIn(absolute_key, _INITIALIZED_DATABASES)
                     first_connection.close.assert_awaited_once()
 
-                    connection = await manager.get_connection(db_name)
+                    with mock.patch.dict(os.environ, {"SQLITE_DB_KEY": "dummy"}, clear=False):
+                        connection = await manager.get_connection(db_name)
+                        second_connection.close.assert_not_awaited()
+                        self.assertIs(connection, second_connection)
 
-                self.assertIs(connection, second_connection)
-                self.assertIn(absolute_key, _INITIALIZED_DATABASES)
+                    self.assertIn(absolute_key, _INITIALIZED_DATABASES)
                 self.assertEqual(connect_mock.await_count, 2)
             finally:
                 await manager.close_connections()
@@ -355,6 +369,7 @@ class TestGlobalDBManagerEmptyKey(unittest.IsolatedAsyncioTestCase):
             ("persistente",),
         )
         await manager.close_connections()
+        await asyncio.sleep(1.0)  # Wait for file release (Windows workaround)
         new_manager = AsyncDatabaseManager()
         try:
             connection = await new_manager.get_connection(db_name)

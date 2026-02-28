@@ -80,12 +80,7 @@ class AsyncDatabaseManager:
 
         self._register_instance()
 
-    def _should_reset_database(self) -> bool:
-        if self._reset_on_init:
-            return True
-        if self._auto_reset_detection and os.getenv("PYTEST_CURRENT_TEST"):
-            return True
-
+    def _is_force_reset_active(self) -> bool:
         force_reset_enabled = _is_truthy(os.getenv("SQLITEPLUS_FORCE_RESET"))
         if not force_reset_enabled:
             return False
@@ -99,6 +94,13 @@ class AsyncDatabaseManager:
             "Se ignoró SQLITEPLUS_FORCE_RESET fuera de un entorno permitido. "
             "Define SQLITEPLUS_ENV=test o ejecuta bajo pytest para habilitar el borrado automático."
         )
+        return False
+
+    def _should_reset_on_init(self) -> bool:
+        if self._reset_on_init:
+            return True
+        if self._auto_reset_detection and os.getenv("PYTEST_CURRENT_TEST"):
+            return True
         return False
 
     def _normalize_db_name(self, raw_name: str) -> tuple[str, Path]:
@@ -131,11 +133,16 @@ class AsyncDatabaseManager:
 
         async with self._creation_lock:
             recreate_connection = False
-            should_reset = self._should_reset_database()
+
+            force_reset = self._is_force_reset_active()
+            init_reset = self._should_reset_on_init()
+
+            already_initialized = canonical_name in self._initialized_keys
+            should_reset_now = force_reset or (init_reset and not already_initialized)
 
             if canonical_name in self.connections:
                 stored_loop = self._connection_loops.get(canonical_name)
-                if stored_loop is not current_loop or should_reset:
+                if stored_loop is not current_loop or (force_reset and already_initialized):
                     await self.connections[canonical_name].close()
                     recreate_connection = True
 
@@ -151,11 +158,10 @@ class AsyncDatabaseManager:
             absolute_key = str(db_path)
 
             if recreate_connection:
-                # `should_reset` ya se evaluó antes para evitar reusar conexiones obsoletas
-                if should_reset:
+                if should_reset_now:
                     _INITIALIZED_DATABASES.discard(absolute_key)
                 if absolute_key not in _INITIALIZED_DATABASES:
-                    if should_reset and db_path.exists():
+                    if should_reset_now and db_path.exists():
                         try:
                             db_path.unlink()
                         except OSError as exc:
@@ -164,7 +170,7 @@ class AsyncDatabaseManager:
                                 canonical_name,
                                 exc,
                             )
-                    if should_reset:
+                    if should_reset_now:
                         wal_shm_paths = [Path(f"{db_path}{suffix}") for suffix in ("-wal", "-shm")]
                         for extra_path in wal_shm_paths:
                             try:
@@ -179,11 +185,12 @@ class AsyncDatabaseManager:
                                     exc,
                                 )
                 raw_encryption_key = os.getenv("SQLITE_DB_KEY")
-                stripped_encryption_key = None
-                if raw_encryption_key is not None:
-                    stripped_encryption_key = raw_encryption_key.strip()
+                # No hacemos strip() para permitir claves con espacios, salvo que sea solo espacios
+                if raw_encryption_key is not None and raw_encryption_key.strip() == "":
+                    encryption_key = ""
+                else:
+                    encryption_key = raw_encryption_key
 
-                encryption_key = stripped_encryption_key
                 if encryption_key == "" and not self.require_encryption:
                     encryption_key = None
 
@@ -194,8 +201,8 @@ class AsyncDatabaseManager:
                     raise HTTPException(
                         status_code=503,
                         detail=(
-                            "Base de datos no disponible: SQLITE_DB_KEY es obligatoria "
-                            "y no puede estar vacía"
+                            "Base de datos no disponible: La clave de cifrado (SQLITE_DB_KEY) "
+                            "es obligatoria y no puede estar vacía"
                         ),
                     )
 
