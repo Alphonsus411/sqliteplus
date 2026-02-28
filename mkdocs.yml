@@ -12,4 +12,15 @@ nav:
   - Configuración: configuracion.md
   - Endpoints: endpoints.md
   - Changelog: changelog.md
+  - English:
+      - Home: en/index.md
+      - Installation: en/installation.md
+      - Basic Usage: en/basic_usage.md
+      - Advanced Usage: en/advanced_usage.md
+      - API: en/api.md
+      - CLI: en/cli.md
+      - Configuration: en/configuration.md
+      - Endpoints: en/endpoints.md
+      - Changelog: en/changelog.md
+      - Security Audit: en/security_remediation_plan.md
 

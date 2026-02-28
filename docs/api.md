@@ -1,3 +1,5 @@
+[Read in English](en/api.md)
+
 # API REST - SQLitePlus Enhanced
 
 La API ofrece operaciones CRUD sobre múltiples bases SQLite protegidas por JWT.

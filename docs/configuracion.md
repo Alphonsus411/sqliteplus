@@ -1,3 +1,5 @@
+[Read in English](en/configuration.md)
+
 # Configuración avanzada
 
 ## Variables de entorno soportadas

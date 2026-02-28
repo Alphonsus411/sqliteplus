@@ -1,3 +1,5 @@
+[Read in English](en/changelog.md)
+
 # Resumen del historial de cambios
 
 Esta página resume los principales hitos publicados en el proyecto. Para revisar el detalle completo consulta el [CHANGELOG en GitHub](https://github.com/Alphonsus411/sqliteplus-enhanced/blob/main/CHANGELOG.md).

@@ -1,3 +1,5 @@
+[Read in English](en/index.md)
+
 # SQLitePlus Enhanced
 
 SQLitePlus Enhanced reúne en un mismo paquete todo lo necesario para trabajar cómodamente con bases SQLite. Puedes montar una API moderna o limitarte a gestionar la base desde la consola, según lo que necesites en cada momento.

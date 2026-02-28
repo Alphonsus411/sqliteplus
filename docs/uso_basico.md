@@ -1,3 +1,5 @@
+[Read in English](en/basic_usage.md)
+
 # Uso básico
 
 ## 1. Configura las variables de entorno

@@ -1,3 +1,7 @@
+![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)
+[![Documentation](https://img.shields.io/badge/docs-English-blue)](docs/en/index.md)
+[![Documentación](https://img.shields.io/badge/docs-Español-red)](docs/index.md)
+
 # SQLitePlus Enhanced
 
 **SQLitePlus Enhanced** es una caja de herramientas en Python que facilita el trabajo con bases de datos SQLite. Puedes usarla para levantar una API con FastAPI o para gestionar la base desde la línea de comandos sin escribir código adicional.

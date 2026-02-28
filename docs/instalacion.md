@@ -1,3 +1,5 @@
+[Read in English](en/installation.md)
+
 # Instalación
 
 ## Requisitos previos

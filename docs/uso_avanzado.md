@@ -1,3 +1,5 @@
+[Read in English](en/advanced_usage.md)
+
 # Casos de uso avanzados
 
 ## Reinicialización automática en pruebas

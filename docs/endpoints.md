@@ -1,3 +1,5 @@
+[Read in English](en/endpoints.md)
+
 # Endpoints REST
 
 Resumen rápido de los recursos disponibles. Todos requieren `Authorization: Bearer <token>` salvo la

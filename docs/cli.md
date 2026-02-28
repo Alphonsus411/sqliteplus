@@ -1,3 +1,5 @@
+[Read in English](en/cli.md)
+
 # CLI `sqliteplus`
 
 El paquete instala el comando `sqliteplus`, pensado para quienes prefieren gestionar la base sin levantar la API. El comando principal acepta dos opciones globales:

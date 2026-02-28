@@ -1,3 +1,5 @@
+[Read in English](en/security_remediation_plan.md)
+
 # Auditoría técnica: bugs, problemas de funcionamiento y fisuras de seguridad
 
 ## Resumen ejecutivo
