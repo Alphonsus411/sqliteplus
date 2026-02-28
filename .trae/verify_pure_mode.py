@@ -9,7 +9,6 @@ cwd = os.getcwd()
 if cwd in sys.path:
     sys.path.remove(cwd)
 
-import sqliteplus
 from sqliteplus.core import schemas
 from sqliteplus.core import _schemas_py_fallback as pyfb
 

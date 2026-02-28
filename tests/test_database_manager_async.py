@@ -569,7 +569,6 @@ class TestAsyncDatabaseManagerResetSafety(unittest.IsolatedAsyncioTestCase):
 
                 try:
                     db_name = "force_reset_same_loop"
-                    db_path = (base_dir / f"{db_name}.db").resolve()
                     conn = await manager.get_connection(db_name)
                     await conn.execute(
                         "CREATE TABLE data (value TEXT)"

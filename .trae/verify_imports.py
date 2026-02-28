@@ -5,7 +5,6 @@ cwd = os.getcwd()
 if cwd in sys.path:
     sys.path.remove(cwd)
 
-import sqliteplus
 from sqliteplus.core import schemas
 import sqliteplus.core.schemas_cy as scy
 from sqliteplus.utils import replication_sync as repl

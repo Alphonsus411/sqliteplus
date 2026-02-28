@@ -7,7 +7,6 @@ configuración correcta.
 
 from pathlib import Path
 
-import pytest
 
 
 def _seed_events(sync_module, db_path: Path) -> None:

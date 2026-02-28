@@ -48,7 +48,11 @@ _cython_module = _load_cython_variant()
 if _cython_module is not None:
     globals().update(_cython_module.__dict__)
 else:
-    from sqliteplus.utils._replication_sync_py import *
+    from sqliteplus.utils._replication_sync_py import (
+        DEFAULT_DB_PATH,
+        PACKAGE_DB_PATH,
+        SQLiteReplication,
+    )
 
 
 def _ensure_demo_database(db_path: Path, cipher_key: str | None) -> None:
