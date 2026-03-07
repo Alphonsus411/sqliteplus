@@ -232,10 +232,7 @@ else:
             with self.lock:
                 with closing(self.get_connection()) as conn:
                     cursor = conn.cursor()
-                    try:
-                        escaped_name = escape_sqlite_identifier(table_name)
-                    except ValueError as e:
-                        raise SQLitePlusQueryError(f"Nombre de tabla inválido: {table_name}", e) from e
+                    escaped_name = escape_sqlite_identifier(table_name)
                     
                     quoted_name = f'"{escaped_name}"'
 
