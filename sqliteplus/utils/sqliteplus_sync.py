@@ -17,6 +17,7 @@ import os
 import sqlite3
 import sys
 import threading
+from contextlib import closing
 from datetime import datetime
 from pathlib import Path
 from types import ModuleType
@@ -98,18 +99,19 @@ else:
             self._initialize_db()
 
         def _initialize_db(self) -> None:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS logs (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        action TEXT,
-                        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            with closing(self.get_connection()) as conn:
+                with conn:
+                    cursor = conn.cursor()
+                    cursor.execute(
+                        """
+                        CREATE TABLE IF NOT EXISTS logs (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            action TEXT,
+                            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                        )
+                        """
                     )
-                    """
-                )
-                conn.commit()
+                    # conn.commit() se llama automáticamente al salir de `with conn` si no hay excepciones
 
         def get_connection(self) -> sqlite3.Connection:
             conn = sqlite3.connect(self.db_path, check_same_thread=False)
@@ -126,20 +128,25 @@ else:
 
         def execute_query(self, query: Any, params: tuple[Any, ...] | tuple[()] = ()) -> int:
             with self.lock:
-                with self.get_connection() as conn:
-                    cursor = conn.cursor()
-                    try:
-                        cursor.execute(query, params)
-                        conn.commit()
-                        return cursor.lastrowid
-                    except sqlite3.Error as e:
-                        raise SQLitePlusQueryError(query, e) from e
+                with closing(self.get_connection()) as conn:
+                    with conn:
+                        cursor = conn.cursor()
+                        try:
+                            cursor.execute(query, params)
+                            # Para INSERT devuelve el ID
+                            if cursor.lastrowid:
+                                return cursor.lastrowid
+                            # Para UPDATE/DELETE devuelve filas afectadas
+                            return cursor.rowcount
+                        except sqlite3.Error as e:
+                            raise SQLitePlusQueryError(query, e) from e
 
         def fetch_query(
             self, query: Any, params: tuple[Any, ...] | tuple[()] = ()
         ) -> list[tuple[Any, ...]]:
             with self.lock:
-                with self.get_connection() as conn:
+                with closing(self.get_connection()) as conn:
+                    # fetch no necesita commit, pero `with conn` es seguro para rollback en error
                     cursor = conn.cursor()
                     try:
                         cursor.execute(query, params)
@@ -153,7 +160,7 @@ else:
             """Devuelve el resultado de una consulta junto con los nombres de columna."""
 
             with self.lock:
-                with self.get_connection() as conn:
+                with closing(self.get_connection()) as conn:
                     cursor = conn.cursor()
                     try:
                         cursor.execute(query, params)
@@ -170,7 +177,7 @@ else:
             """Obtiene las tablas y vistas definidas en la base de datos."""
 
             with self.lock:
-                with self.get_connection() as conn:
+                with closing(self.get_connection()) as conn:
                     cursor = conn.cursor()
                     try:
                         cursor.execute(
@@ -231,7 +238,7 @@ else:
             """Describe la estructura de una tabla, sus índices y claves foráneas."""
 
             with self.lock:
-                with self.get_connection() as conn:
+                with closing(self.get_connection()) as conn:
                     cursor = conn.cursor()
                     escaped_name = self._escape_identifier(table_name)
                     quoted_name = f'"{escaped_name}"'

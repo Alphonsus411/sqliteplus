@@ -3,6 +3,7 @@
 import os
 import sqlite3
 import threading
+from contextlib import closing
 from datetime import datetime
 from pathlib import Path
 
@@ -82,18 +83,19 @@ cdef class SQLitePlus:
         self._initialize_db()
 
     cdef void _initialize_db(self):
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS logs (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    action TEXT,
-                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        with closing(self.get_connection()) as conn:
+            with conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS logs (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        action TEXT,
+                        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """
                 )
-                """
-            )
-            conn.commit()
+                # conn.commit()
 
     cpdef object get_connection(self):
         conn = sqlite3.connect(self.db_path, check_same_thread=False)
@@ -110,18 +112,22 @@ cdef class SQLitePlus:
 
     cpdef object execute_query(self, query, params=()):
         with self.lock:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                try:
-                    cursor.execute(query, params)
-                    conn.commit()
-                    return cursor.lastrowid
-                except sqlite3.Error as e:
-                    raise SQLitePlusQueryError(query, e) from e
+            with closing(self.get_connection()) as conn:
+                with conn:
+                    cursor = conn.cursor()
+                    try:
+                        cursor.execute(query, params)
+                        # conn.commit() se ejecuta al salir de `with conn`
+                        if cursor.lastrowid:
+                            return cursor.lastrowid
+                        return cursor.rowcount
+                    except sqlite3.Error as e:
+                        raise SQLitePlusQueryError(query, e) from e
 
     cpdef object fetch_query(self, query, params=()):
         with self.lock:
-            with self.get_connection() as conn:
+            with closing(self.get_connection()) as conn:
+                # fetch no requiere commit
                 cursor = conn.cursor()
                 try:
                     cursor.execute(query, params)
@@ -133,7 +139,7 @@ cdef class SQLitePlus:
         """Devuelve el resultado de una consulta junto con los nombres de columna."""
 
         with self.lock:
-            with self.get_connection() as conn:
+            with closing(self.get_connection()) as conn:
                 cursor = conn.cursor()
                 try:
                     cursor.execute(query, params)
@@ -150,7 +156,7 @@ cdef class SQLitePlus:
         """Obtiene las tablas y vistas definidas en la base de datos."""
         cdef int idx
         with self.lock:
-            with self.get_connection() as conn:
+            with closing(self.get_connection()) as conn:
                 cursor = conn.cursor()
                 try:
                     cursor.execute(
