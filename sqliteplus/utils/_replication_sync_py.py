@@ -8,7 +8,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from sqliteplus.core.schemas import is_valid_sqlite_identifier
+from sqliteplus.core.schemas import is_valid_sqlite_identifier, escape_sqlite_identifier
 from sqliteplus.utils.constants import (
     DEFAULT_DB_PATH,
     PACKAGE_DB_PATH,
@@ -58,15 +58,17 @@ class SQLiteReplication:
 
     def export_to_csv(self, table_name: str, output_file: str, overwrite: bool = False):
         """Exporta los datos de una tabla a un archivo CSV."""
-        if not self._is_valid_table_name(table_name):
-            raise ValueError(f"Nombre de tabla inválido: {table_name}")
+        try:
+            escaped_name = escape_sqlite_identifier(table_name)
+        except ValueError as exc:
+            raise ValueError(f"Nombre de tabla inválido: {table_name}") from exc
 
         if not Path(self.db_path).exists():
             raise FileNotFoundError(
                 f"No se encontró la base de datos origen: {self.db_path}"
             )
 
-        query = f"SELECT * FROM {self._escape_identifier(table_name)}"
+        query = f'SELECT * FROM "{escaped_name}"'
 
         output_path = Path(output_file).expanduser().resolve()
 
@@ -182,20 +184,6 @@ class SQLiteReplication:
         """Genera un timestamp para los nombres de archivo."""
         import datetime
         return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    @staticmethod
-    def _is_valid_table_name(table_name: str) -> bool:
-        if not isinstance(table_name, str):
-            return False
-
-        sanitized = table_name.strip()
-        return bool(sanitized) and is_valid_sqlite_identifier(sanitized)
-
-    @staticmethod
-    def _escape_identifier(identifier: str) -> str:
-        sanitized = identifier.strip()
-        escaped_identifier = sanitized.replace('"', '""')
-        return f'"{escaped_identifier}"'
 
     @staticmethod
     def _copy_wal_and_shm(

@@ -28,6 +28,7 @@ from sqliteplus.core.schemas import (
     CreateTableSchema,
     InsertDataSchema,
     is_valid_sqlite_identifier,
+    escape_sqlite_identifier,
 )
 from sqliteplus.auth.jwt import generate_jwt, verify_jwt
 from sqliteplus.auth.users import get_user_service, UserSourceError
@@ -59,13 +60,6 @@ def build_safe_http_error(
     else:
         logger.error(log_message, extra={"context": context})
     return HTTPException(status_code=status_code, detail=public_detail)
-
-
-def _escape_identifier(identifier: str) -> str:
-    """Escapa identificadores siguiendo las reglas de SQLite."""
-
-    escaped_identifier = identifier.replace('"', '""')
-    return f'"{escaped_identifier}"'
 
 
 def _normalize_rows_response(
@@ -253,9 +247,9 @@ async def create_table(db_name: str, table_name: str, schema: CreateTableSchema,
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     columns_def = ", ".join(
-        f"{_escape_identifier(column)} {column_type}" for column, column_type in sanitized_columns.items()
+        f'"{escape_sqlite_identifier(column)}" {column_type}' for column, column_type in sanitized_columns.items()
     )
-    query = f"CREATE TABLE IF NOT EXISTS {_escape_identifier(table_name)} ({columns_def})"
+    query = f'CREATE TABLE IF NOT EXISTS "{escape_sqlite_identifier(table_name)}" ({columns_def})'
     try:
         await db_manager.execute_query(db_name, query)
     except ValueError as exc:
@@ -272,10 +266,10 @@ async def insert_data(db_name: str, table_name: str, schema: InsertDataSchema, u
 
     payload_values = schema.values
     columns = list(payload_values.keys())
-    escaped_columns = ", ".join(_escape_identifier(column) for column in columns)
+    escaped_columns = ", ".join(f'"{escape_sqlite_identifier(column)}"' for column in columns)
     placeholders = ", ".join(["?"] * len(columns))
     query = (
-        f"INSERT INTO {_escape_identifier(table_name)} ({escaped_columns}) "
+        f'INSERT INTO "{escape_sqlite_identifier(table_name)}" ({escaped_columns}) '
         f"VALUES ({placeholders})"
     )
     try:
@@ -299,7 +293,7 @@ async def fetch_data(db_name: str, table_name: str, user: str = Depends(verify_j
     if not is_valid_sqlite_identifier(table_name):
         raise HTTPException(status_code=400, detail="Nombre de tabla inválido")
 
-    query = f"SELECT * FROM {_escape_identifier(table_name)}"
+    query = f'SELECT * FROM "{escape_sqlite_identifier(table_name)}"'
     try:
         column_names, rows = await db_manager.fetch_query_with_columns(db_name, query)
     except ValueError as exc:
@@ -315,7 +309,7 @@ async def drop_table(db_name: str, table_name: str, user: str = Depends(verify_j
     if not is_valid_sqlite_identifier(table_name):
         raise HTTPException(status_code=400, detail="Nombre de tabla inválido")
 
-    query = f"DROP TABLE IF EXISTS {_escape_identifier(table_name)}"
+    query = f'DROP TABLE IF EXISTS "{escape_sqlite_identifier(table_name)}"'
     try:
         await db_manager.execute_query(db_name, query)
     except ValueError as exc:

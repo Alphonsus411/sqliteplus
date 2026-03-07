@@ -486,6 +486,11 @@ console = Console()
     help="Clave SQLCipher a utilizar al abrir las bases de datos.",
 )
 @click.option(
+    "--ask-key",
+    is_flag=True,
+    help="Solicita la clave de cifrado de forma segura e interactiva (oculta).",
+)
+@click.option(
     "--db-path",
     default=DEFAULT_DB_PATH,
     show_default=True,
@@ -497,9 +502,13 @@ console = Console()
     ),
 )
 @click.pass_context
-def cli(ctx, cipher_key, db_path):
+def cli(ctx, cipher_key, ask_key, db_path):
     """Herramientas de consola para trabajar con SQLitePlus sin programar."""
     ctx.ensure_object(dict)
+    
+    if ask_key and not cipher_key:
+        cipher_key = click.prompt("Clave de cifrado", hide_input=True)
+        
     ctx.obj["cipher_key"] = cipher_key
     normalized_db_path = Path(db_path).expanduser()
     if normalized_db_path == Path(DEFAULT_DB_PATH):

@@ -82,3 +82,39 @@ def apply_cipher_key(connection: sqlite3.Connection, cipher_key: str | None) -> 
         raise SQLitePlusCipherError(exc) from exc
 
 
+async def apply_cipher_key_async(connection: Any, cipher_key: str | None) -> None:
+    """Versión asíncrona de apply_cipher_key para aiosqlite."""
+    import sqlite3  # Re-importar por si acaso, aunque ya está arriba
+
+    if cipher_key is None:
+        return
+
+    if not isinstance(cipher_key, str):
+        raise SQLitePlusCipherError(message=GENERIC_SECURITY_ERROR_MESSAGE)
+
+    stripped_cipher_key = cipher_key.strip()
+    if not stripped_cipher_key:
+        return
+
+    escaped_key = cipher_key.replace("'", "''")
+    try:
+        await connection.execute(f"PRAGMA key = '{escaped_key}';")
+        
+        try:
+            cursor = await connection.execute("PRAGMA cipher_version;")
+            cipher_version_row = await cursor.fetchone()
+        except sqlite3.OperationalError:
+            cipher_version_row = None
+            
+        verify_cipher_support(
+            cipher_key=cipher_key,
+            cipher_version_row=cipher_version_row,
+            exception_factory=lambda message: SQLitePlusCipherError(message=message),
+            security_message=GENERIC_SECURITY_ERROR_MESSAGE,
+        )
+    except sqlite3.DatabaseError as exc:
+        if isinstance(exc, SQLitePlusCipherError):
+            raise exc
+        raise SQLitePlusCipherError(exc) from exc
+
+

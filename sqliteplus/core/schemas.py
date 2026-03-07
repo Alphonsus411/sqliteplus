@@ -87,6 +87,23 @@ else:
     _is_safe_default_expr_impl = _py_is_safe_default_expr
 
 
+def escape_sqlite_identifier(identifier: str) -> str:
+    """Valida y escapa un identificador SQLite para uso seguro en consultas.
+    
+    Asegura que el identificador sea válido según las reglas estrictas de
+    is_valid_sqlite_identifier y escapa las comillas dobles para su uso
+    dentro de identificadores delimitados (ej. "tabla").
+    """
+    sanitized = identifier.strip()
+    if not sanitized:
+        raise ValueError("El identificador no puede estar vacío.")
+    
+    if not is_valid_sqlite_identifier(sanitized):
+        raise ValueError(f"Identificador inválido: '{identifier}'")
+        
+    return sanitized.replace('"', '""')
+
+
 class CreateTableSchema(BaseModel):
     """Esquema recibido al crear una tabla.
 

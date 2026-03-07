@@ -12,7 +12,8 @@ import aiosqlite
 from fastapi import HTTPException
 from sqliteplus.utils.crypto_sqlite import (
     GENERIC_SECURITY_ERROR_MESSAGE,
-    verify_cipher_support,
+    SQLitePlusCipherError,
+    apply_cipher_key_async,
 )
 
 
@@ -214,37 +215,19 @@ class AsyncDatabaseManager:
                 connection = None
                 try:
                     connection = await aiosqlite.connect(str(db_path))
-                    if encryption_key is not None:
-                        escaped_key = encryption_key.replace("'", "''")
-                        try:
-                            await connection.execute(f"PRAGMA key = '{escaped_key}';")
-                            cipher_version_cursor = await connection.execute("PRAGMA cipher_version;")
-                            cipher_version_row = await cipher_version_cursor.fetchone()
-                            verify_cipher_support(
-                                cipher_key=encryption_key,
-                                cipher_version_row=cipher_version_row,
-                                exception_factory=lambda message: HTTPException(
-                                    status_code=503,
-                                    detail=message,
-                                ),
-                                security_message=GENERIC_SECURITY_ERROR_MESSAGE,
-                            )
-                        except (aiosqlite.OperationalError, sqlite3.DatabaseError) as exc:
-                            logger.error(
-                                "Fallo al validar soporte de cifrado para la base '%s': %s.",
-                                canonical_name,
-                                exc,
-                            )
-                            raise HTTPException(
-                                status_code=503,
-                                detail=GENERIC_SECURITY_ERROR_MESSAGE,
-                            ) from exc
-                        except HTTPException:
-                            logger.error(
-                                "Soporte de cifrado no disponible para la base '%s'.",
-                                canonical_name,
-                            )
-                            raise
+                    try:
+                        await apply_cipher_key_async(connection, encryption_key)
+                    except SQLitePlusCipherError as exc:
+                        logger.error(
+                            "Fallo al validar soporte de cifrado para la base '%s': %s.",
+                            canonical_name,
+                            exc,
+                        )
+                        raise HTTPException(
+                            status_code=503,
+                            detail=GENERIC_SECURITY_ERROR_MESSAGE,
+                        ) from exc
+
                     await connection.execute("PRAGMA journal_mode=WAL;")  # Mejora concurrencia
                     await connection.commit()
                 except Exception:

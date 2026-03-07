@@ -23,7 +23,10 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-from sqliteplus.core.schemas import is_valid_sqlite_identifier
+from sqliteplus.core.schemas import (
+    is_valid_sqlite_identifier,
+    escape_sqlite_identifier,
+)
 from sqliteplus.utils.constants import DEFAULT_DB_PATH, resolve_default_db_path
 from sqliteplus.utils.crypto_sqlite import (
     SQLitePlusCipherError,
@@ -200,11 +203,12 @@ else:
 
                         row_count = None
                         if include_row_counts and obj_type == "table":
-                            identifier = name.replace('"', '""')
                             try:
+                                identifier = escape_sqlite_identifier(name)
                                 count_cursor = conn.execute(f'SELECT COUNT(*) FROM "{identifier}"')
                                 row_count = count_cursor.fetchone()[0]
-                            except sqlite3.Error as e:
+                            except (ValueError, sqlite3.Error) as e:
+                                # Si el nombre es inválido o hay error SQL, no podemos contar
                                 raise SQLitePlusQueryError(f"SELECT COUNT(*) FROM {name}", e) from e
 
                         results.append(
@@ -219,20 +223,8 @@ else:
 
         @classmethod
         def _escape_identifier(cls, table_name: str) -> str:
-            sanitized = table_name.strip()
-            if not sanitized:
-                raise ValueError("El nombre de la tabla no puede estar vacío.")
-
-            if not is_valid_sqlite_identifier(sanitized):
-                raise ValueError(
-                    (
-                        f"Nombre de tabla inválido: '{table_name}'."
-                        " Evita comillas dobles, caracteres de control y"
-                        " espacios al inicio o al final."
-                    )
-                )
-
-            return sanitized.replace('"', '""')
+            # DEPRECATED: Usar sqliteplus.core.schemas.escape_sqlite_identifier
+            return escape_sqlite_identifier(table_name)
 
         def describe_table(self, table_name: str):
             """Describe la estructura de una tabla, sus índices y claves foráneas."""
@@ -240,7 +232,11 @@ else:
             with self.lock:
                 with closing(self.get_connection()) as conn:
                     cursor = conn.cursor()
-                    escaped_name = self._escape_identifier(table_name)
+                    try:
+                        escaped_name = escape_sqlite_identifier(table_name)
+                    except ValueError as e:
+                        raise SQLitePlusQueryError(f"Nombre de tabla inválido: {table_name}", e) from e
+                    
                     quoted_name = f'"{escaped_name}"'
 
                     try:
