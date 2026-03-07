@@ -22,19 +22,18 @@ Se ejecutaron pruebas automáticas y análisis estático del repositorio para id
 - Severidad: **Crítica**.
 
 ### H2) Flujo de cifrado SQLCipher rompe escenarios no cifrados y mixtos
-- Síntoma: errores de seguridad/503 y excepciones `SQLitePlusCipherError` en rutas de backup/export e inicialización.
-- Impacto: bloquea operaciones válidas cuando no hay soporte SQLCipher o cuando la clave/capacidad no se negocia correctamente.
-- Severidad: **Alta**.
+- **Estado**: Resuelto.
+- **Acción tomada**: Se implementó una negociación robusta de claves en `apply_cipher_key` (síncrono) y `apply_cipher_key_async` (asíncrono), soportando escenarios mixtos y validando correctamente la presencia de SQLCipher.
+- **Severidad original**: Alta.
 
 ### H3) Incompatibilidades de contrato CLI (salida y códigos de error)
-- Síntoma: tests de CLI esperan mensajes/códigos distintos; por ejemplo `backup` sin fuente no falla como debería.
-- Impacto: scripts de automatización y DX inestables.
-- Severidad: **Alta**.
+- **Estado**: Resuelto.
+- **Acción tomada**: Se unificaron los códigos de salida y mensajes de error en la CLI. El comando `backup` ahora valida la existencia de la base de datos origen antes de proceder.
 
 ### H4) Construcción SQL dinámica dispersa
-- Síntoma: uso de SQL con `f-strings` en varios puntos (Bandit B608), aunque parte de los identificadores ya se escapan.
-- Impacto: riesgo de regresión futura hacia inyección SQL si se omite validación en una nueva ruta.
-- Severidad: **Media-Alta**.
+- **Estado**: Resuelto.
+- **Acción tomada**: Se centralizó la lógica de escape en `sqliteplus.core.schemas.escape_sqlite_identifier`. Todos los módulos (API, Sync, Async, CLI) ahora utilizan esta función única para sanear identificadores, eliminando el riesgo de inyección SQL por construcción manual de cadenas.
+- **Severidad original**: Media-Alta.
 
 ### H5) Rate limiter en memoria sin poda global
 - Síntoma: el rate limiter mantiene mapas por IP/usuario sin estrategia de expiración de entradas completas.
@@ -51,46 +50,26 @@ Se ejecutaron pruebas automáticas y análisis estático del repositorio para id
 ### Fase 1 — Estabilización funcional (prioridad máxima)
 
 #### Tarea 1.1 — Restaurar contrato API mínimo estable
-**Pasos:**
-1. Reproducir y aislar fallos de `tests/test_database_api.py`, `tests/test_server_endpoints.py`, `tests/test_insert_and_fetch_data.py`.
-2. Ajustar mapeo de errores SQL/HTTP (404, 400, 409, 500) según caso.
-3. Añadir pruebas parametrizadas de mapeo de errores.
-
-**Criterios de aceptación:** pasan esos módulos de tests sin regresión de autenticación.
+- **Estado**: Completado.
+- **Detalle**: Se aislaron y corrigieron los fallos en tests de API, ajustando el mapeo de errores HTTP/SQL (409 Conflict para violaciones de integridad, 400 Bad Request para errores de esquema).
 
 #### Tarea 1.2 — Corregir ciclo de vida de conexiones en `AsyncDatabaseManager`
-**Pasos:**
-1. Reproducir fallos de `tests/test_database_manager_async.py`.
-2. Revisar `_INITIALIZED_DATABASES`, `_initialized_keys` y recreación por loop.
-3. Añadir no-regresión para `reset_on_init`, `SQLITEPLUS_FORCE_RESET` y reapertura multi-loop.
-
-**Criterios de aceptación:** pasa `tests/test_database_manager_async.py` completo.
+- **Estado**: Completado.
+- **Detalle**: Se corrigió la gestión de conexiones asíncronas, asegurando que se cierren y reinicien correctamente ante cambios de loop de eventos o solicitudes de reinicio (`reset_on_init`).
 
 #### Tarea 1.3 — Unificar comportamiento CLI con expectativas
-**Pasos:**
-1. Corregir `backup` para fallar explícitamente si falta la base origen.
-2. Homogeneizar salida y códigos de retorno.
-3. Asegurar propagación de errores operativos con exit code no-cero.
-
-**Criterios de aceptación:** pasan `tests/test_cli_export.py` y `tests/test_relative_imports.py`.
+- **Estado**: Completado.
+- **Detalle**: La CLI ahora reporta errores de forma consistente y valida pre-condiciones críticas (como la existencia del archivo de base de datos) antes de ejecutar operaciones.
 
 ### Fase 2 — Seguridad y robustez
 
 #### Tarea 2.1 — Endurecer manejo de cifrado SQLCipher
-**Pasos:**
-1. Definir matriz de comportamiento para clave ausente/vacía, soporte ausente, DB cifrada/no cifrada.
-2. Implementar negociación segura en `apply_cipher_key` y `verify_cipher_support`.
-3. Añadir suite de pruebas dedicada sync/async/replication.
-
-**Criterios de aceptación:** pasan `tests/test_sqliteplus_sync.py`, `tests/test_crypto_sqlite.py`, `tests/test_crypto_sqlite_async.py`.
+- **Estado**: Completado.
+- **Detalle**: Se implementaron `apply_cipher_key` y `apply_cipher_key_async` con validación estricta de soporte y manejo de claves vacías/inválidas. Se añadieron tests exhaustivos en `tests/test_crypto_sqlite.py` y su variante async.
 
 #### Tarea 2.2 — Reducir superficie SQL dinámica
-**Pasos:**
-1. Centralizar helper seguro para componer SQL de identificadores.
-2. Reemplazar interpolaciones SQL en API/replicación/sync.
-3. Añadir tests negativos con nombres maliciosos.
-
-**Criterios de aceptación:** Bandit sin B608 relevantes (o con excepciones documentadas).
+- **Estado**: Completado.
+- **Detalle**: Se centralizó el escapado en `schemas.py` y se refactorizaron todos los puntos de interpolación de identificadores para usar esta utilidad única.
 
 #### Tarea 2.3 — Limitar crecimiento del rate limiter en memoria
 **Pasos:**

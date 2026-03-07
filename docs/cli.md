@@ -2,9 +2,10 @@
 
 # CLI `sqliteplus`
 
-El paquete instala el comando `sqliteplus`, pensado para quienes prefieren gestionar la base sin levantar la API. El comando principal acepta dos opciones globales:
+El paquete instala el comando `sqliteplus`, pensado para quienes prefieren gestionar la base sin levantar la API. El comando principal acepta opciones globales de configuración y seguridad:
 
 - `--cipher-key` (o la variable `SQLITE_DB_KEY`) para abrir bases cifradas.
+- `--ask-key` para solicitar la clave de cifrado de forma interactiva y oculta, evitando que quede en el historial.
 - `--db-path` para indicar qué archivo `.db` usarán los subcomandos.
 
 ## Inicializar la base
@@ -145,11 +146,21 @@ De forma análoga, `SQLiteReplication.backup_database` retorna la ubicación cre
 
 ## Trabajar con SQLCipher
 
+Para mayor seguridad en entornos compartidos, evita pasar la clave directamente en el comando. Usa `--ask-key` para que la CLI te la solicite de forma oculta:
+
 ```bash
-sqliteplus --cipher-key "$SQLITE_DB_KEY" backup
+sqliteplus --ask-key backup
+# Prompt: Clave de cifrado: ******
 ```
 
-Si la clave es incorrecta o el intérprete no soporta SQLCipher, la CLI mostrará un error fácil de entender para guiarte en la corrección.
+Si prefieres usar variables de entorno o scripts automatizados:
+
+```bash
+export SQLITE_DB_KEY="mi-secreto-seguro"
+sqliteplus backup
+```
+
+La CLI detecta automáticamente si la clave es incorrecta o si la base requiere cifrado pero no se proporcionó ninguna credencial.
 
 ## Nuevo aspecto con Rich
 

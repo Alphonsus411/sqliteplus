@@ -35,7 +35,8 @@ This prevents external clients from spoofing their IP when the server is not beh
 
 ## CLI Options
 
-- `--cipher-key` / `SQLITE_DB_KEY`: allows using SQLCipher in synchronous operations.
+- `--cipher-key` / `SQLITE_DB_KEY`: SQLCipher key for opening the encrypted database (for both synchronous and asynchronous operations).
+- `--ask-key`: Securely prompts for the encryption key interactively (hidden on screen), avoiding history leaks.
 - The `export-csv` and `backup` subcommands accept custom paths preserving safe names.
 
 ## External Authentication

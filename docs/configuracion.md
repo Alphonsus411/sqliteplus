@@ -38,7 +38,8 @@ un proxy explícitamente confiable.
 
 ## Opciones de la CLI
 
-- `--cipher-key` / `SQLITE_DB_KEY`: permite usar SQLCipher en las operaciones sincrónicas.
+- `--cipher-key` / `SQLITE_DB_KEY`: Clave SQLCipher para abrir la base de datos cifrada (en operaciones síncronas y asíncronas).
+- `--ask-key`: Solicita la clave de cifrado de forma interactiva y segura (oculta en pantalla), evitando que quede registrada en el historial de comandos.
 - Los subcomandos `export-csv` y `backup` aceptan rutas personalizadas conservando nombres seguros.
 
 ## Autenticación externa

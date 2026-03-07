@@ -42,11 +42,16 @@ When you execute any of the above examples without the compiled dependency insta
 
 After installing the package, you have three commands available in your `PATH` without needing to call the modules directly:
 
-- `sqliteplus`: Main CLI. Use `--db-path` and `--cipher-key` (or the `SQLITE_DB_KEY` variable) to select the database and open it with SQLCipher if applicable. A minimal flow could be:
+- `sqliteplus`: Main CLI. Use `--db-path` to select the database. For encryption, you can use `--cipher-key` (or the `SQLITE_DB_KEY` variable) or, preferably, `--ask-key` to enter the key securely. A minimal flow could be:
 
   ```bash
+  # Initialize database
   sqliteplus --db-path ./databases/demo.db init-db
-  sqliteplus --db-path ./databases/demo.db execute "INSERT INTO logs (action) VALUES ('Hello from CLI')"
+
+  # Operations with secure key prompt (if the database is encrypted)
+  sqliteplus --db-path ./databases/demo.db --ask-key execute "INSERT INTO logs (action) VALUES ('Secure hello')"
+
+  # Standard query
   sqliteplus --db-path ./databases/demo.db fetch "SELECT * FROM logs"
   ```
 

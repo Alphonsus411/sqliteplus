@@ -48,11 +48,16 @@ oficial instala el extra `security` (`pip install "sqliteplus-enhanced[security]
 
 Después de instalar el paquete tienes disponibles tres comandos en tu `PATH` sin necesidad de llamar a los módulos directamente:
 
-- `sqliteplus`: CLI principal. Usa `--db-path` y `--cipher-key` (o la variable `SQLITE_DB_KEY`) para seleccionar la base y abrirla con SQLCipher si procede. Un flujo mínimo podría ser:
+- `sqliteplus`: CLI principal. Usa `--db-path` para seleccionar la base. Para cifrado, puedes usar `--cipher-key` (o la variable `SQLITE_DB_KEY`) o, preferiblemente, `--ask-key` para introducir la clave de forma segura. Un flujo mínimo podría ser:
 
   ```bash
+  # Inicializar base de datos
   sqliteplus --db-path ./databases/demo.db init-db
-  sqliteplus --db-path ./databases/demo.db execute "INSERT INTO logs (action) VALUES ('Hola desde CLI')"
+
+  # Operaciones con solicitud segura de clave (si la base está cifrada)
+  sqliteplus --db-path ./databases/demo.db --ask-key execute "INSERT INTO logs (action) VALUES ('Hola seguro')"
+  
+  # Consulta estándar
   sqliteplus --db-path ./databases/demo.db fetch "SELECT * FROM logs"
   ```
 

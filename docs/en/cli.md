@@ -2,9 +2,10 @@
 
 # `sqliteplus` CLI
 
-The package installs the `sqliteplus` command, designed for those who prefer managing the database without starting the API. The main command accepts two global options:
+The package installs the `sqliteplus` command, designed for those who prefer managing the database without starting the API. The main command accepts global configuration and security options:
 
 - `--cipher-key` (or the `SQLITE_DB_KEY` variable) to open encrypted databases.
+- `--ask-key` to request the encryption key interactively and hidden, avoiding history logs.
 - `--db-path` to indicate which `.db` file the subcommands will use.
 
 ## Initialize the database
@@ -134,11 +135,21 @@ You will get a dated backup in the `backups/` folder. The command indicates the 
 
 ## Working with SQLCipher
 
+For greater security in shared environments, avoid passing the key directly in the command. Use `--ask-key` so the CLI prompts you hiddenly:
+
 ```bash
-sqliteplus --cipher-key "$SQLITE_DB_KEY" backup
+sqliteplus --ask-key backup
+# Prompt: Encryption Key: ******
 ```
 
-If the key is incorrect or the interpreter does not support SQLCipher, the CLI will show an easy-to-understand error.
+If you prefer environment variables or automated scripts:
+
+```bash
+export SQLITE_DB_KEY="my-secure-secret"
+sqliteplus backup
+```
+
+The CLI automatically detects if the key is incorrect or if the database requires encryption but no credentials were provided.
 
 ## New Look with Rich
 

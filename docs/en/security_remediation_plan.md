@@ -22,19 +22,18 @@ Automated tests and static analysis of the repository were executed to identify 
 - Severity: **Critical**.
 
 ### H2) SQLCipher Encryption Flow Breaks Unencrypted and Mixed Scenarios
-- Symptom: security/503 errors and `SQLitePlusCipherError` exceptions in backup/export and initialization routes.
-- Impact: blocks valid operations when there is no SQLCipher support or when key/capability is not negotiated correctly.
-- Severity: **High**.
+- **Status**: Resolved.
+- **Action Taken**: Robust key negotiation implemented in `apply_cipher_key` (sync) and `apply_cipher_key_async` (async), supporting mixed scenarios and correctly validating SQLCipher presence.
+- **Original Severity**: High.
 
 ### H3) CLI Contract Incompatibilities (Output and Error Codes)
-- Symptom: CLI tests expect different messages/codes; for example `backup` without source does not fail as it should.
-- Impact: unstable automation scripts and DX.
-- Severity: **High**.
+- **Status**: Resolved.
+- **Action Taken**: CLI exit codes and error messages unified. The `backup` command now validates source database existence before proceeding.
 
 ### H4) Scattered Dynamic SQL Construction
-- Symptom: use of SQL with `f-strings` in several points (Bandit B608), although part of the identifiers are already escaped.
-- Impact: risk of future regression towards SQL injection if validation is omitted in a new route.
-- Severity: **Medium-High**.
+- **Status**: Resolved.
+- **Action Taken**: Escaping logic centralized in `sqliteplus.core.schemas.escape_sqlite_identifier`. All modules (API, Sync, Async, CLI) now use this single utility to sanitize identifiers, eliminating SQL injection risk from manual string construction.
+- **Original Severity**: Medium-High.
 
 ### H5) In-Memory Rate Limiter Without Global Pruning
 - Symptom: the rate limiter maintains maps per IP/user without a strategy for expiring complete entries.
@@ -51,46 +50,26 @@ Automated tests and static analysis of the repository were executed to identify 
 ### Phase 1 — Functional Stabilization (Top Priority)
 
 #### Task 1.1 — Restore Minimum Stable API Contract
-**Steps:**
-1. Reproduce and isolate failures in `tests/test_database_api.py`, `tests/test_server_endpoints.py`, `tests/test_insert_and_fetch_data.py`.
-2. Adjust SQL/HTTP error mapping (404, 400, 409, 500) as appropriate.
-3. Add parameterized error mapping tests.
-
-**Acceptance Criteria:** those test modules pass without authentication regression.
+- **Status**: Completed.
+- **Detail**: API test failures isolated and fixed, adjusting HTTP/SQL error mapping (409 Conflict for integrity violations, 400 Bad Request for schema errors).
 
 #### Task 1.2 — Fix Connection Lifecycle in `AsyncDatabaseManager`
-**Steps:**
-1. Reproduce failures in `tests/test_database_manager_async.py`.
-2. Review `_INITIALIZED_DATABASES`, `_initialized_keys`, and recreation by loop.
-3. Add non-regression for `reset_on_init`, `SQLITEPLUS_FORCE_RESET`, and multi-loop reopening.
-
-**Acceptance Criteria:** passes `tests/test_database_manager_async.py` completely.
+- **Status**: Completed.
+- **Detail**: Async connection management fixed, ensuring correct closing and resetting upon event loop changes or restart requests (`reset_on_init`).
 
 #### Task 1.3 — Unify CLI Behavior with Expectations
-**Steps:**
-1. Fix `backup` to explicitly fail if the source database is missing.
-2. Homogenize output and return codes.
-3. Ensure propagation of operational errors with non-zero exit code.
-
-**Acceptance Criteria:** passes `tests/test_cli_export.py` and `tests/test_relative_imports.py`.
+- **Status**: Completed.
+- **Detail**: CLI now reports errors consistently and validates critical preconditions (like database file existence) before executing operations.
 
 ### Phase 2 — Security and Robustness
 
 #### Task 2.1 — Harden SQLCipher Encryption Handling
-**Steps:**
-1. Define behavior matrix for missing/empty key, missing support, encrypted/unencrypted DB.
-2. Implement secure negotiation in `apply_cipher_key` and `verify_cipher_support`.
-3. Add dedicated test suite sync/async/replication.
-
-**Acceptance Criteria:** passes `tests/test_sqliteplus_sync.py`, `tests/test_crypto_sqlite.py`, `tests/test_crypto_sqlite_async.py`.
+- **Status**: Completed.
+- **Detail**: `apply_cipher_key` and `apply_cipher_key_async` implemented with strict support validation and empty/invalid key handling. Comprehensive tests added in `tests/test_crypto_sqlite.py` and its async variant.
 
 #### Task 2.2 — Reduce Dynamic SQL Surface
-**Steps:**
-1. Centralize secure helper to compose identifier SQL.
-2. Replace SQL interpolations in API/replication/sync.
-3. Add negative tests with malicious names.
-
-**Acceptance Criteria:** Bandit without relevant B608 (or with documented exceptions).
+- **Status**: Completed.
+- **Detail**: Escaping centralized in `schemas.py`, and all identifier interpolation points refactored to use this single utility.
 
 #### Task 2.3 — Limit In-Memory Rate Limiter Growth
 **Steps:**
