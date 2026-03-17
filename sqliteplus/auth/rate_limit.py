@@ -246,6 +246,12 @@ class LoginRateLimiter:
                 user_state.last_seen = current
 
     def metrics_snapshot(self) -> dict[str, object]:
+        retained_failed_by_ip = {
+            key: state.failures for key, state in self._metrics_by_ip.items()
+        }
+        retained_failed_by_user = {
+            key: state.failures for key, state in self._metrics_by_user.items()
+        }
         return {
             "failed_attempts_total": self.failed_attempts_total,
             "failed_attempts_ip_total": self.failed_attempts_ip_total,
@@ -254,12 +260,11 @@ class LoginRateLimiter:
             "rate_limit_triggered_total": self.rate_limit_triggered_total,
             "ip_states_size": len(self._ip_states),
             "user_states_size": len(self._user_states),
-            "retained_failed_by_ip": {
-                key: state.failures for key, state in self._metrics_by_ip.items()
-            },
-            "retained_failed_by_user": {
-                key: state.failures for key, state in self._metrics_by_user.items()
-            },
+            # Backward-compatible aliases kept for existing callers.
+            "failed_by_ip": retained_failed_by_ip,
+            "failed_by_user": retained_failed_by_user,
+            "retained_failed_by_ip": retained_failed_by_ip,
+            "retained_failed_by_user": retained_failed_by_user,
             "metrics_ip_size": len(self._metrics_by_ip),
             "metrics_user_size": len(self._metrics_by_user),
             "metrics_dropped_total": self.metrics_dropped_total,
